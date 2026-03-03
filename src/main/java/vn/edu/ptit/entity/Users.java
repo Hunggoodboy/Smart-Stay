@@ -37,12 +37,6 @@ public class Users implements Serializable {
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
-    @Column(name = "student_id")
-    private String studentId;
-
-    @Column(name = "university")
-    private String university;
-
     @Column(name = "avatar_url")
     private String avatarUrl;
 

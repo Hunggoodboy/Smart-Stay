@@ -6,4 +6,5 @@ import vn.edu.ptit.entity.Admins;
 
 @Repository
 public interface AdminsRepository extends JpaRepository<Admins, Long> {
+
 }

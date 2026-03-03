@@ -20,7 +20,8 @@ public class RentPayments implements Serializable {
 
     @Column(name = "billing_month", nullable = false)
     private String billingMonth;
-
+    @Column(name = "id_card_number")
+    private String idCardNumber;
     @Column(name = "rent_amount", nullable = false)
     private Double rentAmount;
 
