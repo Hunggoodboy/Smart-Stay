@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Stay Auth</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/uno.css}">
+    <link rel="stylesheet" href="../static/css/uno.css">
+</head>
+<body class="min-h-screen bg-[radial-gradient(circle_at_top,_#fef3c7_0%,_#ffffff_35%,_#dbeafe_100%)] text-slate-800 antialiased [font-family:'Be_Vietnam_Pro',sans-serif]">
+    <div class="pointer-events-none fixed inset-0 overflow-hidden">
+        <div class="absolute -top-22 -left-22 h-64 w-64 rounded-full bg-amber-300/45 blur-3xl animate-pulse"></div>
+        <div class="absolute -bottom-24 -right-20 h-80 w-80 rounded-full bg-sky-300/45 blur-3xl animate-pulse"></div>
+    </div>
+
+    <main class="relative z-10 mx-auto flex min-h-screen max-w-6xl items-center justify-center px-4 py-10 sm:px-6 lg:px-8">
+        <section class="grid w-full max-w-5xl overflow-hidden rounded-3xl border border-white/60 bg-white/75 shadow-[0_24px_80px_rgba(15,23,42,0.16)] backdrop-blur-md lg:grid-cols-2">
+            <aside class="hidden bg-[linear-gradient(145deg,_#0f172a,_#1d4ed8)] p-10 text-white lg:flex lg:flex-col lg:justify-between">
+                <div>
+                    <p class="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1 text-sm font-semibold tracking-wide text-sky-100">
+                        Smart Stay
+                    </p>
+                    <h1 class="mt-6 text-4xl leading-tight [font-family:'Space_Grotesk',sans-serif]">
+                        Quản lý nhà trọ gọn gàng, dễ dùng mỗi ngày.
+                    </h1>
+                    <p class="mt-4 max-w-sm text-sky-100/90">
+                        Đăng nhập nhanh, đăng ký đơn giản và bắt đầu ngay trong vài giây.
+                    </p>
+                </div>
+                <div class="space-y-3 text-sm text-sky-100/95">
+                    <p class="flex items-center gap-2">
+                        <span class="inline-block h-2 w-2 rounded-full bg-amber-300"></span>
+                        Tạo tài khoản nhanh
+                    </p>
+                    <p class="flex items-center gap-2">
+                        <span class="inline-block h-2 w-2 rounded-full bg-amber-300"></span>
+                        Truy cập tài khoản an toàn
+                    </p>
+                    <p class="flex items-center gap-2">
+                        <span class="inline-block h-2 w-2 rounded-full bg-amber-300"></span>
+                        Theo dõi phòng theo thời gian thực
+                    </p>
+                </div>
+            </aside>
+
+            <div class="p-6 sm:p-10">
+                <div class="mx-auto w-full max-w-md">
+                    <div class="inline-flex rounded-xl bg-slate-100 p-1 text-sm font-semibold">
+                        <button id="btn-login" type="button" class="rounded-lg bg-white px-4 py-2 text-slate-900 shadow-sm transition">
+                            Đăng nhập
+                        </button>
+                        <button id="btn-register" type="button" class="rounded-lg px-4 py-2 text-slate-500 transition hover:text-slate-700">
+                            Đăng ký
+                        </button>
+                    </div>
+
+                    <div class="mt-8">
+                        <form id="form-login" class="space-y-4">
+                            <h2 class="text-2xl font-bold [font-family:'Space_Grotesk',sans-serif]">Đăng nhập tài khoản</h2>
+                            <p class="text-sm text-slate-500">Dùng username và mật khẩu để tiếp tục.</p>
+
+                            <label class="block text-sm font-medium text-slate-700">
+                                Username
+                                <input type="text" placeholder="nhập username" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none ring-0 transition focus:border-sky-400 focus:shadow-[0_0_0_3px_rgba(14,165,233,0.16)]" required>
+                            </label>
+
+                            <label class="block text-sm font-medium text-slate-700">
+                                Mật khẩu
+                                <input type="password" placeholder="********" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none ring-0 transition focus:border-sky-400 focus:shadow-[0_0_0_3px_rgba(14,165,233,0.16)]" required>
+                            </label>
+
+                            <div class="flex items-center justify-between text-sm">
+                                <label class="inline-flex items-center gap-2 text-slate-600">
+                                    <input type="checkbox" class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500">
+                                    Ghi nhớ tài khoản
+                                </label>
+                                <a href="#" class="font-medium text-sky-700 hover:text-sky-800">Quên mật khẩu?</a>
+                            </div>
+
+                            <button type="submit" class="w-full rounded-xl bg-slate-900 px-4 py-3 font-semibold text-white transition hover:bg-slate-800">
+                                Đăng nhập
+                            </button>
+                        </form>
+
+                        <form id="form-register" class="hidden space-y-4">
+                            <h2 class="text-2xl font-bold [font-family:'Space_Grotesk',sans-serif]">Tạo tài khoản mới</h2>
+                            <p class="text-sm text-slate-500">Nhập đầy đủ thông tin cơ bản để đăng ký.</p>
+
+                            <label class="block text-sm font-medium text-slate-700">
+                                Họ và tên
+                                <input type="text" placeholder="Nguyễn Văn A" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none ring-0 transition focus:border-amber-400 focus:shadow-[0_0_0_3px_rgba(251,191,36,0.2)]" required>
+                            </label>
+
+                            <label class="block text-sm font-medium text-slate-700">
+                                Số điện thoại
+                                <input type="tel" inputmode="numeric" pattern="[0-9]{9,11}" placeholder="VD: 0987654321" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none ring-0 transition focus:border-amber-400 focus:shadow-[0_0_0_3px_rgba(251,191,36,0.2)]" required>
+                            </label>
+
+                            <label class="block text-sm font-medium text-slate-700">
+                                Username
+                                <input type="text" placeholder="tạo username" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none ring-0 transition focus:border-amber-400 focus:shadow-[0_0_0_3px_rgba(251,191,36,0.2)]" required>
+                            </label>
+
+                            <label class="block text-sm font-medium text-slate-700">
+                                Mật khẩu
+                                <input id="register-password" type="password" placeholder="Tối thiểu 8 ký tự" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none ring-0 transition focus:border-amber-400 focus:shadow-[0_0_0_3px_rgba(251,191,36,0.2)]" required>
+                            </label>
+
+                            <label class="block text-sm font-medium text-slate-700">
+                                Nhập lại mật khẩu
+                                <input id="register-confirm-password" type="password" placeholder="Nhập lại mật khẩu" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none ring-0 transition focus:border-amber-400 focus:shadow-[0_0_0_3px_rgba(251,191,36,0.2)]" required>
+                            </label>
+
+                            <p id="register-password-error" class="hidden text-sm font-medium text-red-600">
+                                Mật khẩu nhập lại chưa khớp.
+                            </p>
+
+                            <button type="submit" class="w-full rounded-xl bg-amber-400 px-4 py-3 font-semibold text-slate-900 transition hover:bg-amber-300">
+                                Đăng ký
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script th:src="@{/js/auth.js}" src="../static/js/auth.js"></script>
+</body>
+</html>

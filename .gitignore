@@ -31,3 +31,5 @@ build/
 
 ### VS Code ###
 .vscode/
+#### Others ###
+src/main/resources/static/css/uno.css

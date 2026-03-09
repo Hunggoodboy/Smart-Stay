@@ -1,0 +1,8 @@
+{
+  "devDependencies": {
+    "@unocss/reset": "^66.6.6",
+    "unocss": "^66.6.6"
+  },
+  "scripts": {
+"uno:build": "unocss src/main/resources/templates/**/*.html -o src/main/resources/static/css/uno.css --watch"}
+}
