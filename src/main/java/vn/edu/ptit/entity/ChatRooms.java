@@ -55,7 +55,7 @@ public class ChatRooms implements Serializable {
     @JoinColumn(name = "user_id", nullable = false)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private Users user;
+    private User user;
 
     /**
      * Nhiều chat room thuộc 1 Customer (chủ nhà)

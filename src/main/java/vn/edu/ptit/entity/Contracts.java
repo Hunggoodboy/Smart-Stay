@@ -74,7 +74,7 @@ public class Contracts implements Serializable {
     @JoinColumn(name = "user_id", nullable = false)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private Users user;
+    private User user;
 
     /**
      * Nhiều hợp đồng thuộc 1 Customer (chủ nhà)

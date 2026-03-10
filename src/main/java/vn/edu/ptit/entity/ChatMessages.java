@@ -70,7 +70,7 @@ public class ChatMessages implements Serializable {
     @JoinColumn(name = "sender_user_id", nullable = true)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private Users senderUser;
+    private User senderUser;
 
     /**
      * Tin nhắn được gửi bởi Customer (nullable - chỉ có giá trị khi senderType = "CUSTOMER")
