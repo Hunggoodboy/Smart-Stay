@@ -1,14 +1,271 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
+
 <head>
     <meta charset="UTF-8">
-    <title>Test UnoCSS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Stay | Nha dat cho thue</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/uno.css}">
     <link rel="stylesheet" href="../static/css/uno.css">
 </head>
-<body>
-    <h1 class="text-3xl font-bold text-red-600 bg-yellow-200 p-4">
-        Test UnoCSS
-    </h1>
+
+<body
+    class="min-h-screen bg-[radial-gradient(circle_at_top,_#fef3c7_0%,_#ffffff_35%,_#dbeafe_100%)] text-slate-800 antialiased [font-family:'Be_Vietnam_Pro',sans-serif]">
+    <div class="pointer-events-none fixed inset-0 overflow-hidden">
+        <div class="absolute -top-22 -left-22 h-64 w-64 rounded-full bg-amber-300/45 blur-3xl animate-pulse"></div>
+        <div class="absolute -bottom-24 -right-20 h-80 w-80 rounded-full bg-sky-300/45 blur-3xl animate-pulse"></div>
+    </div>
+
+    <div class="relative z-10 mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <!-- <header class="rounded-2xl border border-white/70 bg-white/80 p-4 shadow-[0_16px_50px_rgba(15,23,42,0.13)] backdrop-blur-md">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="grid h-10 w-10 place-items-center rounded-xl bg-[linear-gradient(145deg,_#0f172a,_#1d4ed8)] text-sm font-extrabold text-white [font-family:'Space_Grotesk',sans-serif]">S</div>
+                    <div>
+                        <p class="text-base font-bold">Smart Stay</p>
+                        <p class="text-xs font-medium text-slate-500">Nen tang tim phong tro an toan</p>
+                    </div>
+                </div>
+
+                <nav class="flex flex-row items-center gap-5 text-sm font-semibold text-slate-600">
+                    <a href="#" class="transition m-4 hover:text-slate-900">Nha dat ban</a>
+                    <a href="#" class="border-b-2 border-amber-400 pb-1 text-slate-900">Nha dat cho thue</a>
+                    <a href="#" class="transition m-4 hover:text-slate-900">Du an</a>
+                    <a href="#" class="transition m-4 hover:text-slate-900">Tin tuc</a>
+                    <a href="#" class="transition m-4 hover:text-slate-900">Danh bạ</a>
+                </nav>
+
+                <div class="flex items-center gap-2">
+                    <a href="/login" class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Dang nhap</a>
+                    <button class="rounded-xl bg-[linear-gradient(135deg,_#0ea5e9,_#2563eb)] px-4 py-2 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(37,99,235,0.3)] transition hover:translate-y-[-1px]">Dang tin</button>
+                </div>
+            </div>
+        </header> -->
+        <header class="fixed top-0 left-0 z-50 w-full border-b border-gray-200 bg-white font-sans shadow-sm">
+            <div class="px-4 py-3 sm:px-6">
+                <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="grid h-10 w-10 place-items-center rounded-xl bg-[linear-gradient(145deg,_#0f172a,_#1d4ed8)] text-sm text-white font-extrabold [font-family:'Space_Grotesk',sans-serif]">
+                                S</div>
+                            <div class="flex flex-col justify-center">
+                                <p class="m-0 text-base font-bold">Smart Stay</p>
+                                <p class="hidden m-0 text-sm font-medium text-slate-500 sm:block">Nền tảng quản lí phòng
+                                    trọ uy tín</p>
+                            </div>
+                        </div>
+                        <nav class="flex flex-wrap gap-3 text-sm font-semibold text-slate-600">
+                            <a class="cursor-pointer rounded-lg bg-slate-100 px-3 py-2 text-slate-900">Tổng quan</a>
+                            <a
+                                class="cursor-pointer rounded-lg px-3 py-2 transition hover:bg-gray-50 hover:text-slate-900">Hóa
+                                đơn & thanh toán</a>
+                            <a
+                                class="cursor-pointer rounded-lg px-3 py-2 transition hover:bg-gray-50 hover:text-slate-900">Hợp
+                                đồng</a>
+                            <a
+                                class="cursor-pointer rounded-lg px-3 py-2 transition hover:bg-gray-50 hover:text-slate-900">Báo
+                                cáo sự cố</a>
+                        </nav>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <button
+                            class="relative p-2 text-gray-500 hover:text-blue-600 transition-colors border-0 bg-transparent outline-none cursor-pointer">
+                            <div class="i-material-symbols-notifications-rounded text-2xl"></div>
+                            <span id="notification-dot" class="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
+                                <span
+                                    class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                            </span>
+                        </button>
+                        <div class="h-6 w-px bg-gray-300"></div>
+                        <div class="relative" id="user-menu">
+                            <button onclick="toggleUserMenu()" id="user-menu-button" type="button" aria-expanded="false"
+                                class="flex items-center gap-2 rounded-xl p-1.5 text-left hover:bg-gray-50 border-0 bg-transparent outline-none cursor-pointer">
+                                <img src="https://ui-avatars.com/api/?name=Thang&background=eff6ff&color=1d4ed8"
+                                    alt="Avatar" id="user-avatar" class="w-8 h-8 rounded-full border border-gray-200">
+                                <div class="hidden sm:block text-left">
+                                    <p id="user-room-label" class="text-sm font-semibold text-gray-700 m-0 leading-tight">Phòng 204</p>
+                                    <p id="user-role-label" class="text-xs text-gray-500 m-0">Khách thuê</p>
+                                </div>
+                                <div id="user-menu-chevron" class="i-mdi-chevron-down text-gray-400 transition"></div>
+                            </button>
+                            <div id="user-dropdown"
+                                class="hidden absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-gray-100 bg-white py-2 shadow-lg">
+                                <div class="border-b border-gray-100 px-4 pb-2 pt-1">
+                                    <p id="dropdown-user-name" class="m-0 text-sm font-semibold text-gray-800">Phòng 204</p>
+                                    <p id="dropdown-user-role" class="m-0 mt-1 text-xs text-gray-500">Khách thuê</p>
+                                </div>
+                                <a href="#"
+                                    class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 no-underline hover:no-underline">
+                                    <div class="i-material-symbols-person text-lg text-gray-500"></div>
+                                    <span>Thông tin cá nhân</span>
+                                </a>
+                                <a href="#"
+                                    class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 no-underline hover:no-underline">
+                                    <div class="i-material-symbols-password text-lg text-gray-500"></div>
+                                    <span>Đổi mật khẩu</span>
+                                </a>
+                                <div class="my-1 h-px bg-gray-100"></div>
+                                <a href="#"
+                                    class="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 no-underline hover:no-underline">
+                                    <div class="i-material-symbols:logout-rounded text-lg text-red-500"></div>
+                                    <span>Đăng xuất</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <div class="pt-[30px]"></div>
+        <main id="tenant-dashboard" data-endpoint="/api/dashboard/tenant"
+            class="max-w-6xl mx-auto p-4 md:p-6 space-y-6 font-sans text-gray-800">
+
+            <div
+                class="bg-[linear-gradient(to_right,_#1e3a8a,_#3b82f6)] rounded-2xl p-6 md:p-8 text-white shadow-md flex justify-between items-center">
+                <div>
+                    <h1 id="welcome-message" class="text-2xl md:text-3xl font-bold m-0 mb-1">Xin chào, Thắng! 👋</h1>
+                    <p id="room-location" class="text-blue-100 text-sm md:text-base m-0 flex items-center gap-1.5">
+                    <div class="i-mdi-map-marker-outline text-lg"></div>
+                    Phòng 204 • Chung cư Mini Hoa Hồng, Cầu Giấy
+                    </p>
+                </div>
+                <div
+                    class="hidden md:grid w-16 h-16 place-items-center bg-white/20 rounded-full backdrop-blur-sm text-3xl">
+                    <div class="i-mdi-home-city-outline"></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <div class="lg:col-span-2 space-y-6">
+
+                    <div
+                        class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between h-full">
+                        <div class="flex justify-between items-center mb-6 border-b border-gray-50 pb-4">
+                            <h2 class="text-lg font-bold text-gray-800 m-0 flex items-center gap-2">
+                                <div class="i-mdi-receipt-text-clock-outline text-blue-600 text-xl"></div>
+                                <span id="billing-month">Hóa đơn Tháng 3/2026</span>
+                            </h2>
+                            <span id="payment-status-chip"
+                                class="bg-red-50 text-red-600 px-3 py-1.5 rounded-full text-xs font-semibold border border-red-100 flex items-center gap-1.5">
+                                <span id="payment-status-dot" class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                                <span id="payment-status-text">Chưa thanh toán</span>
+                            </span>
+                        </div>
+
+                        <div class="flex flex-col md:flex-row gap-6 items-center md:items-start justify-between">
+                            <div>
+                                <p id="payment-due-date" class="text-sm text-gray-500 font-medium m-0 mb-1">Cần thanh toán trước 05/04/2026
+                                </p>
+                                <p class="text-4xl font-extrabold text-gray-900 m-0 tracking-tight"><span id="payment-total">4.250.000</span> <span
+                                        class="text-xl text-gray-400 font-bold">VNĐ</span></p>
+                            </div>
+                            <button
+                                id="pay-now-button"
+                                class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 active:scale-95 text-white px-8 py-3.5 rounded-xl font-semibold transition-all shadow-md shadow-blue-200/50 flex items-center justify-center gap-2 cursor-pointer">
+                                <div class="i-mdi-credit-card-outline text-xl"></div>
+                                Thanh toán
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div
+                            class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex items-center gap-4 hover:border-yellow-200 transition-colors">
+                            <div
+                                class="w-12 h-12 rounded-full bg-yellow-50 text-yellow-500 flex items-center justify-center text-2xl shrink-0">
+                                <div class="i-mdi-lightning-bolt-outline"></div>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 font-medium m-0 mb-0.5">Điện tiêu thụ</p>
+                                <p class="text-lg font-bold text-gray-800 m-0"><span id="electric-usage">100</span> <span
+                                        class="text-xs text-gray-500 font-normal">kWh</span></p>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex items-center gap-4 hover:border-cyan-200 transition-colors">
+                            <div
+                                class="w-12 h-12 rounded-full bg-cyan-50 text-cyan-500 flex items-center justify-center text-2xl shrink-0">
+                                <div class="i-mdi-water-outline"></div>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 font-medium m-0 mb-0.5">Nước tiêu thụ</p>
+                                <p class="text-lg font-bold text-gray-800 m-0"><span id="water-usage">4</span> <span
+                                        class="text-xs text-gray-500 font-normal">Khối</span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="lg:col-span-1 space-y-6">
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col h-full">
+                        <div class="flex items-center justify-between mb-5">
+                            <h2 class="text-lg font-bold text-gray-800 m-0">Thông báo mới <span id="unread-count" class="text-sm text-gray-500">(0)</span></h2>
+                            <a href="#"
+                                class="text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium transition-colors">Xem
+                                tất cả</a>
+                        </div>
+
+                        <div id="notification-list" class="space-y-4 flex-1">
+                            <div class="flex gap-3 items-start group cursor-pointer">
+                                <div
+                                    class="mt-0.5 grid place-items-center w-8 h-8 rounded-full bg-orange-50 text-orange-500 shrink-0 group-hover:bg-orange-100 transition-colors">
+                                    <div class="i-mdi-alert-outline text-lg"></div>
+                                </div>
+                                <div>
+                                    <p
+                                        class="font-semibold text-gray-800 text-sm m-0 group-hover:text-blue-600 transition-colors">
+                                        Lịch cắt điện luân phiên</p>
+                                    <p class="text-xs text-gray-500 mt-1 m-0 line-clamp-2 leading-relaxed">Khu vực Cầu
+                                        Giấy sẽ cúp điện từ 8h-12h ngày 15/03. Mọi người chú ý sạc điện thoại và lưu trữ
+                                        đồ ăn.</p>
+                                    <p class="text-[10px] font-medium text-gray-400 mt-1.5 m-0 uppercase tracking-wide">
+                                        2 giờ trước</p>
+                                </div>
+                            </div>
+
+                            <div class="h-px w-full bg-gray-50"></div>
+                            <div class="flex gap-3 items-start group cursor-pointer">
+                                <div
+                                    class="mt-0.5 grid place-items-center w-8 h-8 rounded-full bg-blue-50 text-blue-500 shrink-0 group-hover:bg-blue-100 transition-colors">
+                                    <div class="i-mdi-information-outline text-lg"></div>
+                                </div>
+                                <div>
+                                    <p
+                                        class="font-semibold text-gray-800 text-sm m-0 group-hover:text-blue-600 transition-colors">
+                                        Đã chốt số điện nước tháng 2</p>
+                                    <p class="text-xs text-gray-500 mt-1 m-0 line-clamp-2 leading-relaxed">Vui lòng kiểm
+                                        tra lại số liệu trên hóa đơn và phản hồi trong vòng 24h nếu có sai sót.</p>
+                                    <p class="text-[10px] font-medium text-gray-400 mt-1.5 m-0 uppercase tracking-wide">
+                                        Hôm qua</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button
+                            class="mt-6 w-full flex items-center justify-center gap-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-semibold transition-colors cursor-pointer">
+                            <div class="i-mdi-chat-processing-outline text-lg text-blue-500"></div>
+                            Nhắn tin chủ nhà
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
 </body>
+<script th:src="@{/js/script.js}" src="../static/js/script.js"></script>
+
 </html>
