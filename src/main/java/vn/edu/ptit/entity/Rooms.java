@@ -76,14 +76,14 @@ public class Rooms implements Serializable {
     // ==================== RELATIONSHIPS ====================
 
     /**
-     * Nhiều phòng thuộc 1 Customer (chủ nhà)
-     * FK: rooms.customer_id → customers.id
+     * Nhiều phòng thuộc 1 Landlord (chủ nhà)
+     * FK: rooms.landlord_id → landlord.id
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", nullable = false)
+    @JoinColumn(name = "landlord_id", nullable = false)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private Customers customer;
+    private LandLord landLord;
 
     /**
      * 1 Phòng có nhiều hợp đồng (theo thời gian)

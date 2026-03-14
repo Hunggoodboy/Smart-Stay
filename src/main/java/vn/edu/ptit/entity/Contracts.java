@@ -67,24 +67,24 @@ public class Contracts implements Serializable {
     // ==================== RELATIONSHIPS ====================
 
     /**
-     * Nhiều hợp đồng thuộc 1 User (người thuê)
-     * FK: contracts.user_id → users.id
+     * Nhiều hợp đồng thuộc 1 LandLord (người thuê)
+     * FK: contracts.landlord_id ->
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "landlord_id", nullable = false)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private Users user;
+    private LandLord landLord;
 
     /**
-     * Nhiều hợp đồng thuộc 1 Customer (chủ nhà)
+     * Nhiều hợp đồng thuộc 1 Customer (người thuê)
      * FK: contracts.customer_id → customers.id
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private Customers customer;
+    private Customer customer;
 
     /**
      * Nhiều hợp đồng thuộc 1 Phòng

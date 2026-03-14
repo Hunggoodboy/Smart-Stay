@@ -1,8 +1,15 @@
 import { defineConfig, presetUno } from 'unocss'
-
+import presetIcons from '@unocss/preset-icons'
 export default defineConfig({
   presets: [
-    presetUno(), // Hỗ trợ các class giống Tailwind
+    presetUno(),
+    presetIcons({
+      scale: 1.2, // Kích thước mặc định của icon
+      extraProperties: {
+        'display': 'inline-block',
+        'vertical-align': 'middle',
+      },
+    }),
   ],
   content: {
     pipeline: {

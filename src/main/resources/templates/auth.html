@@ -7,8 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/uno.css}">
-    <link rel="stylesheet" href="../static/css/uno.css">
+    <link rel="stylesheet" href="/css/uno.css" th:href="@{/css/uno.css}">
 </head>
 <body class="min-h-screen bg-[radial-gradient(circle_at_top,_#fef3c7_0%,_#ffffff_35%,_#dbeafe_100%)] text-slate-800 antialiased [font-family:'Be_Vietnam_Pro',sans-serif]">
     <div class="pointer-events-none fixed inset-0 overflow-hidden">
@@ -64,13 +63,15 @@
 
                             <label class="block text-sm font-medium text-slate-700">
                                 Username
-                                <input type="text" placeholder="nhập username" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none ring-0 transition focus:border-sky-400 focus:shadow-[0_0_0_3px_rgba(14,165,233,0.16)]" required>
+                                <input id="login-username" name="username" type="text" placeholder="nhập username" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none ring-0 transition focus:border-sky-400 focus:shadow-[0_0_0_3px_rgba(14,165,233,0.16)]" autocomplete="username" required>
                             </label>
 
                             <label class="block text-sm font-medium text-slate-700">
                                 Mật khẩu
-                                <input type="password" placeholder="********" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none ring-0 transition focus:border-sky-400 focus:shadow-[0_0_0_3px_rgba(14,165,233,0.16)]" required>
+                                <input id="login-password" name="password" type="password" placeholder="********" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none ring-0 transition focus:border-sky-400 focus:shadow-[0_0_0_3px_rgba(14,165,233,0.16)]" autocomplete="current-password" required>
                             </label>
+
+                            <p id="login-message" class="hidden rounded-lg border px-3 py-2 text-sm"></p>
 
                             <div class="flex items-center justify-between text-sm">
                                 <label class="inline-flex items-center gap-2 text-slate-600">
@@ -80,7 +81,7 @@
                                 <a href="#" class="font-medium text-sky-700 hover:text-sky-800">Quên mật khẩu?</a>
                             </div>
 
-                            <button type="submit" class="w-full rounded-xl bg-slate-900 px-4 py-3 font-semibold text-white transition hover:bg-slate-800">
+                            <button id="login-submit" type="submit" class="w-full rounded-xl bg-slate-900 px-4 py-3 font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70">
                                 Đăng nhập
                             </button>
                         </form>
@@ -91,34 +92,41 @@
 
                             <label class="block text-sm font-medium text-slate-700">
                                 Họ và tên
-                                <input type="text" placeholder="Nguyễn Văn A" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none ring-0 transition focus:border-amber-400 focus:shadow-[0_0_0_3px_rgba(251,191,36,0.2)]" required>
+                                <input id="register-full-name" name="fullName" type="text" placeholder="Nguyễn Văn A" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none ring-0 transition focus:border-amber-400 focus:shadow-[0_0_0_3px_rgba(251,191,36,0.2)]" autocomplete="name" required>
                             </label>
 
                             <label class="block text-sm font-medium text-slate-700">
                                 Số điện thoại
-                                <input type="tel" inputmode="numeric" pattern="[0-9]{9,11}" placeholder="VD: 0987654321" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none ring-0 transition focus:border-amber-400 focus:shadow-[0_0_0_3px_rgba(251,191,36,0.2)]" required>
+                                <input id="register-phone" name="phoneNumber" type="tel" inputmode="numeric" pattern="[0-9]{9,11}" placeholder="VD: 0987654321" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none ring-0 transition focus:border-amber-400 focus:shadow-[0_0_0_3px_rgba(251,191,36,0.2)]" autocomplete="tel" required>
+                            </label>
+
+                            <label class="block text-sm font-medium text-slate-700">
+                                Email
+                                <input id="register-email" name="email" type="email" placeholder="you@example.com" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none ring-0 transition focus:border-amber-400 focus:shadow-[0_0_0_3px_rgba(251,191,36,0.2)]" autocomplete="email">
                             </label>
 
                             <label class="block text-sm font-medium text-slate-700">
                                 Username
-                                <input type="text" placeholder="tạo username" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none ring-0 transition focus:border-amber-400 focus:shadow-[0_0_0_3px_rgba(251,191,36,0.2)]" required>
+                                <input id="register-username" name="username" type="text" placeholder="tạo username" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none ring-0 transition focus:border-amber-400 focus:shadow-[0_0_0_3px_rgba(251,191,36,0.2)]" autocomplete="username" required>
                             </label>
 
                             <label class="block text-sm font-medium text-slate-700">
                                 Mật khẩu
-                                <input id="register-password" type="password" placeholder="Tối thiểu 8 ký tự" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none ring-0 transition focus:border-amber-400 focus:shadow-[0_0_0_3px_rgba(251,191,36,0.2)]" required>
+                                <input id="register-password" name="password" type="password" placeholder="Tối thiểu 8 ký tự" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none ring-0 transition focus:border-amber-400 focus:shadow-[0_0_0_3px_rgba(251,191,36,0.2)]" autocomplete="new-password" required>
                             </label>
 
                             <label class="block text-sm font-medium text-slate-700">
                                 Nhập lại mật khẩu
-                                <input id="register-confirm-password" type="password" placeholder="Nhập lại mật khẩu" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none ring-0 transition focus:border-amber-400 focus:shadow-[0_0_0_3px_rgba(251,191,36,0.2)]" required>
+                                <input id="register-confirm-password" name="confirmPassword" type="password" placeholder="Nhập lại mật khẩu" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none ring-0 transition focus:border-amber-400 focus:shadow-[0_0_0_3px_rgba(251,191,36,0.2)]" autocomplete="new-password" required>
                             </label>
 
                             <p id="register-password-error" class="hidden text-sm font-medium text-red-600">
                                 Mật khẩu nhập lại chưa khớp.
                             </p>
 
-                            <button type="submit" class="w-full rounded-xl bg-amber-400 px-4 py-3 font-semibold text-slate-900 transition hover:bg-amber-300">
+                            <p id="register-message" class="hidden rounded-lg border px-3 py-2 text-sm"></p>
+
+                            <button id="register-submit" type="submit" class="w-full rounded-xl bg-amber-400 px-4 py-3 font-semibold text-slate-900 transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-70">
                                 Đăng ký
                             </button>
                         </form>
