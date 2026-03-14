@@ -33,3 +33,5 @@ build/
 .vscode/
 #### Others ###
 src/main/resources/static/css/uno.css
+
+src/main/resources/application-local.properties

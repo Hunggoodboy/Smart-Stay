@@ -11,6 +11,9 @@ import java.util.List;
 @Entity
 @Data
 @Table(name = "users")
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "user_type", discriminatorType = DiscriminatorType.STRING)
+@DiscriminatorValue("USER")
 public class User implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -22,7 +25,7 @@ public class User implements Serializable {
     @Column(name = "full_name", nullable = false)
     private String fullName;
 
-    @Column(name = "email", nullable = true, unique = true)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
     @Column(name = "username", nullable = false, unique = true)
@@ -34,13 +37,13 @@ public class User implements Serializable {
     @Column(name = "phone_number")
     private String phoneNumber;
 
-    @Column(name = "gender", nullable = true)
+    @Column(name = "gender")
     private String gender;
 
-    @Column(name = "date_of_birth", nullable = true)
+    @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
-    @Column(name = "avatar_url", nullable = true)
+    @Column(name = "avatar_url")
     private String avatarUrl;
 
     @Column(name = "is_active", nullable = false)
@@ -49,35 +52,18 @@ public class User implements Serializable {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "role", nullable = false)
-    private Role role;
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
     public enum Role {
-        ADMIN, LANDLORD, TENANT
+        ADMIN, LANDLORD, CUSTOMER
     }
 
-    // ==================== RELATIONSHIPS ====================
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false, length = 25)
+    private Role role = Role.CUSTOMER;
 
-    /**
-     * 1 User ký nhiều hợp đồng (thuê nhiều phòng)
-     */
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private List<Contracts> contracts;
 
-    /**
-     * 1 User tham gia nhiều phòng chat
-     */
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private List<ChatRooms> chatRooms;
-
-    /**
-     * 1 User nhận nhiều thông báo
-     */
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private List<Notifications> notifications;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<UtilityBills> utilityBills;
 }

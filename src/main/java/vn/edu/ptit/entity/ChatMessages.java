@@ -80,5 +80,5 @@ public class ChatMessages implements Serializable {
     @JoinColumn(name = "sender_customer_id", nullable = true)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private Customers senderCustomer;
+    private Customer senderCustomer;
 }

@@ -77,7 +77,7 @@ public class Notifications implements Serializable {
                 updatable = false)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private Customers customer;
+    private Customer customer;
 
     /**
      * recipient_id - cột thực tế lưu ID người nhận

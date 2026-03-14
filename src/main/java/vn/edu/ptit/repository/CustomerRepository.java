@@ -2,8 +2,8 @@ package vn.edu.ptit.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import vn.edu.ptit.entity.Customers;
+import vn.edu.ptit.entity.Customer;
 
 @Repository
-public interface CustomersRepository extends JpaRepository<Customers, Long> {
+public interface CustomerRepository extends JpaRepository<Customer, Long> {
 }

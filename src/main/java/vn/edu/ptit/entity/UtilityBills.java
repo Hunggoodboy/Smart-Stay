@@ -20,7 +20,7 @@ public class UtilityBills implements Serializable {
     private Long id;
 
     @Column(name = "billing_month", nullable = false)
-    private String billingMonth;
+    private Long billingMonth;
 
     @Column(name = "electricity_old_index", nullable = false)
     private Double electricityOldIndex = 0.0;
@@ -50,7 +50,7 @@ public class UtilityBills implements Serializable {
     private Double waterPricePerM3;
 
     @Column(name = "water_amount")
-    private Double waterAmount;
+    private BigDecimal waterAmount;
 
     @Column(name = "internet_fee", nullable = false)
     private Double internetFee = 0.0;
@@ -68,19 +68,22 @@ public class UtilityBills implements Serializable {
     private String otherFeeNote;
 
     @Column(name = "total_amount", nullable = false)
-    private Double totalAmount;
+    private BigDecimal totalAmount;
 
     @Column(name = "due_date")
-    private LocalDate dueDate;
+    private LocalDateTime dueDate;
+
+    public enum Status{
+        UNPAID,
+        PAID
+    }
 
     @Column(name = "status", nullable = false)
-    private String status = "UNPAID";
+    private Status status = Status.UNPAID;
 
     @Column(name = "paid_at")
     private LocalDate paidAt;
 
-    @Column(name = "bill_image_url")
-    private String billImageUrl;
 
     @Column(name = "notes")
     private String notes;
@@ -120,4 +123,11 @@ public class UtilityBills implements Serializable {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private RentPayments rentPayment;
+
+    //Toi user
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private User user;
 }

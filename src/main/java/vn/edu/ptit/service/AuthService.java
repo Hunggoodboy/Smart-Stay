@@ -1,7 +1,21 @@
 package vn.edu.ptit.service;
 
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Service;
 import vn.edu.ptit.dto.AuthResponse;
 import vn.edu.ptit.dto.LoginRequest;
@@ -13,17 +27,18 @@ import vn.edu.ptit.repository.UserRepository;
 import java.time.LocalDateTime;
 
 @Service
-@AllArgsConstructor
-
+@RequiredArgsConstructor
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
+    private final AuthenticationManager authManager;
+    private final SecurityContextRepository securityContextRepository =
+            new HttpSessionSecurityContextRepository();
     private boolean checkUsernameExists(String username) {
         return userRepository.findByUsername(username).isPresent();
     }
 
-    public AuthResponse Register(RegisterRequest registerRequest) {
+    public AuthResponse register(RegisterRequest registerRequest) {
         try {
             if(registerRequest.getUsername() == null || registerRequest.getPassword() == null || registerRequest.getConfirmPassword() == null || registerRequest.getFullName() == null || registerRequest.getPhoneNumber() == null) {
                 return new AuthResponse("Vui lòng điền đầy đủ thông tin", false, null);
@@ -40,7 +55,7 @@ public class AuthService {
             user.setEmail(registerRequest.getEmail());
             user.setPhoneNumber(registerRequest.getPhoneNumber());
             user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-            user.setRole(User.Role.TENANT);
+            user.setRole(User.Role.CUSTOMER);
             user.setActive(true);
             user.setCreatedAt(LocalDateTime.now());
             userRepository.save(user);
@@ -51,22 +66,35 @@ public class AuthService {
             return new AuthResponse("Đăng ký thất bại: " + e.getMessage(), false, null);
         }
     }
-    public AuthResponse login(LoginRequest loginRequest) {
+    public AuthResponse login(LoginRequest loginRequest, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
         try{
             String username = loginRequest.getUsername();
             String password = loginRequest.getPassword();
-            if(!userRepository.findByUsername(username).isPresent()) {
-                return new AuthResponse("Tên đăng nhập hoặc mật khẩu của bạn không chính xác", false, null);
-            }
-            User user = userRepository.findByUsername(username).get();
-            if(!passwordEncoder.matches(password, user.getPassword())) {
-                return new AuthResponse("Tên đăng nhập hoặc mật khẩu của bạn không chính xác", false, null);
-            }
-            UserDTO userDTO = UserDTO.fromEntity(user);
-            return new AuthResponse("Đăng nhập thành công", true, userDTO);
+            Authentication authentication = authManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+            SecurityContext context = SecurityContextHolder.createEmptyContext();
+            context.setAuthentication(authentication);
+            SecurityContextHolder.setContext(context);
+            securityContextRepository.saveContext(context, httpRequest, httpResponse);
+            User user = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("Tên đăng nhập hoặc mật khẩu không chính xác"));
+            return new AuthResponse("Đăng nhập thành công", true, UserDTO.fromEntity(user));
         }
-        catch (Exception e) {
-            return new AuthResponse("Đăng nhập thất bại: " + e.getMessage(), false, null);
+        catch (BadCredentialsException e) {
+            return new AuthResponse("Tên đăng nhập hoặc mật khẩu không chính xác", false, null);
         }
+        catch (Exception ex) {
+            return new AuthResponse("Đăng nhập thất bại: " + ex.getMessage(), false, null);
+        }
+    }
+    public void logout(HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
+        SecurityContextHolder.clearContext();
+        securityContextRepository.saveContext(SecurityContextHolder.createEmptyContext(), httpRequest, httpResponse);
+    }
+
+    public ResponseEntity<?> getTenantDashboardData(Authentication authentication) {
+        if(authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        User user = userRepository.findByUsername(authentication.getName()).orElseThrow(() -> new RuntimeException("User not found"));
+        return new ResponseEntity<>(UserDTO.fromEntity(user), HttpStatus.OK);
     }
 }

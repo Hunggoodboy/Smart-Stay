@@ -48,24 +48,24 @@ public class ChatRooms implements Serializable {
     // ==================== RELATIONSHIPS ====================
 
     /**
-     * Nhiều chat room thuộc 1 User (người thuê)
+     * Nhiều chat room thuộc 1 Customer (người thuê)
      * FK: chat_rooms.user_id → users.id
-     */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private User user;
-
-    /**
-     * Nhiều chat room thuộc 1 Customer (chủ nhà)
-     * FK: chat_rooms.customer_id → customers.id
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private Customers customer;
+    private Customer customer;
+
+    /**
+     * Nhiều chat room thuộc 1 LandLord (chủ nhà)
+     * FK: chat_rooms.customer_id → customers.id
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "landlord_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private LandLord landLord;
 
     /**
      * 1 Chat room chứa nhiều tin nhắn

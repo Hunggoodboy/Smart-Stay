@@ -25,25 +25,34 @@ const API_ROUTES = {
 function setMode(mode) {
     const loginMode = mode === 'login';
 
-    formLogin.classList.toggle('hidden', !loginMode);
-    formRegister.classList.toggle('hidden', loginMode);
+    if (formLogin) formLogin.classList.toggle('hidden', !loginMode);
+    if (formRegister) formRegister.classList.toggle('hidden', loginMode);
 
-    btnLogin.className = loginMode
-        ? 'rounded-lg bg-white px-4 py-2 text-slate-900 shadow-sm transition'
-        : 'rounded-lg px-4 py-2 text-slate-500 transition hover:text-slate-700';
+    if (btnLogin) {
+        btnLogin.className = loginMode
+            ? 'rounded-lg bg-white px-4 py-2 text-slate-900 shadow-sm transition'
+            : 'rounded-lg px-4 py-2 text-slate-500 transition hover:text-slate-700';
+    }
 
-    btnRegister.className = loginMode
-        ? 'rounded-lg px-4 py-2 text-slate-500 transition hover:text-slate-700'
-        : 'rounded-lg bg-white px-4 py-2 text-slate-900 shadow-sm transition';
+    if (btnRegister) {
+        btnRegister.className = loginMode
+            ? 'rounded-lg px-4 py-2 text-slate-500 transition hover:text-slate-700'
+            : 'rounded-lg bg-white px-4 py-2 text-slate-900 shadow-sm transition';
+    }
 }
 
-btnLogin.addEventListener('click', () => setMode('login'));
-btnRegister.addEventListener('click', () => setMode('register'));
+// Thêm optional chaining (?.) để tránh lỗi nếu phần tử không tồn tại trên DOM
+btnLogin?.addEventListener('click', () => {
+    setMode('login');
+    hideMessage(loginMessage); // Ẩn thông báo cũ khi chuyển tab
+});
+btnRegister?.addEventListener('click', () => {
+    setMode('register');
+    hideMessage(registerMessage);
+});
 
 function showMessage(target, message, success) {
-    if (!target) {
-        return;
-    }
+    if (!target) return;
 
     target.textContent = message;
     target.classList.remove('hidden');
@@ -53,20 +62,17 @@ function showMessage(target, message, success) {
 }
 
 function hideMessage(target) {
-    if (!target) {
-        return;
-    }
+    if (!target) return;
 
     target.classList.add('hidden');
     target.textContent = '';
 }
 
-async function postJson(url, payload) {
+async function postJson(url, payload, defaultMessage = 'Đã có lỗi xảy ra, vui lòng thử lại.') {
     const response = await fetch(url, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(payload)
     });
 
@@ -78,7 +84,7 @@ async function postJson(url, payload) {
     }
 
     if (!response.ok) {
-        throw new Error(data && data.message ? data.message : 'Tên đăng nhập hoặc mật khẩu không đúng.');
+        throw new Error(data && data.message ? data.message : defaultMessage);
     }
 
     return data;
@@ -132,22 +138,28 @@ if (formRegister) {
         };
 
         registerSubmit.disabled = true;
-        registerSubmit.textContent = 'Dang xu ly...';
+        registerSubmit.textContent = 'Đang xử lý...';
 
         try {
-            const data = await postJson(API_ROUTES.users, payload);
-            showMessage(registerMessage, data && data.message ? data.message : 'Dang ky thanh cong.', true);
+            const registerResponse = await postJson(API_ROUTES.users, payload, 'Đăng ký thất bại, vui lòng thử lại.');
+
             formRegister.reset();
             validateRegisterPasswordMatch();
+            setMode('login');
+
             if (loginUsername) {
                 loginUsername.value = payload.username;
             }
-            setMode('login');
+
+            // Hiển thị thông báo thành công ở bên form đăng nhập (vì form đăng ký đã bị ẩn)
+            const successMsg = registerResponse && registerResponse.message ? registerResponse.message : 'Đăng ký thành công. Vui lòng đăng nhập.';
+            showMessage(loginMessage, successMsg, true);
+
         } catch (error) {
             showMessage(registerMessage, error.message, false);
         } finally {
             registerSubmit.disabled = false;
-            registerSubmit.textContent = 'Dang ky';
+            registerSubmit.textContent = 'Đăng ký';
         }
     });
 }
@@ -163,24 +175,25 @@ if (formLogin) {
         };
 
         loginSubmit.disabled = true;
-        loginSubmit.textContent = 'Dang nhap...';
+        loginSubmit.textContent = 'Đang đăng nhập...';
 
         try {
             const data = await postJson(API_ROUTES.sessions, payload);
             if (data && data.user) {
                 localStorage.setItem('smartstay_user', JSON.stringify(data.user));
             }
-            showMessage(loginMessage, data && data.message ? data.message : 'Dang nhap thanh cong.', true);
+            showMessage(loginMessage, data && data.message ? data.message : 'Đăng nhập thành công.', true);
             window.location.href = '/';
         } catch (error) {
             showMessage(loginMessage, error.message, false);
         } finally {
             loginSubmit.disabled = false;
-            loginSubmit.textContent = 'Dang nhap';
+            loginSubmit.textContent = 'Đăng nhập';
         }
     });
 }
 
+// Khởi tạo trạng thái ban đầu
 if (window.location.pathname === '/register') {
     setMode('register');
 } else {

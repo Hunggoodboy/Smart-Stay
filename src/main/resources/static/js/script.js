@@ -135,6 +135,8 @@ function applyDashboardData(data) {
     const roomLabel = data.roomLabel || 'Phong 204';
     const roleLabel = data.roleLabel || 'Khach thue';
 
+    setText(el.userRoomLabel, displayName);
+    setText(el.userRoleLabel, roleLabel);
     setText(el.welcomeMessage, `Xin chao, ${displayName}!`);
     setText(el.roomLocation, roomLabel);
     setText(el.userRoomLabel, roomLabel);
@@ -186,33 +188,90 @@ function applyDashboardData(data) {
     }
 }
 
-async function loadDashboard() {
-    if (!dashboardRoot) {
+function renderUserMenu(isLoggedIn, data) {
+    if (!wrapper) return;
+
+    if (!isLoggedIn) {
+        // Ẩn nút notification khi chưa đăng nhập
+        const notifBtn = document.querySelector('button:has(#notification-dot)');
+        const divider = notifBtn && notifBtn.nextElementSibling;
+        if (notifBtn) notifBtn.style.display = 'none';
+        if (divider && divider.tagName !== 'DIV') { /* skip */ } else if (divider) divider.style.display = 'none';
+
+        // Thay toàn bộ user-menu thành 2 nút đăng nhập / đăng ký
+        wrapper.innerHTML = `
+            <div class="flex items-center gap-2">
+                <a href="/login"
+                    class="flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 no-underline">
+                    <div class="i-material-symbols-login text-base text-gray-500"></div>
+                    Đăng nhập
+                </a>
+                <a href="/register"
+                    class="flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-blue-200/50 transition hover:bg-blue-700 active:scale-95 no-underline">
+                    <div class="i-material-symbols-person-add text-base"></div>
+                    Đăng ký
+                </a>
+            </div>
+        `;
         return;
+        if (data) {
+            const displayName = data.displayName || data.fullName || 'Khách thuê';
+            const roleLabel   = data.roleLabel || 'Khách thuê';
+
+            if (el.userRoomLabel) el.userRoomLabel.textContent = displayName; // ✅
+            if (el.userRoleLabel) el.userRoleLabel.textContent = roleLabel;
+        }
     }
 
-    const endpoint = dashboardRoot.dataset.endpoint || '/api/dashboard/tenant';
-    const user = getSavedUser();
-    const username = user && user.username ? user.username : null;
-    const url = username ? `${endpoint}?username=${encodeURIComponent(username)}` : endpoint;
+    // Đã đăng nhập — cập nhật thông tin trong button
+    if (data) {
+        const displayName = data.displayName || data.fullName || 'Khách thuê';
+        const roomLabel  = data.roomLabel  || 'Phòng 204';
+        const roleLabel  = data.roleLabel  || 'Khách thuê';
+        const avatarUrl  = data.avatarUrl  || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=eff6ff&color=1d4ed8`;
 
-    try {
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (!response.ok) {
-            return;
-        }
-
-        const data = await response.json();
-        applyDashboardData(data);
-    } catch (error) {
-        // Keep current static UI when API is unavailable.
+        if (el.userAvatar)    el.userAvatar.src = avatarUrl;
+        if (el.userRoomLabel) el.userRoomLabel.textContent = roomLabel;
+        if (el.userRoleLabel) el.userRoleLabel.textContent = roleLabel;
     }
 }
 
+async function loadDashboard() {
+    // 1. Thay đổi endpoint gọi đến API lấy thông tin người dùng
+    const endpoint = '/api/user/tenant';
+
+    try {
+        const response = await fetch(endpoint, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include'
+        });
+
+        if (response.status === 401 || response.status === 403) {
+            renderUserMenu(false, null);
+            return;
+        }
+
+        if (!response.ok) return;
+
+        const rawData = await response.json();
+
+        // 2. Xử lý dữ liệu trả về.
+        // Do JSON của bạn đang bị bọc trong object có key là "body", ta cần bóc tách nó ra:
+        const userData = rawData.body ? rawData.body : rawData;
+
+        // 3. Render thông tin lên Header (Góc trên bên phải)
+        renderUserMenu(true, userData);
+
+        // 4. Render thông tin lên Dashboard (Lời chào "Xin chào, Trần Văn B!")
+        if (dashboardRoot) {
+            applyDashboardData(userData);
+        }
+
+    } catch (error) {
+        console.error("Lỗi khi tải thông tin người dùng:", error);
+    }
+}
+
+// Khởi chạy hàm khi load file
 loadDashboard();
