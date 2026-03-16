@@ -3,25 +3,42 @@ const dropdown = document.getElementById('user-dropdown');
 const menuButton = document.getElementById('user-menu-button');
 const dashboardRoot = document.getElementById('tenant-dashboard');
 
+function byId() {
+    for (let i = 0; i < arguments.length; i += 1) {
+        const node = document.getElementById(arguments[i]);
+        if (node) {
+            return node;
+        }
+    }
+    return null;
+}
+
 const el = {
-    welcomeMessage: document.getElementById('welcome-message'),
-    roomLocation: document.getElementById('room-location'),
-    userAvatar: document.getElementById('user-avatar'),
-    userRoomLabel: document.getElementById('user-room-label'),
-    userRoleLabel: document.getElementById('user-role-label'),
-    dropdownUserName: document.getElementById('dropdown-user-name'),
-    dropdownUserRole: document.getElementById('dropdown-user-role'),
-    notificationDot: document.getElementById('notification-dot'),
-    unreadCount: document.getElementById('unread-count'),
-    billingMonth: document.getElementById('billing-month'),
-    paymentStatusChip: document.getElementById('payment-status-chip'),
-    paymentStatusDot: document.getElementById('payment-status-dot'),
-    paymentStatusText: document.getElementById('payment-status-text'),
-    paymentDueDate: document.getElementById('payment-due-date'),
-    paymentTotal: document.getElementById('payment-total'),
-    electricUsage: document.getElementById('electric-usage'),
-    waterUsage: document.getElementById('water-usage'),
-    notificationList: document.getElementById('notification-list')
+    welcomeMessage: byId('welcome-message'),
+    roomLocation: byId('room-location'),
+    userAvatar: byId('user-avatar'),
+    userRoomLabel: byId('user-room-label'),
+    userRoleLabel: byId('user-role-label'),
+    dropdownUserName: byId('dropdown-user-name'),
+    dropdownUserRole: byId('dropdown-user-role'),
+    notificationDot: byId('notification-dot'),
+    unreadCount: byId('unread-count'),
+    billingMonth: byId('billingMonth', 'billing-month'),
+    paymentStatusChip: byId('payment-status-chip'),
+    paymentStatusDot: byId('payment-status-dot'),
+    statusPreview: byId('statusPreview', 'payment-status-text'),
+    dueDatePreview: byId('dueDatePreview', 'payment-due-date'),
+    totalAmountPreview: byId('totalAmountPreview', 'payment-total'),
+    electricityAmount: byId('electricityAmount', 'electricity-amount'),
+    waterAmount: byId('waterAmount', 'water-amount'),
+    serviceAmount: byId('serviceAmount', 'service-amount'),
+    status: byId('status', 'bill-status'),
+    createdAt: byId('createdAt', 'bill-created-at'),
+    dueDate: byId('dueDate', 'bill-due-date'),
+    totalAmount: byId('totalAmount', 'bill-total-cost'),
+    electricityConsumed: byId('electricityConsumed', 'electric-usage'),
+    waterConsumed: byId('waterConsumed', 'water-usage'),
+    notificationList: byId('notification-list')
 };
 
 function setUserMenuState(isOpen) {
@@ -72,6 +89,20 @@ function setText(node, value) {
 function formatCurrency(value) {
     const amount = Number(value || 0);
     return new Intl.NumberFormat('vi-VN').format(amount);
+}
+
+function getStatusLabel(status) {
+    const normalized = String(status || '').toUpperCase();
+    if (normalized === 'PAID') {
+        return 'Da thanh toan';
+    }
+    if (normalized === 'OVERDUE') {
+        return 'Qua han';
+    }
+    if (normalized === 'UNPAID') {
+        return 'Chua thanh toan';
+    }
+    return 'Chua xac dinh';
 }
 
 function formatDate(value) {
@@ -154,13 +185,25 @@ function applyDashboardData(data) {
         el.notificationDot.classList.toggle('hidden', unread <= 0);
     }
 
+    const paymentStatus = data.paymentStatus || data.status;
+    const paymentStatusLabel = data.paymentStatusLabel || getStatusLabel(paymentStatus);
+    const dueDate = data.dueDate;
+    const totalCost = data.totalCost ?? data.totalAmount;
+
     setText(el.billingMonth, `Hoa don ${data.billingMonth || ''}`.trim());
-    setText(el.paymentStatusText, data.paymentStatusLabel || 'Chua co hoa don');
-    setText(el.paymentDueDate, `Can thanh toan truoc ${formatDate(data.dueDate)}`);
-    setText(el.paymentTotal, formatCurrency(data.totalAmount));
-    setText(el.electricUsage, data.electricUsage ?? 100);
-    setText(el.waterUsage, data.waterUsage ?? 4);
-    applyStatusStyle(data.paymentStatus);
+    setText(el.statusPreview, paymentStatusLabel || 'Chua co hoa don');
+    setText(el.dueDatePreview, `Can thanh toan truoc ${formatDate(dueDate)}`);
+    setText(el.totalAmountPreview, formatCurrency(totalCost));
+    setText(el.electricityAmount, formatCurrency(data.electricityAmount));
+    setText(el.waterAmount, formatCurrency(data.waterAmount));
+    setText(el.serviceAmount, formatCurrency(data.serviceAmount));
+    setText(el.status, paymentStatusLabel);
+    setText(el.createdAt, formatDate(data.createdAt));
+    setText(el.dueDate, formatDate(dueDate));
+    setText(el.totalAmount, formatCurrency(totalCost));
+    setText(el.electricityConsumed, data.electricityConsumed ?? data.electricUsage ?? 100);
+    setText(el.waterConsumed, data.waterConsumed ?? data.waterUsage ?? 4);
+    applyStatusStyle(paymentStatus);
 
     if (el.notificationList && Array.isArray(data.notifications) && data.notifications.length > 0) {
         el.notificationList.innerHTML = data.notifications
