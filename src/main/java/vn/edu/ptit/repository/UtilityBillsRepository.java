@@ -11,5 +11,6 @@ import java.util.List;
 @Repository
 public interface UtilityBillsRepository extends JpaRepository<UtilityBills, Long> {
     UtilityBills findAllById(Long id);
-//    @Query("SELECT u from UtilityBills u join User us ON u.user_id = ")
+    @Query("SELECT u from UtilityBills u join User us ON u.user.id = us.id where us.id = :userId")
+    List<UtilityBills> findAllByUserId(Long userId);
 }

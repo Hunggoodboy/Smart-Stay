@@ -26,4 +26,9 @@ public class WebController {
     public String home() {
         return "index";
     }
+
+    @GetMapping("/payment")
+    public String payment() {
+        return "payment";
+    }
 }

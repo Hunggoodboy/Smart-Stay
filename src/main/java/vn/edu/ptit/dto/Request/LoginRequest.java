@@ -1,4 +1,4 @@
-package vn.edu.ptit.dto;
+package vn.edu.ptit.dto.Request;
 
 
 import lombok.Data;

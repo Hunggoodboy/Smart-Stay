@@ -1,16 +1,15 @@
-package vn.edu.ptit.dto;
+package vn.edu.ptit.dto.Response;
 
 
 import lombok.Data;
 import vn.edu.ptit.entity.UtilityBills;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 //Response gửi cho người thuê
 @Data
-public class UtilityBillsDetailResponse {
+public class UtilityBillsResponse {
     private Long billingMonth;
     private Double electricityOldIndex;
     private Double electricityNewIndex;
@@ -32,8 +31,8 @@ public class UtilityBillsDetailResponse {
     private LocalDateTime createdAt;
     private UtilityBills.Status status;
 
-    public UtilityBillsDetailResponse fromEntity(UtilityBills entity) {
-        UtilityBillsDetailResponse detailResponse = new UtilityBillsDetailResponse();
+    public UtilityBillsResponse fromEntity(UtilityBills entity) {
+        UtilityBillsResponse detailResponse = new UtilityBillsResponse();
         detailResponse.setBillingMonth(entity.getBillingMonth());
         detailResponse.setElectricityOldIndex(entity.getElectricityOldIndex());
         detailResponse.setElectricityNewIndex(entity.getElectricityNewIndex());

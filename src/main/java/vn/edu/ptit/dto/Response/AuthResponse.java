@@ -1,7 +1,8 @@
-package vn.edu.ptit.dto;
+package vn.edu.ptit.dto.Response;
 
 
 import lombok.Data;
+import vn.edu.ptit.dto.UserDTO;
 
 @Data
 public class AuthResponse {

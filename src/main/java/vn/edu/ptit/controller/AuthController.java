@@ -6,10 +6,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import vn.edu.ptit.dto.AuthResponse;
-import vn.edu.ptit.dto.LoginRequest;
-import vn.edu.ptit.dto.RegisterRequest;
-import vn.edu.ptit.repository.UserRepository;
+import vn.edu.ptit.dto.Response.AuthResponse;
+import vn.edu.ptit.dto.Request.LoginRequest;
+import vn.edu.ptit.dto.Request.RegisterRequest;
 import vn.edu.ptit.service.AuthService;
 
 @RestController
@@ -37,6 +36,11 @@ public class AuthController {
 
     @GetMapping("/tenant")
     public ResponseEntity<?> getTenant(Authentication authentication) {
-        return ResponseEntity.ok(authService.getTenantDashboardData(authentication));
+        return ResponseEntity.ok(authService.getCurrentUser(authentication));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
+        return ResponseEntity.ok(authService.getCurrentUser(authentication));
     }
 }

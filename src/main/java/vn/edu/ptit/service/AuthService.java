@@ -1,9 +1,7 @@
 package vn.edu.ptit.service;
 
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,14 +15,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Service;
-import vn.edu.ptit.dto.AuthResponse;
-import vn.edu.ptit.dto.LoginRequest;
-import vn.edu.ptit.dto.RegisterRequest;
+import vn.edu.ptit.dto.Response.AuthResponse;
+import vn.edu.ptit.dto.Request.LoginRequest;
+import vn.edu.ptit.dto.Request.RegisterRequest;
 import vn.edu.ptit.dto.UserDTO;
 import vn.edu.ptit.entity.User;
 import vn.edu.ptit.repository.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -85,16 +84,12 @@ public class AuthService {
             return new AuthResponse("Đăng nhập thất bại: " + ex.getMessage(), false, null);
         }
     }
-    public void logout(HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
-        SecurityContextHolder.clearContext();
-        securityContextRepository.saveContext(SecurityContextHolder.createEmptyContext(), httpRequest, httpResponse);
-    }
 
-    public ResponseEntity<?> getTenantDashboardData(Authentication authentication) {
+    public UserDTO getCurrentUser(Authentication authentication) {
         if(authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw  new IllegalStateException("Người dùng chưa đăng nhập");
         }
         User user = userRepository.findByUsername(authentication.getName()).orElseThrow(() -> new RuntimeException("User not found"));
-        return new ResponseEntity<>(UserDTO.fromEntity(user), HttpStatus.OK);
+        return UserDTO.fromEntity(user);
     }
 }
