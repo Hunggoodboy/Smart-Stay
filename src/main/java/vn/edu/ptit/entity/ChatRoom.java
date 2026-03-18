@@ -10,7 +10,7 @@ import java.util.List;
 @Entity
 @Data
 @Table(name = "chat_rooms")
-public class ChatRooms implements Serializable {
+public class ChatRoom implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -45,6 +45,9 @@ public class ChatRooms implements Serializable {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "sender_type", nullable = false)
+    private String senderType; // "CUSTOMER" hoặc "LANDLORD"
+
     // ==================== RELATIONSHIPS ====================
 
     /**
@@ -74,4 +77,8 @@ public class ChatRooms implements Serializable {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private List<ChatMessages> messages;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "room_id", nullable = true)
+    private Rooms room;
 }

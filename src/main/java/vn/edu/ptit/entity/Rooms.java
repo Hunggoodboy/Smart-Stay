@@ -100,4 +100,7 @@ public class Rooms implements Serializable {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private List<UtilityBills> utilityBills;
+
+    @OneToOne(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private ChatRoom chatRoom;
 }

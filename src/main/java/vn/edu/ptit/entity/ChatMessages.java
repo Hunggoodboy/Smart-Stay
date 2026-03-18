@@ -23,26 +23,11 @@ public class ChatMessages implements Serializable {
     @Column(name = "message_type", nullable = false)
     private String messageType = "TEXT";
 
-    @Column(name = "file_url")
-    private String fileUrl;
-
     @Column(name = "file_name")
     private String fileName;
 
-    @Column(name = "sender_type", nullable = false)
-    private String senderType;
-
     @Column(name = "sent_at", nullable = false)
     private LocalDateTime sentAt;
-
-    @Column(name = "is_read", nullable = false)
-    private Boolean read = Boolean.FALSE;
-
-    @Column(name = "read_at")
-    private LocalDateTime readAt;
-
-    @Column(name = "is_deleted", nullable = false)
-    private Boolean deleted = Boolean.FALSE;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -57,28 +42,33 @@ public class ChatMessages implements Serializable {
      * FK: chat_messages.chat_room_id → chat_rooms.id
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chat_room_id", nullable = false)
+    @JoinColumn(name = "chat_room_id", nullable = true)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private ChatRooms chatRoom;
+    private ChatRoom chatRoom;
 
-    /**
-     * Tin nhắn được gửi bởi User (nullable - chỉ có giá trị khi senderType = "USER")
-     * FK: chat_messages.sender_user_id → users.id
-     */
+    // ==================== LandLord chủ nhà ====================
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sender_user_id", nullable = true)
+    @JoinColumn(name = "sender_landlord_id", nullable = true)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private User senderUser;
+    private LandLord landLord;
+
 
     /**
      * Tin nhắn được gửi bởi Customer (nullable - chỉ có giá trị khi senderType = "CUSTOMER")
      * FK: chat_messages.sender_customer_id → customers.id
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sender_customer_id", nullable = true)
+    @JoinColumn(name = "sender_id", nullable = true)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private Customer senderCustomer;
+    private User sender;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "receiver_id", nullable = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private User receiver;
 }

@@ -31,4 +31,8 @@ public class WebController {
     public String payment() {
         return "payment";
     }
+    @GetMapping("/chatMessage")
+    public String chatMessage() {
+        return "chatMessage";
+    }
 }

@@ -6,4 +6,5 @@ import vn.edu.ptit.entity.Customer;
 
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
+    public Customer findById(long id);
 }

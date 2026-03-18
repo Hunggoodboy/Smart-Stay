@@ -66,4 +66,10 @@ public class User implements Serializable {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<UtilityBills> utilityBills;
+
+    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL)
+    private List<ChatMessages> receiverChatMessages;
+
+    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
+    private List<ChatMessages> sentChatMessages;
 }

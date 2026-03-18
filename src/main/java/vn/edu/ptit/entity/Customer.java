@@ -45,7 +45,7 @@ public class Customer extends User {
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private List<ChatRooms> chatRooms;
+    private List<ChatRoom> chatRooms;
 
     /**
      * 1 Customer nhận nhiều thông báo

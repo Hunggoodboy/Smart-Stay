@@ -43,4 +43,9 @@ public class AuthController {
     public ResponseEntity<?> getCurrentUser(Authentication authentication) {
         return ResponseEntity.ok(authService.getCurrentUser(authentication));
     }
+
+    @GetMapping("/myid")
+    public ResponseEntity<?> getCurrentUserId(Authentication authentication) {
+        return ResponseEntity.ok(authService.getCurrentUser(authentication).getId());
+    }
 }

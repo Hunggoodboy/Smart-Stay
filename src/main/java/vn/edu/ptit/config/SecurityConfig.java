@@ -40,7 +40,7 @@ public class SecurityConfig {
                         s.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/static/**","/auth", "/css/**","/webjars/**","/", "/js/**", "/images/**", "/api/user/login", "/api/user/register", "/payment").permitAll()
-                        .requestMatchers("/api/utility-bills").authenticated()
+                        .requestMatchers("/api/utility-bills", "/chatMessage").authenticated()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
