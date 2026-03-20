@@ -3,14 +3,21 @@ package vn.edu.ptit.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import vn.edu.ptit.dto.Request.ChatMessageRequest;
 import vn.edu.ptit.dto.Response.ChatMessagesResponse;
+import vn.edu.ptit.dto.Response.ConversationResponse;
+import vn.edu.ptit.dto.UserDTO;
 import vn.edu.ptit.entity.ChatMessages;
+import vn.edu.ptit.entity.LandLord;
 import vn.edu.ptit.entity.User;
 import vn.edu.ptit.repository.*;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -20,6 +27,8 @@ public class ChatMessageService {
     private final ChatRoomRepository chatRoomRepository;
     private final UserRepository userRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final AuthService authService;
+    private final RoomsRepository roomsRepository;
     public void saveMessage(ChatMessageRequest request) {
         System.out.println(">>> Request: " + request);
         System.out.println(">>> senderId: " + request.getSenderId());
@@ -37,35 +46,62 @@ public class ChatMessageService {
         chatMessage.setSentAt(LocalDateTime.now());
         chatMessagesRepository.save(chatMessage);
     }
-    public void sendPrivateMessage(ChatMessageRequest request) {
-        User sender = userRepository.findById(request.getSenderId()).orElseThrow( () -> new RuntimeException("Sender not found"));
-        User receiver = userRepository.findById(request.getReceiverId()).orElseThrow( () -> new RuntimeException("Receiver not found"));
+    public void sendPrivateMessage(ChatMessageRequest request, Principal principal) {
+        User sender = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Sender not found"));
+
+        // Nếu frontend không gửi receiverId → tự tìm chủ nhà
+        User receiver;
+        if (request.getReceiverId() == null || request.getReceiverId() == 0) {
+            receiver = roomsRepository.findLandLordByCustomerId(sender.getId())
+                    .orElseThrow(() -> new RuntimeException("Landlord not found"));
+        } else {
+            receiver = userRepository.findById(request.getReceiverId())
+                    .orElseThrow(() -> new RuntimeException("Receiver not found"));
+        }
+
+        // Gán lại để saveMessage có đủ thông tin
+        request.setSenderId(sender.getId());
+        request.setReceiverId(receiver.getId());
+        request.setSentAt(LocalDateTime.now());
+
         saveMessage(request);
+
         ChatMessagesResponse response = ChatMessagesResponse.builder()
                 .id(request.getId())
                 .chatRoomId(request.getChatRoomId())
                 .content(request.getContent())
                 .messageType(request.getMessageType())
                 .senderType(request.getSenderType())
-                .senderId(request.getSenderId())
-                .senderName(userRepository.findFullNameById(request.getSenderId()))
-                .receiverId(request.getReceiverId())
+                .senderId(sender.getId())
+                .senderName(sender.getFullName())
+                .receiverId(receiver.getId())
                 .sentAt(request.getSentAt())
                 .build();
-        // Gửi tin nhắn đến người nhận qua WebSocket
-        messagingTemplate.convertAndSendToUser(
-                receiver.getUsername(),
-                "/queue/private",
-                response
-        );
-            // Gửi tin nhắn đến người gửi qua WebSocket
-        messagingTemplate.convertAndSendToUser(
-                sender.getUsername(),
-                "/queue/private",
-                response
-        );
-    }
 
+        messagingTemplate.convertAndSendToUser(receiver.getUsername(), "/queue/private", response);
+        messagingTemplate.convertAndSendToUser(sender.getUsername(),   "/queue/private", response);
+    }
+    public List<ConversationResponse> getConversations() {
+        Long userId = authService.getCurrentUserId();
+        List<ChatMessages> chatMessages = chatMessagesRepository.findLatestMessagePerConversation(userId);
+        List<ConversationResponse> conversationResponses = new ArrayList<>();
+        for (ChatMessages msg : chatMessages) {
+            Long senderId = msg.getSender().getId() != null ? msg.getSender().getId() : null;
+            Long receiverId = msg.getReceiver().getId() != null ? msg.getReceiver().getId() : null;
+            Long partnerId = senderId.equals(userId) ? receiverId : senderId;
+            String partnerName = userRepository.findFullNameById(partnerId);
+            ConversationResponse conversationResponse = ConversationResponse.builder()
+                    .partnerId(partnerId)
+                    .partnerName(partnerName)
+                    .lastMessage(msg.getContent())
+                    .lastMessageAt(msg.getSentAt())
+                    .unreadCount(chatMessagesRepository.countUnread(userId, partnerId))
+                    .build();
+            conversationResponses.add(conversationResponse);
+        }
+        return conversationResponses;
+    }
     public void loadMessageHistory(Long senderId, Long receiverId) {
         // Lấy lịch sử tin nhắn từ database
         List<ChatMessages> chatMessages = chatMessagesRepository.findAllBySenderIdAndReceiverIdOrSenderIdAndReceiverIdOrderBySentAtAsc(senderId, receiverId, receiverId, senderId);
@@ -96,7 +132,5 @@ public class ChatMessageService {
                 "/queue/history",
                 response
         );
-
     }
-
 }

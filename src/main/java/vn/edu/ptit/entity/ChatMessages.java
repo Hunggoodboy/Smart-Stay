@@ -20,6 +20,9 @@ public class ChatMessages implements Serializable {
     @Column(name = "content", nullable = false)
     private String content;
 
+    @Column(name = "is_read", nullable = true)
+    private Boolean isRead = false;
+
     @Column(name = "message_type", nullable = false)
     private String messageType = "TEXT";
 

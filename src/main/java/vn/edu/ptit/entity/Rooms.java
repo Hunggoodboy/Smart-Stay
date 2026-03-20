@@ -103,4 +103,7 @@ public class Rooms implements Serializable {
 
     @OneToOne(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private ChatRoom chatRoom;
+
+    @OneToMany(mappedBy = "rooms", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Notifications> notifications;
 }

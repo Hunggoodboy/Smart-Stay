@@ -58,12 +58,8 @@ public class LandLord extends User {
     @EqualsAndHashCode.Exclude
     private List<ChatRoom> chatRooms;
 
-
-//    /**
-//     * 1 Landlord nhận nhiều thông báo
-//     */
-//    @OneToMany(mappedBy = "landlord", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    @ToString.Exclude
-//    @EqualsAndHashCode.Exclude
-//    private List<Notifications> notifications;
+    @OneToMany(mappedBy = "landlord", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<Notifications> notifications;
 }

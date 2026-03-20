@@ -92,4 +92,12 @@ public class AuthService {
         User user = userRepository.findByUsername(authentication.getName()).orElseThrow(() -> new RuntimeException("User not found"));
         return UserDTO.fromEntity(user);
     }
+    public Long getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if(authentication == null || !authentication.isAuthenticated()) {
+            throw  new IllegalStateException("Người dùng chưa đăng nhập");
+        }
+        User user = userRepository.findByUsername(authentication.getName()).orElseThrow(() -> new RuntimeException("User not found"));
+        return user.getId();
+    }
 }

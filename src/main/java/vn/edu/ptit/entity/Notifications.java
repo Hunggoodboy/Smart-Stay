@@ -36,9 +36,6 @@ public class Notifications implements Serializable {
     @Column(name = "reference_id")
     private Long referenceId;
 
-    @Column(name = "is_read", nullable = false)
-    private Boolean read = false;
-
     @Column(name = "read_at")
     private LocalDateTime readAt;
 
@@ -49,40 +46,13 @@ public class Notifications implements Serializable {
     private LocalDateTime updatedAt;
 
     // ==================== RELATIONSHIPS ====================
-    // Notifications dùng kiểu "polymorphic" - 1 recipientId có thể trỏ đến
-    // users, customers hoặc admins tùy recipientType.
-    // Vì JPA không hỗ trợ polymorphic FK trực tiếp, ta tách thành 2 FK nullable.
-
-    /**
-     * Người nhận là User (nullable - chỉ có giá trị khi recipientType = "USER")
-     * FK: notifications.recipient_id → users.id
-     */
+    // Người gửi là chủ nhà
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "recipient_id",
-                nullable = true,
-                insertable = false,
-                updatable = false)
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private User user;
+    @JoinColumn(name = "landlord_id")
+    private LandLord landlord;
 
-    /**
-     * Người nhận là Customer (nullable - chỉ có giá trị khi recipientType = "CUSTOMER")
-     * FK: notifications.recipient_id → customers.id
-     */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "recipient_id",
-                nullable = true,
-                insertable = false,
-                updatable = false)
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private Customer customer;
+    @JoinColumn(name = "room_id")
+    private Rooms rooms;
 
-    /**
-     * recipient_id - cột thực tế lưu ID người nhận
-     * Dùng để set giá trị khi lưu (vì 2 field trên đều insertable=false)
-     */
-    @Column(name = "recipient_id", nullable = false)
-    private Long recipientId;
 }

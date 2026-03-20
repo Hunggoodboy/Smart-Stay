@@ -47,11 +47,4 @@ public class Customer extends User {
     @EqualsAndHashCode.Exclude
     private List<ChatRoom> chatRooms;
 
-    /**
-     * 1 Customer nhận nhiều thông báo
-     */
-    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private List<Notifications> notifications;
 }
