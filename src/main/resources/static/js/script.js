@@ -118,6 +118,48 @@ function formatDate(value) {
     return date.toLocaleDateString('vi-VN');
 }
 
+function pickLatestBill(bills) {
+    if (!Array.isArray(bills) || bills.length === 0) {
+        return null;
+    }
+
+    return bills
+        .slice()
+        .sort(function (a, b) {
+            const monthA = Number((a && a.billingMonth) || 0);
+            const monthB = Number((b && b.billingMonth) || 0);
+            if (monthA !== monthB) {
+                return monthB - monthA;
+            }
+
+            const createdA = new Date((a && a.createdAt) || 0).getTime();
+            const createdB = new Date((b && b.createdAt) || 0).getTime();
+            return createdB - createdA;
+        })[0];
+}
+
+function mergeDashboardData(userData, latestBill) {
+    const data = Object.assign({}, userData || {});
+
+    if (!latestBill) {
+        return data;
+    }
+
+    data.paymentStatus = latestBill.status;
+    data.totalCost = latestBill.totalAmount;
+    data.dueDate = latestBill.dueDate;
+    data.createdAt = latestBill.createdAt;
+    data.electricityConsumed = latestBill.electricityConsumed;
+    data.waterConsumed = latestBill.waterConsumed ?? latestBill.water_consumed;
+    data.electricityAmount = latestBill.electricityAmount;
+    data.waterAmount = latestBill.waterAmount;
+    if (latestBill.billingMonth !== undefined && latestBill.billingMonth !== null) {
+        data.billingMonth = `thang ${latestBill.billingMonth}`;
+    }
+
+    return data;
+}
+
 function getSavedUser() {
     const raw = localStorage.getItem('smartstay_user');
     if (!raw) {
@@ -204,7 +246,7 @@ function applyDashboardData(data) {
     setText(el.dueDate, formatDate(dueDate));
     setText(el.totalAmount, formatCurrency(totalCost));
     setText(el.electricityConsumed, data.electricityConsumed ?? data.electricUsage ?? 100);
-    setText(el.waterConsumed, data.waterConsumed ?? data.waterUsage ?? 4);
+    setText(el.waterConsumed, data.waterConsumed ?? data.water_consumed ?? data.waterUsage ?? data.water_usage ?? 4);
     applyStatusStyle(paymentStatus);
 
     if (el.notificationList && Array.isArray(data.notifications) && data.notifications.length > 0) {
@@ -259,7 +301,7 @@ function renderUserMenu(isLoggedIn, data) {
         return;
         if (data) {
             const displayName = data.displayName || data.fullName || 'Khách thuê';
-            const roleLabel   = data.roleLabel || 'Khách thuê';
+            const roleLabel = data.roleLabel || 'Khách thuê';
 
             if (el.userRoomLabel) el.userRoomLabel.textContent = displayName; // ✅
             if (el.userRoleLabel) el.userRoleLabel.textContent = roleLabel;
@@ -269,46 +311,54 @@ function renderUserMenu(isLoggedIn, data) {
     // Đã đăng nhập — cập nhật thông tin trong button
     if (data) {
         const displayName = data.displayName || data.fullName || 'Khách thuê';
-        const roomLabel  = data.roomLabel  || 'Phòng 204';
-        const roleLabel  = data.roleLabel  || 'Khách thuê';
-        const avatarUrl  = data.avatarUrl  || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=eff6ff&color=1d4ed8`;
+        const roomLabel = data.roomLabel || 'Phòng 204';
+        const roleLabel = data.roleLabel || 'Khách thuê';
+        const avatarUrl = data.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=eff6ff&color=1d4ed8`;
 
-        if (el.userAvatar)    el.userAvatar.src = avatarUrl;
+        if (el.userAvatar) el.userAvatar.src = avatarUrl;
         if (el.userRoomLabel) el.userRoomLabel.textContent = roomLabel;
         if (el.userRoleLabel) el.userRoleLabel.textContent = roleLabel;
     }
 }
 
 async function loadDashboard() {
-    // 1. Thay đổi endpoint gọi đến API lấy thông tin người dùng
-    const endpoint = '/api/user/tenant';
-
     try {
-        const response = await fetch(endpoint, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include'
-        });
+        const [userResponse, billsResponse] = await Promise.all([
+            fetch('/api/user/tenant', {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+            }),
+            fetch('/api/utility-bills', {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+            }).catch(function () {
+                return null;
+            })
+        ]);
 
-        if (response.status === 401 || response.status === 403) {
+        if (userResponse.status === 401 || userResponse.status === 403) {
             renderUserMenu(false, null);
             return;
         }
 
-        if (!response.ok) return;
+        if (!userResponse.ok) return;
 
-        const rawData = await response.json();
+        const rawData = await userResponse.json();
 
-        // 2. Xử lý dữ liệu trả về.
-        // Do JSON của bạn đang bị bọc trong object có key là "body", ta cần bóc tách nó ra:
         const userData = rawData.body ? rawData.body : rawData;
-
-        // 3. Render thông tin lên Header (Góc trên bên phải)
         renderUserMenu(true, userData);
 
-        // 4. Render thông tin lên Dashboard (Lời chào "Xin chào, Trần Văn B!")
+        let latestBill = null;
+        if (billsResponse && billsResponse.ok) {
+            const billsData = await billsResponse.json();
+            latestBill = pickLatestBill(billsData);
+        }
+
+        const dashboardData = mergeDashboardData(userData, latestBill);
         if (dashboardRoot) {
-            applyDashboardData(userData);
+            applyDashboardData(dashboardData);
         }
 
     } catch (error) {
@@ -466,7 +516,7 @@ function markItemRead(id) {
     // Gọi API backend đánh dấu đã đọc
     fetch(`/api/notifications/${id}/read`, { method: 'PATCH', credentials: 'include' })
         .then(() => {
-            _cachedNotifications = _cachedNotifications.map(n => n.id === id ? {...n, isRead: true} : n);
+            _cachedNotifications = _cachedNotifications.map(n => n.id === id ? { ...n, isRead: true } : n);
             renderNotifDropdown(_cachedNotifications);
             // Cập nhật lại badge
             const unread = _cachedNotifications.filter(n => !n.isRead).length;
@@ -474,24 +524,24 @@ function markItemRead(id) {
             const dot = document.getElementById('notification-dot');
             if (badge) { badge.textContent = unread; badge.style.display = unread > 0 ? 'inline' : 'none'; }
             if (dot) dot.style.display = unread > 0 ? 'flex' : 'none';
-        }).catch(() => {});
+        }).catch(() => { });
 }
 
 function markAllRead() {
     fetch('/api/notifications/read-all', { method: 'PATCH', credentials: 'include' })
         .then(() => {
-            _cachedNotifications = _cachedNotifications.map(n => ({...n, isRead: true}));
+            _cachedNotifications = _cachedNotifications.map(n => ({ ...n, isRead: true }));
             renderNotifDropdown(_cachedNotifications);
             const badge = document.getElementById('notif-badge');
             const dot = document.getElementById('notification-dot');
             if (badge) { badge.style.display = 'none'; }
             if (dot) dot.style.display = 'none';
             if (el.unreadCount) el.unreadCount.textContent = '(0)';
-        }).catch(() => {});
+        }).catch(() => { });
 }
 
 // Đóng dropdown khi click ra ngoài
-window.addEventListener('click', function(e) {
+window.addEventListener('click', function (e) {
     const menu = document.getElementById('notif-menu');
     if (menu && !menu.contains(e.target) && _notifDropdownOpen) {
         closeNotifDropdown();
@@ -520,7 +570,7 @@ function closeInboxDropdown() {
     if (d) d.style.display = "none";
 }
 
-window.addEventListener("click", function(e) {
+window.addEventListener("click", function (e) {
     const menu = document.getElementById("inbox-menu");
     if (menu && !menu.contains(e.target) && _inboxOpen) closeInboxDropdown();
 }, true);
@@ -537,9 +587,9 @@ async function loadInboxConversations() {
         const conversations = await res.json();
 
         const totalUnread = conversations.reduce((s, c) => s + (c.unreadCount || 0), 0);
-        const dot   = document.getElementById('inbox-dot');
+        const dot = document.getElementById('inbox-dot');
         const badge = document.getElementById('inbox-unread-badge');
-        if (dot)   dot.style.display  = totalUnread > 0 ? 'block' : 'none';
+        if (dot) dot.style.display = totalUnread > 0 ? 'block' : 'none';
         if (badge) { badge.style.display = totalUnread > 0 ? 'inline' : 'none'; badge.textContent = totalUnread; }
 
         if (!conversations.length) { listEl.innerHTML = renderInboxEmpty('Chưa có cuộc trò chuyện nào'); return; }
@@ -551,17 +601,17 @@ async function loadInboxConversations() {
 }
 
 function renderConversationItem(conv) {
-    const name       = escapeHtml(conv.partnerName || 'Người dùng');
-    const lastMsg    = escapeHtml(conv.lastMessage || 'Chưa có tin nhắn');
-    const time       = relativeTime(conv.lastMessageAt);
-    const unread     = conv.unreadCount || 0;
-    const avatar     = (conv.partnerName || 'U').charAt(0).toUpperCase();
+    const name = escapeHtml(conv.partnerName || 'Người dùng');
+    const lastMsg = escapeHtml(conv.lastMessage || 'Chưa có tin nhắn');
+    const time = relativeTime(conv.lastMessageAt);
+    const unread = conv.unreadCount || 0;
+    const avatar = (conv.partnerName || 'U').charAt(0).toUpperCase();
     const isLandlord = String(conv.partnerRole || '').toUpperCase().includes('LANDLORD');
-    const avatarBg   = isLandlord ? '#1e3a8a' : '#0891b2';
-    const roleBadge  = isLandlord
+    const avatarBg = isLandlord ? '#1e3a8a' : '#0891b2';
+    const roleBadge = isLandlord
         ? '<span style="font-size:10px;background:#dbeafe;color:#1e40af;padding:1px 6px;border-radius:4px;font-weight:600;">Chủ nhà</span>'
         : '';
-    const unreadBg   = unread > 0 ? '#f8fbff' : '#fff';
+    const unreadBg = unread > 0 ? '#f8fbff' : '#fff';
 
     return `
         <div onclick="openChatWithPartner(${conv.partnerId},'${name}');closeInboxDropdown();"
@@ -592,9 +642,9 @@ function renderInboxEmpty(msg) {
 }
 
 function openChatWithPartner(partnerId, partnerName) {
-    const nameEl   = document.getElementById('chat-landlord-name');
+    const nameEl = document.getElementById('chat-landlord-name');
     const avatarEl = document.getElementById('chat-landlord-avatar');
-    if (nameEl)   nameEl.textContent   = partnerName;
+    if (nameEl) nameEl.textContent = partnerName;
     if (avatarEl) avatarEl.textContent = (partnerName || 'U').charAt(0).toUpperCase();
     window._chatPartnerId = partnerId;
     openChat();
@@ -767,7 +817,7 @@ function setChatStatus(text) {
 }
 
 function escapeHtml(str) {
-    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 // ==================== KHỞI CHẠY ====================
