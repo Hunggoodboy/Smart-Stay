@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Phòng đang cho thuê – SmartStay</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" th:href="@{/css/roomsSummary.css}" />
+</head>
+<body>
+
+<!-- ══════════════════════════════
+     NAVBAR
+     ══════════════════════════════ -->
+<header class="navbar">
+    <div class="nav-inner" id="navInner">
+        <a href="/" class="logo">
+            <span class="logo-mark">S</span>
+            <span class="logo-text">Smart<em>Stay</em></span>
+        </a>
+
+        <nav class="nav-links">
+            <a href="/rooms"       class="nav-link active">Khám phá</a>
+            <a href="/map"         class="nav-link">Bản đồ</a>
+            <a href="/post/create" class="nav-link">Đăng tin</a>
+        </nav>
+
+        <div class="nav-actions">
+            <a href="/login"    class="btn-ghost">Đăng nhập</a>
+            <a href="/register" class="btn-primary">Đăng ký</a>
+        </div>
+
+        <button class="hamburger" id="hamburger" aria-label="Menu">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+</header>
+
+<!-- ══════════════════════════════
+     HERO + SEARCH
+     ══════════════════════════════ -->
+<section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+        <p class="hero-eyebrow" id="heroCount">Đang tải dữ liệu...</p>
+        <h1 class="hero-title">Tìm phòng trọ<br/><em>ưng ý</em> của bạn</h1>
+        <div class="search-bar">
+            <div class="search-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                </svg>
+            </div>
+            <input type="text" id="searchInput" class="search-input"
+                   placeholder="Tìm tiêu đề, địa chỉ, khu vực…" autocomplete="off" />
+            <button class="search-btn" id="searchBtn">Tìm kiếm</button>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════
+     MAIN CONTENT
+     ══════════════════════════════ -->
+<main class="main-content">
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+        <div class="filter-row">
+
+            <div class="filter-group">
+                <label class="filter-label">Loại nhà</label>
+                <div class="select-wrap">
+                    <select id="filterType" class="filter-select">
+                        <option value="">Tất cả loại</option>
+                        <option value="PHONG_TRO">Phòng trọ</option>
+                        <option value="CHUNG_CU_MINI">Chung cư mini</option>
+                        <option value="CHUNG_CU">Chung cư</option>
+                        <option value="STUDIO">Studio</option>
+                        <option value="NHA_NGUYEN_CAN">Nhà nguyên căn</option>
+                    </select>
+                    <svg class="select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">Mức giá</label>
+                <div class="select-wrap">
+                    <select id="filterPrice" class="filter-select">
+                        <option value="">Tất cả giá</option>
+                        <option value="0-2000000">Dưới 2 triệu</option>
+                        <option value="2000000-4000000">2 – 4 triệu</option>
+                        <option value="4000000-7000000">4 – 7 triệu</option>
+                        <option value="7000000-99999999">Trên 7 triệu</option>
+                    </select>
+                    <svg class="select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">Sắp xếp</label>
+                <div class="select-wrap">
+                    <select id="filterSort" class="filter-select">
+                        <option value="newest">Mới nhất</option>
+                        <option value="price_asc">Giá thấp → cao</option>
+                        <option value="price_desc">Giá cao → thấp</option>
+                    </select>
+                    <svg class="select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+            </div>
+
+            <button class="btn-reset" id="btnReset">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+                Xoá lọc
+            </button>
+
+        </div>
+        <div class="active-tags" id="activeTags"></div>
+    </div>
+
+    <!-- Results header -->
+    <div class="results-header">
+        <div class="results-count" id="resultsCount">Đang tải…</div>
+        <div class="view-toggle">
+            <button class="view-btn active" id="btnGrid" title="Dạng lưới">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+                </svg>
+            </button>
+            <button class="view-btn" id="btnList" title="Dạng danh sách">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="3" y="3" width="18" height="5" rx="1"/><rect x="3" y="10" width="18" height="5" rx="1"/>
+                    <rect x="3" y="17" width="18" height="5" rx="1"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <div id="roomGrid" class="room-grid"></div>
+    <div class="pagination" id="pagination"></div>
+
+</main>
+
+<!-- ══════════════════════════════
+     FOOTER
+     ══════════════════════════════ -->
+<footer class="footer">
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <span class="logo-mark small">S</span>
+            <span class="footer-name">SmartStay</span>
+        </div>
+        <p class="footer-copy">© 2025 SmartStay · Nền tảng cho thuê phòng thông minh</p>
+    </div>
+</footer>
+
+<script th:src="@{/js/roomsSummary.js}"></script>
+</body>
+</html>

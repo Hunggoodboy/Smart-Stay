@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Đăng phòng cho thuê</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+<body>
+
+  <!-- Background decoration -->
+  <div class="bg-grid"></div>
+  <div class="bg-blob blob-1"></div>
+  <div class="bg-blob blob-2"></div>
+
+  <div class="page-wrapper">
+
+    <!-- Sidebar progress -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <span class="logo-icon">🏠</span>
+        <span class="logo-text">RentEasy</span>
+      </div>
+
+      <nav class="step-nav">
+        <div class="step-item active" data-step="1">
+          <div class="step-dot"><span>1</span></div>
+          <div class="step-label">
+            <p class="step-name">Thông tin cơ bản</p>
+            <p class="step-desc">Tiêu đề, loại, mô tả</p>
+          </div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step-item" data-step="2">
+          <div class="step-dot"><span>2</span></div>
+          <div class="step-label">
+            <p class="step-name">Địa chỉ</p>
+            <p class="step-desc">Vị trí phòng</p>
+          </div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step-item" data-step="3">
+          <div class="step-dot"><span>3</span></div>
+          <div class="step-label">
+            <p class="step-name">Giá & dịch vụ</p>
+            <p class="step-desc">Tiền thuê, điện, nước</p>
+          </div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step-item" data-step="4">
+          <div class="step-dot"><span>4</span></div>
+          <div class="step-label">
+            <p class="step-name">Hình ảnh</p>
+            <p class="step-desc">Ảnh bìa & gallery</p>
+          </div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step-item" data-step="5">
+          <div class="step-dot"><span>5</span></div>
+          <div class="step-label">
+            <p class="step-name">Xem lại & đăng</p>
+            <p class="step-desc">Kiểm tra trước khi đăng</p>
+          </div>
+        </div>
+      </nav>
+
+      <div class="sidebar-tip">
+        <div class="tip-icon">💡</div>
+        <p>Bài đăng đầy đủ thông tin nhận được <strong>3x</strong> lượt liên hệ hơn bài đăng thiếu.</p>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main-content">
+
+      <!-- Step 1: Thông tin cơ bản -->
+      <section class="step-panel active" id="step-1">
+        <div class="panel-header">
+          <p class="panel-eyebrow">Bước 1 / 5</p>
+          <h1 class="panel-title">Thông tin <em>cơ bản</em></h1>
+          <p class="panel-subtitle">Hãy cho khách thuê biết phòng của bạn là gì.</p>
+        </div>
+
+        <div class="form-body">
+
+          <div class="field-group full">
+            <label class="field-label" for="title">
+              Tiêu đề bài đăng <span class="required">*</span>
+            </label>
+            <div class="input-wrap">
+              <input class="field-input" type="text" id="title" name="title"
+                placeholder="VD: Phòng trọ mới xây, full nội thất, gần Đại học Bách Khoa"
+                maxlength="200" />
+              <span class="char-count" id="title-count">0/200</span>
+            </div>
+            <p class="field-hint">Tối thiểu 10 ký tự, tối đa 200 ký tự.</p>
+            <p class="field-error" id="title-error"></p>
+          </div>
+
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label" for="roomType">Loại phòng</label>
+              <div class="select-wrap">
+                <select class="field-input" id="roomType" name="roomType">
+                  <option value="">-- Chọn loại phòng --</option>
+                  <option value="PHONG_TRO">Phòng trọ</option>
+                  <option value="CHUNG_CU_MINI">Chung cư mini</option>
+                  <option value="CAN_HO">Căn hộ dịch vụ</option>
+                  <option value="NHA_NGUYEN_CAN">Nhà nguyên căn</option>
+                  <option value="STUDIO">Studio</option>
+                </select>
+                <span class="select-arrow">▾</span>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label" for="maxOccupants">Số người tối đa</label>
+              <div class="number-stepper">
+                <button type="button" class="stepper-btn" data-target="maxOccupants" data-op="minus">−</button>
+                <input class="field-input stepper-input" type="number" id="maxOccupants" name="maxOccupants"
+                  value="1" min="1" max="20" />
+                <button type="button" class="stepper-btn" data-target="maxOccupants" data-op="plus">+</button>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label" for="areaM2">Diện tích (m²)</label>
+              <div class="input-wrap suffix">
+                <input class="field-input" type="number" id="areaM2" name="areaM2"
+                  placeholder="25" min="1" step="0.5" />
+                <span class="input-suffix">m²</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="field-group full">
+            <label class="field-label" for="description">Mô tả chi tiết</label>
+            <textarea class="field-input field-textarea" id="description" name="description"
+              placeholder="Mô tả chi tiết về phòng: nội thất, tiện ích xung quanh, quy định nhà trọ..."
+              maxlength="5000" rows="5"></textarea>
+            <span class="char-count textarea-count" id="desc-count">0/5000</span>
+            <p class="field-hint">Mô tả càng chi tiết, khách thuê càng quan tâm hơn.</p>
+          </div>
+
+        </div>
+
+        <div class="panel-footer">
+          <div></div>
+          <button class="btn btn-primary" onclick="nextStep(1)">
+            Tiếp theo <span class="btn-arrow">→</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Step 2: Địa chỉ -->
+      <section class="step-panel" id="step-2">
+        <div class="panel-header">
+          <p class="panel-eyebrow">Bước 2 / 5</p>
+          <h1 class="panel-title">Địa chỉ <em>phòng</em></h1>
+          <p class="panel-subtitle">Vị trí chính xác giúp khách thuê tìm thấy bạn dễ hơn.</p>
+        </div>
+
+        <div class="form-body">
+
+          <div class="field-group full">
+            <label class="field-label" for="address">
+              Địa chỉ cụ thể <span class="required">*</span>
+            </label>
+            <input class="field-input" type="text" id="address" name="address"
+              placeholder="VD: 123 Nguyễn Trãi" />
+            <p class="field-error" id="address-error"></p>
+          </div>
+
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label" for="ward">Phường / Xã</label>
+              <input class="field-input" type="text" id="ward" name="ward"
+                placeholder="VD: Phường Thanh Xuân Trung" />
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="district">Quận / Huyện</label>
+              <input class="field-input" type="text" id="district" name="district"
+                placeholder="VD: Quận Thanh Xuân" />
+            </div>
+          </div>
+
+          <div class="field-group full">
+            <label class="field-label" for="city">
+              Tỉnh / Thành phố <span class="required">*</span>
+            </label>
+            <div class="select-wrap">
+              <select class="field-input" id="city" name="city">
+                <option value="">-- Chọn tỉnh / thành phố --</option>
+                <option value="Hà Nội">Hà Nội</option>
+                <option value="Hồ Chí Minh">TP. Hồ Chí Minh</option>
+                <option value="Đà Nẵng">Đà Nẵng</option>
+                <option value="Hải Phòng">Hải Phòng</option>
+                <option value="Cần Thơ">Cần Thơ</option>
+                <option value="Bình Dương">Bình Dương</option>
+                <option value="Đồng Nai">Đồng Nai</option>
+                <option value="Khánh Hòa">Khánh Hòa</option>
+                <option value="Thừa Thiên Huế">Thừa Thiên Huế</option>
+                <option value="Khác">Tỉnh khác...</option>
+              </select>
+              <span class="select-arrow">▾</span>
+            </div>
+            <p class="field-error" id="city-error"></p>
+          </div>
+
+          <!-- Address preview card -->
+          <div class="address-preview" id="address-preview">
+            <span class="preview-icon">📍</span>
+            <span id="preview-text">Địa chỉ sẽ hiển thị ở đây khi bạn điền thông tin...</span>
+          </div>
+
+        </div>
+
+        <div class="panel-footer">
+          <button class="btn btn-ghost" onclick="prevStep(2)">← Quay lại</button>
+          <button class="btn btn-primary" onclick="nextStep(2)">Tiếp theo →</button>
+        </div>
+      </section>
+
+      <!-- Step 3: Giá & dịch vụ -->
+      <section class="step-panel" id="step-3">
+        <div class="panel-header">
+          <p class="panel-eyebrow">Bước 3 / 5</p>
+          <h1 class="panel-title">Giá thuê & <em>dịch vụ</em></h1>
+          <p class="panel-subtitle">Thiết lập giá rõ ràng, khách thuê sẽ tin tưởng hơn.</p>
+        </div>
+
+        <div class="form-body">
+
+          <div class="price-highlight-row">
+            <div class="field-group price-main">
+              <label class="field-label" for="monthlyRent">
+                Giá thuê / tháng <span class="required">*</span>
+              </label>
+              <div class="input-wrap suffix">
+                <input class="field-input price-input" type="number" id="monthlyRent" name="monthlyRent"
+                  placeholder="3,500,000" min="1" step="100000" />
+                <span class="input-suffix">₫/tháng</span>
+              </div>
+              <p class="field-error" id="rent-error"></p>
+            </div>
+
+            <div class="field-group price-deposit">
+              <label class="field-label" for="depositAmount">Tiền đặt cọc</label>
+              <div class="input-wrap suffix">
+                <input class="field-input" type="number" id="depositAmount" name="depositAmount"
+                  placeholder="7,000,000" min="0" step="100000" />
+                <span class="input-suffix">₫</span>
+              </div>
+              <p class="field-hint">Thường bằng 1–2 tháng tiền thuê.</p>
+            </div>
+          </div>
+
+          <div class="section-divider">
+            <span>Chi phí dịch vụ hàng tháng</span>
+          </div>
+
+          <div class="fee-grid">
+            <div class="fee-card">
+              <div class="fee-icon">⚡</div>
+              <label class="field-label" for="electricityPricePerKwh">Giá điện</label>
+              <div class="input-wrap suffix">
+                <input class="field-input" type="number" id="electricityPricePerKwh" name="electricityPricePerKwh"
+                  placeholder="3,500" min="0" step="500" value="3500" />
+                <span class="input-suffix">₫/kWh</span>
+              </div>
+            </div>
+
+            <div class="fee-card">
+              <div class="fee-icon">💧</div>
+              <label class="field-label" for="waterPricePerM3">Giá nước</label>
+              <div class="input-wrap suffix">
+                <input class="field-input" type="number" id="waterPricePerM3" name="waterPricePerM3"
+                  placeholder="15,000" min="0" step="1000" value="15000" />
+                <span class="input-suffix">₫/m³</span>
+              </div>
+            </div>
+
+            <div class="fee-card">
+              <div class="fee-icon">📶</div>
+              <label class="field-label" for="internetFee">Phí Internet</label>
+              <div class="input-wrap suffix">
+                <input class="field-input" type="number" id="internetFee" name="internetFee"
+                  placeholder="0" min="0" step="50000" value="0" />
+                <span class="input-suffix">₫/tháng</span>
+              </div>
+            </div>
+
+            <div class="fee-card">
+              <div class="fee-icon">🅿️</div>
+              <label class="field-label" for="parkingFee">Phí giữ xe</label>
+              <div class="input-wrap suffix">
+                <input class="field-input" type="number" id="parkingFee" name="parkingFee"
+                  placeholder="0" min="0" step="50000" value="0" />
+                <span class="input-suffix">₫/tháng</span>
+              </div>
+            </div>
+
+            <div class="fee-card">
+              <div class="fee-icon">🧹</div>
+              <label class="field-label" for="cleaningFee">Phí vệ sinh</label>
+              <div class="input-wrap suffix">
+                <input class="field-input" type="number" id="cleaningFee" name="cleaningFee"
+                  placeholder="0" min="0" step="50000" value="0" />
+                <span class="input-suffix">₫/tháng</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cost summary -->
+          <div class="cost-summary" id="cost-summary">
+            <p class="summary-title">Ước tính chi phí hàng tháng</p>
+            <div class="summary-rows" id="summary-rows"></div>
+            <div class="summary-total">
+              <span>Tổng ước tính</span>
+              <span id="total-estimate">—</span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="panel-footer">
+          <button class="btn btn-ghost" onclick="prevStep(3)">← Quay lại</button>
+          <button class="btn btn-primary" onclick="nextStep(3)">Tiếp theo →</button>
+        </div>
+      </section>
+        <!-- Hình ảnh -->
+        <section class="step-panel" id="step-4">
+            <div class="panel-header">
+                <p class="panel-eyebrow">Bước 4 / 5</p>
+                <h1 class="panel-title">Hình ảnh <em>phòng</em></h1>
+                <p class="panel-subtitle">Ảnh chất lượng cao tăng khả năng cho thuê lên đến 60%.</p>
+            </div>
+
+            <div class="form-body">
+
+                <div class="field-group full">
+                    <label class="field-label">
+                        Ảnh bìa (Thumbnail) <span class="required">*</span>
+                    </label>
+
+                    <div class="upload-zone" id="main-dropzone" onclick="document.getElementById('mainImageFile').click()">
+                        <input type="file" id="mainImageFile" accept="image/*" hidden>
+
+                        <div id="main-preview-wrap" style="display: none; position: relative; width: 100%;">
+                            <img id="main-preview-img" src="" alt="Ảnh bìa" style="width: 100%; max-height: 250px; object-fit: cover; border-radius: 8px;">
+                            <button type="button" class="remove-preview" onclick="removeMainImage(event)">✕</button>
+                        </div>
+
+                        <div class="upload-prompt" id="main-prompt">
+                            <span style="font-size: 32px;">📸</span>
+                            <p>Kéo thả ảnh bìa vào đây hoặc <strong>nhấn để chọn file</strong></p>
+                        </div>
+                    </div>
+
+                    <p class="field-hint">Ảnh đại diện chất lượng cao giúp thu hút người thuê ngay từ cái nhìn đầu tiên.</p>
+                    <p class="field-error" id="mainImage-error"></p>
+                </div>
+
+                <div class="field-group full" style="margin-top: 16px;">
+                    <label class="field-label">Gallery ảnh (tối đa 10 ảnh)</label>
+
+                    <div class="upload-zone" id="gallery-dropzone" onclick="document.getElementById('galleryFiles').click()">
+                        <input type="file" id="galleryFiles" accept="image/*" multiple hidden>
+                        <div class="upload-prompt">
+                            <span style="font-size: 32px;">🖼️</span>
+                            <p>Kéo thả nhiều ảnh vào đây hoặc <strong>nhấn để chọn file</strong></p>
+                        </div>
+                    </div>
+                    <p class="field-hint">Chọn nhiều ảnh cùng lúc để làm nổi bật các góc và tiện ích của phòng trọ.</p>
+
+                    <div class="gallery-grid" id="gallery-grid">
+                        <div class="gallery-empty">
+                            <span>📷</span>
+                            <p>Chưa có ảnh gallery</p>
+                        </div>
+                    </div>
+                    <p class="field-error" id="gallery-error"></p>
+                </div>
+
+            </div>
+
+            <div class="panel-footer">
+                <button class="btn btn-ghost" onclick="prevStep(4)">← Quay lại</button>
+                <button class="btn btn-primary" onclick="nextStep(4)">Xem lại & đăng →</button>
+            </div>
+        </section>
+
+      <!-- Step 5: Review -->
+      <section class="step-panel" id="step-5">
+        <div class="panel-header">
+          <p class="panel-eyebrow">Bước 5 / 5</p>
+          <h1 class="panel-title">Xem lại & <em>đăng bài</em></h1>
+          <p class="panel-subtitle">Kiểm tra lại thông tin trước khi xuất bản.</p>
+        </div>
+
+        <div class="form-body">
+
+            <div class="publish-option">
+              <input type="radio" name="publishMode" id="mode-publish" value="true" />
+              <label for="mode-publish" class="publish-label">
+                <span class="option-icon">🚀</span>
+                <span class="option-body">
+                  <strong>Đăng ngay</strong>
+                  <small>Hiển thị công khai, khách thuê có thể tìm thấy</small>
+                </span>
+              </label>
+            </div>
+          </div>
+
+        <div class="panel-footer">
+          <button class="btn btn-ghost" onclick="prevStep(5)">← Quay lại</button>
+          <button class="btn btn-success" id="submit-btn" onclick="submitForm()">
+            <span id="submit-text">🚀 Đăng bài</span>
+          </button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast"></div>
+
+  <script th:src = "@{/js/postRoom.js}"></script>
+</body>
+</html>
