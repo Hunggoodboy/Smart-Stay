@@ -16,85 +16,73 @@ import java.util.Optional;
 @Repository
 public interface RoomPostRepository extends JpaRepository<RoomPosts, Long> {
 
-    // ==================== TÌM THEO LANDLORD ====================
+    Optional<RoomPosts> findById(Long id);
+
+    // ==================== PHÍA LANDLORD ====================
 
     /**
-     * Lấy tất cả bài đăng của một landlord (mọi status)
+     * Tất cả bài đăng của landlord (mọi status), mới nhất trước.
      */
-    Page<RoomPosts> findByLandLord_IdOrderByCreatedAtDesc(Long landlordId, Pageable pageable);
+    Page<RoomPosts> findByUser_IdOrderByCreatedAtDesc(Long landlordId, Pageable pageable);
 
     /**
-     * Lấy bài đăng của landlord theo status cụ thể
+     * Bài đăng của landlord lọc theo status.
      */
-    Page<RoomPosts> findByLandLord_IdAndStatusOrderByCreatedAtDesc(
+    Page<RoomPosts> findByUser_IdAndStatusOrderByCreatedAtDesc(
             Long landlordId, RoomPosts.Status status, Pageable pageable);
 
     /**
-     * Đếm bài đăng theo landlord và status
+     * Đếm bài đăng đang ACTIVE của landlord.
      */
-    long countByLandLord_IdAndStatus(Long landlordId, RoomPosts.Status status);
-
-    // ==================== TÌM THEO PHÒNG ====================
-
-    /**
-     * Lấy bài đăng ACTIVE hiện tại của một phòng (chỉ nên có 1)
-     */
-    Optional<RoomPosts> findTopByRoom_IdAndStatusOrderByCreatedAtDesc(
-            Long roomId, RoomPosts.Status status);
-
-    /**
-     * Lịch sử bài đăng của một phòng
-     */
-    List<RoomPosts> findByRoom_IdOrderByCreatedAtDesc(Long roomId);
+    long countByUser_IdAndStatus(Long landlordId, RoomPosts.Status status);
 
     // ==================== TÌM KIẾM CÔNG KHAI ====================
 
     /**
-     * Tìm kiếm bài đăng ACTIVE có phân trang và lọc
+     * Tìm kiếm bài đăng ACTIVE với bộ lọc — dùng cho trang khách hàng.
+     * Tất cả tham số đều nullable (null = bỏ qua điều kiện đó).
      */
     @Query("""
             SELECT p FROM RoomPosts p
             WHERE p.status = 'ACTIVE'
-              AND (:city IS NULL OR LOWER(p.city) LIKE LOWER(CONCAT('%', :city, '%')))
+              AND (:city     IS NULL OR LOWER(p.city)     LIKE LOWER(CONCAT('%', :city,     '%')))
               AND (:district IS NULL OR LOWER(p.district) LIKE LOWER(CONCAT('%', :district, '%')))
-              AND (:minPrice IS NULL OR p.postedPrice >= :minPrice)
-              AND (:maxPrice IS NULL OR p.postedPrice <= :maxPrice)
+              AND (:minPrice IS NULL OR p.monthlyRent >= :minPrice)
+              AND (:maxPrice IS NULL OR p.monthlyRent <= :maxPrice)
               AND (:roomType IS NULL OR p.roomType = :roomType)
-              AND (:keyword IS NULL
-                    OR LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+              AND (:keyword  IS NULL
+                    OR LOWER(p.title)   LIKE LOWER(CONCAT('%', :keyword, '%'))
                     OR LOWER(p.address) LIKE LOWER(CONCAT('%', :keyword, '%')))
-            ORDER BY p.publishedAt DESC
+            ORDER BY p.createdAt DESC
             """)
     Page<RoomPosts> searchActive(
-            @Param("city") String city,
-            @Param("district") String district,
-            @Param("minPrice") BigDecimal minPrice,
-            @Param("maxPrice") BigDecimal maxPrice,
-            @Param("roomType") String roomType,
-            @Param("keyword") String keyword,
+            @Param("city")      String city,
+            @Param("district")  String district,
+            @Param("minPrice")  BigDecimal minPrice,
+            @Param("maxPrice")  BigDecimal maxPrice,
+            @Param("roomType")  String roomType,
+            @Param("keyword")   String keyword,
             Pageable pageable
     );
 
-    /**
-     * Lấy các bài đăng nổi bật (nhiều lượt xem nhất)
-     */
-    @Query("SELECT p FROM RoomPosts p WHERE p.status = 'ACTIVE' ORDER BY p.viewCount DESC")
-    List<RoomPosts> findTopByViews(Pageable pageable);
-
-    // ==================== CẬP NHẬT THỐNG KÊ ====================
-
-    @Modifying
-    @Query("UPDATE RoomPosts p SET p.viewCount = p.viewCount + 1 WHERE p.id = :id")
-    void incrementViewCount(@Param("id") Long id);
-
-    @Modifying
-    @Query("UPDATE RoomPosts p SET p.contactCount = p.contactCount + 1 WHERE p.id = :id")
-    void incrementContactCount(@Param("id") Long id);
+    // ==================== CẬP NHẬT TRẠNG THÁI ====================
 
     /**
-     * Đánh dấu bài đăng là đã cho thuê (RENTED) khi hợp đồng được ký
+     * Chuyển bài đăng sang RENTED và gán room vừa được tạo.
+     * Gọi sau khi Service tạo xong Rooms + Contracts.
      */
     @Modifying
-    @Query("UPDATE RoomPosts p SET p.status = 'RENTED' WHERE p.room.id = :roomId AND p.status = 'ACTIVE'")
-    void markRentedByRoomId(@Param("roomId") Long roomId);
+    @Query("UPDATE RoomPosts p SET p.status = 'RENTED', p.room.id = :roomId WHERE p.id = :postId")
+    void markRented(@Param("postId") Long postId, @Param("roomId") Long roomId);
+
+    /**
+     * Lấy các bài đăng đã hết hạn nhưng chưa được tắt (dùng cho scheduled job).
+     */
+    @Query("""
+            SELECT p FROM RoomPosts p
+            WHERE p.status = 'ACTIVE'
+              AND p.expiredAt IS NOT NULL
+              AND p.expiredAt < CURRENT_TIMESTAMP
+            """)
+    List<RoomPosts> findExpiredActivePosts();
 }

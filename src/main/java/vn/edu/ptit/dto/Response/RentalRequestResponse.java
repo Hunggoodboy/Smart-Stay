@@ -1,4 +1,4 @@
-package vn.edu.ptit.dto.response;
+package vn.edu.ptit.dto.Response;
 
 import lombok.Builder;
 import lombok.Data;
@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 
 /**
  * Response chi tiết yêu cầu thuê phòng.
- * Dùng cho cả hai phía: Customer xem lịch sử, Landlord xem danh sách yêu cầu.
+ * Dùng chung cho cả Customer (xem lịch sử) và Landlord (xem danh sách yêu cầu).
  */
 @Data
 @Builder
@@ -23,22 +23,32 @@ public class RentalRequestResponse {
     private Integer desiredDurationMonths;
     private Integer numOccupants;
     private String rejectionReason;
+
+    /** Chỉ Landlord mới thấy field này */
     private String landlordNotes;
+
     private LocalDateTime reviewedAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     // ==================== BÀI ĐĂNG LIÊN QUAN ====================
-    private RoomPostSummary roomPost;
+
+    private RoomPostInfo roomPost;
 
     // ==================== THÔNG TIN KHÁCH HÀNG (Landlord xem) ====================
-    private CustomerSummary customer;
+
+    private CustomerInfo customer;
 
     // ==================== THÔNG TIN CHỦ NHÀ (Customer xem) ====================
-    private LandlordSummary landlord;
 
-    // ==================== HỢP ĐỒNG ĐÃ TẠO (nếu có) ====================
-    /** Chỉ có giá trị khi status = CONTRACTED */
+    private LandlordInfo landlord;
+
+    // ==================== HỢP ĐỒNG ĐÃ TẠO ====================
+
+    /**
+     * Chỉ có giá trị khi status = CONTRACTED.
+     * Landlord / Customer dùng contractId để điều hướng sang màn quản lý.
+     */
     private Long contractId;
     private String contractCode;
 
@@ -46,18 +56,18 @@ public class RentalRequestResponse {
 
     @Data
     @Builder
-    public static class RoomPostSummary {
+    public static class RoomPostInfo {
         private Long id;
         private String title;
         private String thumbnailUrl;
-        private BigDecimal postedPrice;
+        private BigDecimal monthlyRent;
         private String shortAddress;
         private String roomType;
     }
 
     @Data
     @Builder
-    public static class CustomerSummary {
+    public static class CustomerInfo {
         private Long id;
         private String fullName;
         private String phoneNumber;
@@ -68,7 +78,7 @@ public class RentalRequestResponse {
 
     @Data
     @Builder
-    public static class LandlordSummary {
+    public static class LandlordInfo {
         private Long id;
         private String fullName;
         private String phoneNumber;

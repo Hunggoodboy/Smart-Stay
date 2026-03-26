@@ -4,7 +4,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.ptit.dto.Response.AuthResponse;
 import vn.edu.ptit.dto.Request.LoginRequest;
@@ -35,17 +34,17 @@ public class AuthController {
     }
 
     @GetMapping("/tenant")
-    public ResponseEntity<?> getTenant(Authentication authentication) {
-        return ResponseEntity.ok(authService.getCurrentUser(authentication));
+    public ResponseEntity<?> getTenant() {
+        return ResponseEntity.ok(authService.getCurrentUser());
     }
 
     @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
-        return ResponseEntity.ok(authService.getCurrentUser(authentication));
+    public ResponseEntity<?> getCurrentUser() {
+        return ResponseEntity.ok(authService.getCurrentUser());
     }
 
     @GetMapping("/myid")
-    public ResponseEntity<?> getCurrentUserId(Authentication authentication) {
-        return ResponseEntity.ok(authService.getCurrentUser(authentication).getId());
+    public ResponseEntity<?> getCurrentUserId() {
+        return ResponseEntity.ok(authService.getCurrentUser().getId());
     }
 }

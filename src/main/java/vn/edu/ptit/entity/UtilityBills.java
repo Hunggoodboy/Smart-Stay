@@ -4,13 +4,15 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
 @Data
+@Builder
 @Table(name = "utility_bills")
+@NoArgsConstructor
+@AllArgsConstructor
 public class UtilityBills implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -19,8 +21,14 @@ public class UtilityBills implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "billing_month", nullable = false)
-    private Long billingMonth;
+    /**
+     * Tháng lập hóa đơn, định dạng "YYYY-MM" (vd: "2025-03")
+     * Thống nhất kiểu String với RentPayments
+     */
+    @Column(name = "billing_month", nullable = false, length = 7)
+    private String billingMonth;
+
+    // ==================== ĐIỆN ====================
 
     @Column(name = "electricity_old_index", nullable = false)
     private Double electricityOldIndex = 0.0;
@@ -32,10 +40,12 @@ public class UtilityBills implements Serializable {
     private Double electricityConsumed;
 
     @Column(name = "electricity_price_per_kwh")
-    private BigDecimal electricityPricePerKwh;
+    private Double electricityPricePerKwh;
 
     @Column(name = "electricity_amount")
-    private BigDecimal electricityAmount;
+    private Double electricityAmount;
+
+    // ==================== NƯỚC ====================
 
     @Column(name = "water_old_index", nullable = false)
     private Double waterOldIndex = 0.0;
@@ -50,7 +60,9 @@ public class UtilityBills implements Serializable {
     private Double waterPricePerM3;
 
     @Column(name = "water_amount")
-    private BigDecimal waterAmount;
+    private Double waterAmount;
+
+    // ==================== PHÍ DỊCH VỤ ====================
 
     @Column(name = "internet_fee", nullable = false)
     private Double internetFee = 0.0;
@@ -67,28 +79,33 @@ public class UtilityBills implements Serializable {
     @Column(name = "other_fee_note")
     private String otherFeeNote;
 
+    // ==================== TỔNG & TRẠNG THÁI ====================
+
     @Column(name = "total_amount", nullable = false)
-    private BigDecimal totalAmount;
+    private Double totalAmount;
 
+    /**
+     * Đổi sang LocalDate — hạn thanh toán chỉ cần ngày, không cần giờ/phút/giây
+     */
     @Column(name = "due_date")
-    private LocalDateTime dueDate;
+    private LocalDate dueDate;
 
-    public enum Status{
+    public enum Status {
         UNPAID,
         PAID
     }
 
-    @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 10)
     private Status status = Status.UNPAID;
 
     @Column(name = "paid_at")
-    private LocalDate paidAt;
-
+    private LocalDate paidDate;
 
     @Column(name = "notes")
     private String notes;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
@@ -107,7 +124,7 @@ public class UtilityBills implements Serializable {
     private Rooms room;
 
     /**
-     * Nhiều hóa đơn thuộc 1 Hợp đồng (nullable - có thể tạo trước khi có hợp đồng)
+     * Hóa đơn điện nước thuộc 1 Hợp đồng (nullable)
      * FK: utility_bills.contract_id → contracts.id
      */
     @ManyToOne(fetch = FetchType.LAZY)
@@ -117,17 +134,21 @@ public class UtilityBills implements Serializable {
     private Contracts contract;
 
     /**
-     * 1 Hóa đơn điện nước được gộp vào 1 kỳ thanh toán (nullable)
+     * Hóa đơn điện nước do LandLord tạo, KHÔNG phải User chung
+     * FK: utility_bills.landlord_id → landlord.id
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "landlord_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private LandLord landLord;
+
+    /**
+     * 1 Hóa đơn điện nước có thể được gộp vào 1 kỳ thanh toán (nullable)
+     * mappedBy phía RentPayments giữ FK
      */
     @OneToOne(mappedBy = "utilityBill", fetch = FetchType.LAZY)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private RentPayments rentPayment;
-
-    //Toi user
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private User user;
 }

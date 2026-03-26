@@ -1,10 +1,317 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chi tiết phòng – SmartStay</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,600&display=swap" rel="stylesheet" />
+    <style>
+        /* ================= CƠ BẢN & MÀU SẮC ================= */
+        :root {
+            --brand: #316bf2; --brand-2: #2558d6; --brand-light: #eef4ff; --brand-soft: #dbeafe;
+            --ink: #1f2937; --ink-2: #4b5563; --ink-3: #6b7280; --ink-4: #9ca3af;
+            --surface: #faf9f7; --card: #ffffff; --border: #e5e7eb;
+            --r-md: 12px; --r-lg: 16px; --r-xl: 24px;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-lg: 0 12px 24px rgba(0,0,0,0.08);
+            --font-display: 'Fraunces', serif;
+            --font-body: 'DM Sans', sans-serif;
+        }
+
+        body { font-family: var(--font-body); background: var(--surface); color: var(--ink); margin: 0; line-height: 1.6; }
+        * { box-sizing: border-box; }
+
+        /* Navbar thu gọn */
+        .navbar { background: #fff; padding: 16px 24px; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;}
+        .logo { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: var(--ink); font-family: var(--font-display); font-weight: 700; font-size: 20px;}
+        .logo span { background: var(--brand); color: #fff; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; }
+
+        /* ================= LAYOUT CHÍNH ================= */
+        .container { max-width: 1120px; margin: 0 auto; padding: 32px 24px; }
+
+        /* Ảnh Grid Header */
+        .gallery-grid {
+            display: grid; grid-template-columns: 2fr 1fr; gap: 12px;
+            height: 400px; margin-bottom: 40px; border-radius: var(--r-xl); overflow: hidden;
+        }
+        .gallery-main { width: 100%; height: 100%; object-fit: cover; }
+        .gallery-side { display: grid; grid-template-rows: 1fr 1fr; gap: 12px; }
+        .gallery-side img { width: 100%; height: 100%; object-fit: cover; }
+        .gallery-placeholder { background: var(--border); width: 100%; height: 100%; display: grid; place-items: center; color: var(--ink-4); }
+
+        /* Bố cục 2 cột */
+        .content-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 60px; }
+
+        /* ================= CỘT TRÁI (THÔNG TIN) ================= */
+        .room-header { margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+        .room-title { font-family: var(--font-display); font-size: 32px; font-weight: 700; margin: 0 0 8px 0; line-height: 1.2; }
+        .room-address { color: var(--ink-3); font-size: 15px; display: flex; align-items: center; gap: 6px; }
+
+        .room-features { display: flex; gap: 24px; margin-bottom: 32px; }
+        .feature-item { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 500; }
+        .feature-icon { width: 40px; height: 40px; background: var(--brand-light); color: var(--brand); border-radius: 50%; display: grid; place-items: center; font-size: 18px; }
+
+        .section-title { font-size: 20px; font-weight: 700; margin: 0 0 16px 0; }
+        .room-desc { color: var(--ink-2); white-space: pre-line; margin-bottom: 32px; font-size: 15px; }
+
+        /* Bảng giá dịch vụ */
+        .services-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 40px; }
+        .service-card { padding: 16px; border: 1px solid var(--border); border-radius: var(--r-md); display: flex; align-items: center; gap: 12px; }
+        .service-card svg { color: var(--brand); width: 24px; height: 24px; }
+        .service-info p { margin: 0; font-size: 13px; color: var(--ink-3); }
+        .service-info strong { font-size: 15px; color: var(--ink); }
+
+        /* ================= CỘT PHẢI (STICKY CARD) ================= */
+        .booking-sidebar { position: sticky; top: 100px; }
+        .booking-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: var(--r-xl);
+            padding: 24px; box-shadow: var(--shadow-lg);
+        }
+        .price-row { margin-bottom: 20px; }
+        .price-amount { font-size: 28px; font-weight: 700; color: var(--brand); }
+        .price-unit { color: var(--ink-3); font-size: 15px; font-weight: 500; }
+
+        .deposit-box { background: var(--brand-light); padding: 12px 16px; border-radius: var(--r-md); margin-bottom: 24px; font-size: 14px; color: var(--brand-2); display: flex; justify-content: space-between; font-weight: 600; }
+
+        .landlord-profile { display: flex; align-items: center; gap: 12px; padding-top: 24px; border-top: 1px solid var(--border); margin-bottom: 24px; }
+        .landlord-avatar { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; }
+        .landlord-info h4 { margin: 0 0 4px 0; font-size: 16px; }
+        .landlord-info p { margin: 0; color: var(--ink-3); font-size: 13px; }
+
+        .btn-primary {
+            width: 100%; padding: 14px; background: var(--brand); color: #fff; border: none;
+            border-radius: var(--r-md); font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s;
+            font-family: var(--font-body);
+        }
+        .btn-primary:hover { background: var(--brand-2); }
+        .btn-disabled { background: var(--border); color: var(--ink-3); cursor: not-allowed; }
+
+        /* Trạng thái Loading/Lỗi */
+        #loader, #error { text-align: center; padding: 100px 0; font-size: 18px; color: var(--ink-3); }
+        #app { display: none; }
+
+        @media (max-width: 900px) {
+            .content-layout { grid-template-columns: 1fr; }
+            .gallery-grid { height: 250px; }
+            .booking-sidebar { position: static; margin-top: 32px; }
+        }
+    </style>
 </head>
 <body>
-$END$
+
+<nav class="navbar">
+    <a href="/" class="logo"><span>S</span> SmartStay</a>
+</nav>
+
+<div id="loader">⏳ Đang tải thông tin phòng...</div>
+<div id="error" style="display: none; color: #e53e3e;">⚠️ Không tìm thấy phòng hoặc có lỗi xảy ra.</div>
+
+<main class="container" id="app">
+    <div class="gallery-grid" id="galleryGrid">
+    </div>
+
+    <div class="content-layout">
+        <div class="main-info">
+            <div class="room-header">
+                <h1 class="room-title" id="rTitle">Đang tải...</h1>
+                <div class="room-address">📍 <span id="rAddress"></span></div>
+            </div>
+
+            <div class="room-features">
+                <div class="feature-item">
+                    <div class="feature-icon">🏠</div>
+                    <div><div style="font-size: 12px; color: #6b7280;">Loại phòng</div><span id="rType"></span></div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📐</div>
+                    <div><div style="font-size: 12px; color: #6b7280;">Diện tích</div><span id="rArea"></span></div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">👥</div>
+                    <div><div style="font-size: 12px; color: #6b7280;">Sức chứa</div><span id="rOcc"></span></div>
+                </div>
+            </div>
+
+            <h3 class="section-title">Mô tả chi tiết</h3>
+            <div class="room-desc" id="rDesc"></div>
+
+            <h3 class="section-title">Chi phí dịch vụ</h3>
+            <div class="services-grid" id="rServices">
+            </div>
+        </div>
+
+        <div class="booking-sidebar">
+            <div class="booking-card">
+                <div class="price-row">
+                    <span class="price-amount" id="rRent"></span>
+                    <span class="price-unit">₫ / tháng</span>
+                </div>
+
+                <div class="deposit-box">
+                    <span>Yêu cầu cọc:</span>
+                    <span id="rDeposit"></span>
+                </div>
+
+                <div class="landlord-profile">
+                    <img id="lAvatar" src="" alt="Avatar" class="landlord-avatar">
+                    <div class="landlord-info">
+                        <h4 id="lName"></h4>
+                        <p>Chủ nhà / Quản lý</p>
+                    </div>
+                </div>
+
+                <button id="btnAction" class="btn-primary" onclick="sendRequest()">Gửi yêu cầu thuê phòng</button>
+                <p style="text-align: center; font-size: 12px; color: #6b7280; margin-top: 12px;">Bạn sẽ không bị trừ tiền khi nhấn nút này.</p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    // 1. Lấy ID phòng từ URL (Hỗ trợ cả dạng /rooms/123 và ?id=123)
+    let roomId = window.location.pathname.split('/').pop();
+    if (isNaN(roomId) || !roomId) {
+        roomId = new URLSearchParams(window.location.search).get('id');
+    }
+
+    const fmtMoney = (n) => new Intl.NumberFormat('vi-VN').format(n || 0) + ' ₫';
+
+    // 2. Gọi API lấy dữ liệu
+    async function fetchRoomDetail() {
+        if (!roomId) { showError(); return; }
+
+        try {
+            // Gọi API bằng đường dẫn tương đối chuẩn REST
+            const res = await fetch(`/room-detail/${roomId}`);
+            if (!res.ok) throw new Error('Not found');
+            const data = await res.json();
+            renderUI(data);
+        } catch (err) {
+            showError();
+        }
+    }
+
+    // 3. Render dữ liệu lên màn hình
+    function renderUI(room) {
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+
+        // ==================== Render Ảnh (Đã vá lỗi đường dẫn) ====================
+        const grid = document.getElementById('galleryGrid');
+        const errFallback = "https://placehold.co/800x600/f3f4f6/9ca3af?text=Loi+Tai+Anh";
+        const emptyFallback = "https://placehold.co/800x600/eef4ff/316bf2?text=Chua+Co+Anh";
+
+        // Hàm nắn đường dẫn: Nếu chưa có dấu '/' ở đầu và không phải link web ngoài thì tự động thêm '/'
+        const getValidImgUrl = (url) => {
+            if (!url) return emptyFallback;
+            if (url.startsWith('http')) return url;
+            return url.startsWith('/') ? url : '/' + url;
+        };
+
+        const mainImgUrl = getValidImgUrl(room.mainImageUrl);
+        const validImages = (room.images || []).map(getValidImgUrl);
+
+        let htmlImages = `<img src="${mainImgUrl}" class="gallery-main" onerror="this.src='${errFallback}'">`;
+
+        // Render gallery bên phải dựa trên số lượng ảnh
+        if (validImages.length >= 2) {
+            htmlImages += `<div class="gallery-side">
+                    <img src="${validImages[0]}" onerror="this.src='${errFallback}'">
+                    <img src="${validImages[1]}" onerror="this.src='${errFallback}'">
+                </div>`;
+        } else if (validImages.length === 1) {
+            htmlImages += `<div class="gallery-side">
+                    <img src="${validImages[0]}" onerror="this.src='${errFallback}'">
+                    <div class="gallery-placeholder">Không có thêm ảnh</div>
+                </div>`;
+        } else {
+            htmlImages += `<div class="gallery-side">
+                    <div class="gallery-placeholder">Không có thêm ảnh</div>
+                    <div class="gallery-placeholder"></div>
+                </div>`;
+        }
+        grid.innerHTML = htmlImages;
+
+        // ==================== Render Thông tin cơ bản ====================
+        document.getElementById('rTitle').textContent = room.title;
+        document.getElementById('rAddress').textContent = room.fullAddress || `${room.address}, ${room.ward}, ${room.district}, ${room.city}`;
+
+        // Map loại phòng
+        const typeLabels = {
+            'PHONG_TRO': 'Phòng trọ',
+            'CHUNG_CU_MINI': 'Chung cư mini',
+            'CHUNG_CU': 'Chung cư',
+            'STUDIO': 'Studio',
+            'NHA_NGUYEN_CAN': 'Nhà nguyên căn'
+        };
+        document.getElementById('rType').textContent = typeLabels[room.roomType] || room.roomType || 'Phòng trọ';
+
+        document.getElementById('rArea').textContent = room.areaM2 ? `${room.areaM2} m²` : '--';
+        document.getElementById('rOcc').textContent = room.maxOccupants ? `Tối đa ${room.maxOccupants} người` : '--';
+        document.getElementById('rDesc').textContent = room.description || 'Chưa có mô tả.';
+
+        // ==================== Render Giá & Chủ nhà ====================
+        document.getElementById('rRent').textContent = new Intl.NumberFormat('vi-VN').format(room.monthlyRent);
+        document.getElementById('rDeposit').textContent = fmtMoney(room.depositAmount);
+
+        const landlord = room.landlord || {};
+        document.getElementById('lName').textContent = landlord.fullName || 'Chủ trọ ẩn danh';
+        document.getElementById('lAvatar').src = landlord.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(landlord.fullName || 'U')}&background=eef4ff&color=316bf2`;
+
+        // ==================== Render Dịch vụ ====================
+        const services = [
+            { name: 'Điện', val: room.electricityPricePerKwh, unit: '/ kWh', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>' },
+            { name: 'Nước', val: room.waterPricePerM3, unit: '/ khối', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>' },
+            { name: 'Internet', val: room.internetFee, unit: '/ tháng', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>' },
+            { name: 'Gửi xe', val: room.parkingFee, unit: '/ xe', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 12h6M12 8v8"/></svg>' },
+        ];
+
+        document.getElementById('rServices').innerHTML = services.map(s => `
+                <div class="service-card">
+                    ${s.icon}
+                    <div class="service-info">
+                        <p>Tiền ${s.name}</p>
+                        <strong>${s.val > 0 ? fmtMoney(s.val) + ' ' + s.unit : 'Miễn phí'}</strong>
+                    </div>
+                </div>
+            `).join('');
+
+        // ==================== Xử lý nút Hành động (Trạng thái thuê) ====================
+        const btn = document.getElementById('btnAction');
+        if (room.myRequestStatus === 'PENDING') {
+            btn.textContent = 'Đang chờ duyệt...';
+            btn.classList.add('btn-disabled');
+            btn.disabled = true;
+        } else if (room.myRequestStatus === 'APPROVED' || room.myRequestStatus === 'CONTRACTED') {
+            btn.textContent = 'Đã thuê / Đã duyệt';
+            btn.style.background = '#10b981'; // Xanh lá
+            btn.disabled = true;
+        }
+    }
+
+    function showError() {
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('error').style.display = 'block';
+    }
+
+    // 4. Hàm gửi yêu cầu thuê phòng
+    function sendRequest() {
+        const btn = document.getElementById('btnAction');
+        btn.textContent = 'Đang gửi...';
+        btn.disabled = true;
+
+        // Mô phỏng gọi API POST /rental-request
+        setTimeout(() => {
+            alert('Đã gửi yêu cầu thuê phòng thành công!');
+            btn.textContent = 'Đang chờ duyệt...';
+            btn.classList.add('btn-disabled');
+        }, 1000);
+    }
+
+    // Khởi chạy khi load xong DOM
+    fetchRoomDetail();
+</script>
 </body>
 </html>

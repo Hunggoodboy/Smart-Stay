@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -41,13 +40,13 @@ public class Rooms implements Serializable {
     private Long maxOccupants;
 
     @Column(name = "rent_price", nullable = false)
-    private BigDecimal rentPrice;
+    private Double rentPrice;
 
     @Column(name = "electricity_price_per_kwh", nullable = false)
-    private BigDecimal electricityPricePerKwh = new BigDecimal("3500");
+    private Double electricityPricePerKwh;
 
     @Column(name = "water_price_per_m3", nullable = false)
-    private BigDecimal waterPricePerM3 = new BigDecimal("15000");
+    private Double waterPricePerM3;
 
     @Column(name = "internet_fee", nullable = false)
     private Double internetFee = 0.0;
@@ -58,8 +57,18 @@ public class Rooms implements Serializable {
     @Column(name = "cleaning_fee", nullable = false)
     private Double cleaningFee = 0.0;
 
-    @Column(name = "status", nullable = false)
-    private String status = "AVAILABLE";
+    public enum Status {
+        AVAILABLE,
+        RENTED,
+        MAINTENANCE
+    }
+
+    /**
+     * Đổi từ String sang Enum để tránh lỗi typo
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 15)
+    private Status status = Status.AVAILABLE;
 
     @Column(name = "room_type")
     private String roomType;
@@ -67,7 +76,7 @@ public class Rooms implements Serializable {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
@@ -76,7 +85,7 @@ public class Rooms implements Serializable {
     // ==================== RELATIONSHIPS ====================
 
     /**
-     * Nhiều phòng thuộc 1 Landlord (chủ nhà)
+     * Nhiều phòng thuộc 1 LandLord
      * FK: rooms.landlord_id → landlord.id
      */
     @ManyToOne(fetch = FetchType.LAZY)
@@ -86,12 +95,11 @@ public class Rooms implements Serializable {
     private LandLord landLord;
 
     /**
-     * 1 Phòng có nhiều hợp đồng (theo thời gian)
+     * 1 Phòng có 1 hợp đồng (theo thời gian)
      */
-    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private List<Contracts> contracts;
+
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "room")
+    private Contracts contract;
 
     /**
      * 1 Phòng có nhiều hóa đơn điện nước
@@ -101,9 +109,21 @@ public class Rooms implements Serializable {
     @EqualsAndHashCode.Exclude
     private List<UtilityBills> utilityBills;
 
+    /**
+     * 1 Phòng có nhiều kỳ thanh toán tiền thuê
+     */
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<RentPayments> rentPayments;
+
     @OneToOne(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private ChatRoom chatRoom;
 
     @OneToMany(mappedBy = "rooms", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<Notifications> notifications;
 }

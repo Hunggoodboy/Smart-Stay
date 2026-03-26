@@ -6,17 +6,20 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import vn.edu.ptit.entity.Contracts;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FeeRequest {
-    private double electricityNewIndex;
-    private double waterNewIndex;
-    private double waterOldIndex;
-    private double electricityOldIndex;
-    private LocalDateTime month;
-    Contracts contract;
+public class RentPaymentRequest {
+    private Long contractId;
+    private Long customerId;
+    private Long roomId;
+    private String billingMonth;
+
+    private Long utilityBillId;   // nullable - gộp hóa đơn điện nước vào
+    private LocalDate dueDate;
+    private String notes;
 }

@@ -1,5 +1,6 @@
-package vn.edu.ptit.dto.request;
+package vn.edu.ptit.dto.Request;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
@@ -9,77 +10,76 @@ import java.util.List;
 
 /**
  * Request tạo bài đăng cho thuê phòng.
- * Landlord chọn phòng đã có trong hệ thống, sau đó tuỳ chỉnh thông tin hiển thị.
+ * Landlord điền thông tin từ đầu — chưa cần chọn Rooms có sẵn.
+ * publishImmediately = true → status = ACTIVE, false → status = DRAFT.
  */
 @Data
 public class CreateRoomPostRequest {
 
-    @NotNull(message = "Vui lòng chọn phòng cần đăng")
-    private Long roomId;
+    // ==================== THÔNG TIN CƠ BẢN ====================
 
-    @NotBlank(message = "Tiêu đề bài đăng không được để trống")
+    @NotBlank(message = "Tiêu đề không được để trống")
     @Size(min = 10, max = 200, message = "Tiêu đề phải từ 10 đến 200 ký tự")
     private String title;
 
     @Size(max = 5000, message = "Mô tả không được vượt quá 5000 ký tự")
     private String description;
 
-    @NotNull(message = "Giá cho thuê không được để trống")
-    @DecimalMin(value = "0.0", inclusive = false, message = "Giá cho thuê phải lớn hơn 0")
-    private BigDecimal postedPrice;
+    @NotNull(message = "Giá thuê không được để trống")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Giá thuê phải lớn hơn 0")
+    private BigDecimal monthlyRent;
+
+    @DecimalMin(value = "0.0", inclusive = false, message = "Tiền cọc phải lớn hơn 0")
+    private BigDecimal depositAmount;
+
+    @Positive(message = "Diện tích phải lớn hơn 0")
+    private Double areaM2;
+
+    @Min(value = 1, message = "Số người ở tối thiểu là 1")
+    private Integer maxOccupants;
+
+    private String roomType;
 
     // ==================== ĐỊA CHỈ ====================
-    // Nếu null thì lấy từ Rooms, nếu có thì override
 
+    @NotBlank(message = "Địa chỉ không được để trống")
     private String address;
+
     private String ward;
     private String district;
+
+    @NotBlank(message = "Thành phố không được để trống")
     private String city;
 
-    // ==================== TIỆN ÍCH ====================
+    // ==================== GIÁ DỊCH VỤ ====================
 
-    private Boolean hasWifi = false;
-    private Boolean hasAirConditioner = false;
-    private Boolean hasWaterHeater = false;
-    private Boolean hasParking = false;
-    private Boolean hasSecurity = false;
-    private Boolean hasElevator = false;
-    private Boolean allowCooking = false;
-    private Boolean allowPet = false;
-
-    @Size(max = 500, message = "Tiện ích bổ sung không được vượt quá 500 ký tự")
-    private String extraAmenities;
-
-    // ==================== PHÍ DỊCH VỤ ====================
-
+    @DecimalMin(value = "0.0", inclusive = false, message = "Giá điện phải lớn hơn 0")
     private BigDecimal electricityPricePerKwh;
+
+    @DecimalMin(value = "0.0", inclusive = false, message = "Giá nước phải lớn hơn 0")
     private BigDecimal waterPricePerM3;
+
+    @PositiveOrZero(message = "Phí internet không được âm")
     private Double internetFee;
+
+    @PositiveOrZero(message = "Phí giữ xe không được âm")
     private Double parkingFee;
+
+    @PositiveOrZero(message = "Phí vệ sinh không được âm")
+    private Double cleaningFee;
 
     // ==================== ẢNH ====================
 
-    /**
-     * Danh sách URL ảnh đã upload (xử lý upload riêng trước khi gọi API này)
-     */
-    @Size(max = 10, message = "Tối đa 10 ảnh cho mỗi bài đăng")
-    private List<ImageItem> images;
+    private String mainImageUrl;
 
     /**
-     * Thời điểm hết hạn bài đăng (null = không giới hạn)
+     * Danh sách ảnh đã upload (URL từ bước upload trước).
+     * Tối đa 10 ảnh; đúng 1 ảnh phải có thumbnail = true.
      */
-    private LocalDateTime expiredAt;
+    @Size(max = 10, message = "Tối đa 10 ảnh mỗi bài đăng")
+    @Valid
+    private List<String> imageUrl;
 
-    /**
-     * true = publish ngay, false = lưu nháp
-     */
-    private Boolean publishImmediately = false;
+    // ==================== INNER CLASS ====================
 
-    @Data
-    public static class ImageItem {
-        @NotBlank
-        private String imageUrl;
-        private Integer displayOrder = 0;
-        private Boolean thumbnail = false;
-    }
 }

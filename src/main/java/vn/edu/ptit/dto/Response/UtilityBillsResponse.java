@@ -4,7 +4,7 @@ package vn.edu.ptit.dto.Response;
 import lombok.Data;
 import vn.edu.ptit.entity.UtilityBills;
 
-import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 //Response gửi cho người thuê
@@ -14,26 +14,27 @@ public class UtilityBillsResponse {
     private Double electricityOldIndex;
     private Double electricityNewIndex;
     private Double electricityConsumed;
-    private BigDecimal electricityPricePerKwh;
-    private BigDecimal electricityAmount; //Tien dien thang nay
+    private Double electricityPricePerKwh;
+    private Double electricityAmount; //Tien dien thang nay
     private Double waterOldIndex = 0.0;
     private Double waterNewIndex = 0.0;
     private Double waterConsumed;
     private Double waterPricePerM3;
-    private BigDecimal waterAmount; // Tien nuoc thang nay
+    private Double waterAmount; // Tien nuoc thang nay
     private Double internetFee = 0.0;
     private Double parkingFee = 0.0;
     private Double cleaningFee = 0.0;
     private Double otherFee = 0.0;
+    private Double rentPrice;
     private String otherFeeNote;
-    private BigDecimal totalAmount;
-    private LocalDateTime dueDate; // Hạn đóng tiền
+    private Double totalAmount;
+    private LocalDate dueDate; // Hạn đóng tiền
     private LocalDateTime createdAt;
     private UtilityBills.Status status;
 
     public UtilityBillsResponse fromEntity(UtilityBills entity) {
         UtilityBillsResponse detailResponse = new UtilityBillsResponse();
-        detailResponse.setBillingMonth(entity.getBillingMonth());
+        detailResponse.setBillingMonth(Long.valueOf(entity.getBillingMonth()));
         detailResponse.setElectricityOldIndex(entity.getElectricityOldIndex());
         detailResponse.setElectricityNewIndex(entity.getElectricityNewIndex());
         detailResponse.setElectricityConsumed(entity.getElectricityConsumed());

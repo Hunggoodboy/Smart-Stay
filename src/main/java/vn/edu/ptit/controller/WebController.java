@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import vn.edu.ptit.service.AuthService;
 
 @Controller
@@ -22,8 +23,8 @@ public class WebController {
         return "auth";
     }
 
-    @GetMapping("/")
-    public String home() {
+    @GetMapping("/myHome")
+    public String myHome() {
         return "index";
     }
 
@@ -34,5 +35,20 @@ public class WebController {
     @GetMapping("/chatMessage")
     public String chatMessage() {
         return "chatMessage";
+    }
+
+    @GetMapping("/postRooms")
+    public String postNewRoom() {
+        return "postNewRoom";
+    }
+
+    @GetMapping("/")
+    public String roomsSummary() {
+        return "roomsSummary";
+    }
+
+    @GetMapping("/rooms/{id}")
+    public String roomDetais(@PathVariable Long id){
+        return "roomDetail";
     }
 }

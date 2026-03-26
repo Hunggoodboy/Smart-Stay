@@ -1,19 +1,21 @@
-package vn.edu.ptit.dto.request;
+package vn.edu.ptit.dto.Request;
 
 import lombok.Data;
 
 import java.math.BigDecimal;
 
 /**
- * Bộ lọc tìm kiếm bài đăng công khai.
+ * Bộ lọc tìm kiếm bài đăng công khai — dùng cho trang khách hàng.
+ * Tất cả tham số là optional; null = bỏ qua điều kiện đó.
  */
 @Data
 public class SearchRoomPostRequest {
 
+    /** Từ khoá tìm trong tiêu đề và địa chỉ */
     private String keyword;
+
     private String city;
     private String district;
-    private String ward;
 
     private BigDecimal minPrice;
     private BigDecimal maxPrice;
@@ -23,19 +25,15 @@ public class SearchRoomPostRequest {
 
     private String roomType;
 
-    // Lọc theo tiện ích
-    private Boolean hasWifi;
-    private Boolean hasAirConditioner;
-    private Boolean hasParking;
-    private Boolean allowPet;
-    private Boolean allowCooking;
-
     /**
-     * Sắp xếp: "price_asc" | "price_desc" | "newest" | "most_viewed"
-     * Mặc định: "newest"
+     * Sắp xếp kết quả:
+     * "newest"     — bài đăng mới nhất (mặc định)
+     * "price_asc"  — giá tăng dần
+     * "price_desc" — giá giảm dần
      */
     private String sortBy = "newest";
 
     private Integer page = 0;
+
     private Integer size = 12;
 }

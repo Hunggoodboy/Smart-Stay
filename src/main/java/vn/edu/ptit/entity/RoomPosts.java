@@ -10,8 +10,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Bài đăng cho thuê phòng — do LandLord tạo từ một Rooms đã có.
- * Một phòng có thể có nhiều bài đăng theo thời gian (mỗi lần phòng trống lại đăng mới).
+ * Bài đăng cho thuê phòng — do LandLord tạo ĐỘC LẬP, chưa liên kết Rooms.
+ *
+ * Flow vòng đời:
+ *   LandLord tạo bài đăng (DRAFT)
+ *       → publish (ACTIVE)
+ *       → Customer gửi RentalRequest
+ *       → LandLord duyệt (RENTED) → hệ thống tự tạo Rooms + Contracts
+ *       → Phòng trống lại → LandLord đăng bài mới
+ *
+ * Khi status chuyển sang RENTED, field `room` sẽ được gán (tham chiếu Rooms vừa tạo).
  */
 @Entity
 @Data
@@ -24,25 +32,30 @@ public class RoomPosts implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // ==================== THÔNG TIN CƠ BẢN ====================
+
     @Column(name = "title", nullable = false)
     private String title;
 
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    /**
-     * Giá hiển thị trên bài đăng (có thể khác giá gốc trong Rooms)
-     */
-    @Column(name = "posted_price", nullable = false)
-    private BigDecimal postedPrice;
+    @Column(name = "monthly_rent", nullable = false)
+    private BigDecimal monthlyRent;
+
+    @Column(name = "deposit_amount")
+    private BigDecimal depositAmount;
 
     @Column(name = "area_m2")
     private Double areaM2;
 
+    @Column(name = "max_occupants")
+    private Integer maxOccupants;
+
     @Column(name = "room_type")
     private String roomType;
 
-    // ==================== ĐỊA CHỈ (denormalized để tìm kiếm nhanh) ====================
+    // ==================== ĐỊA CHỈ ====================
 
     @Column(name = "address", nullable = false)
     private String address;
@@ -53,62 +66,26 @@ public class RoomPosts implements Serializable {
     @Column(name = "district")
     private String district;
 
-    @Column(name = "city")
+    @Column(name = "city", nullable = false)
     private String city;
 
-    // ==================== TIỆN ÍCH ====================
 
-    @Column(name = "has_wifi", nullable = false)
-    private Boolean hasWifi = false;
+    // ==================== GIÁ DỊCH VỤ (dùng để tạo Rooms khi cho thuê) ====================
 
-    @Column(name = "has_air_conditioner", nullable = false)
-    private Boolean hasAirConditioner = false;
+    @Column(name = "electricity_price_per_kwh", nullable = false)
+    private BigDecimal electricityPricePerKwh = new BigDecimal("3500");
 
-    @Column(name = "has_water_heater", nullable = false)
-    private Boolean hasWaterHeater = false;
+    @Column(name = "water_price_per_m3", nullable = false)
+    private BigDecimal waterPricePerM3 = new BigDecimal("15000");
 
-    @Column(name = "has_parking", nullable = false)
-    private Boolean hasParking = false;
-
-    @Column(name = "has_security", nullable = false)
-    private Boolean hasSecurity = false;
-
-    @Column(name = "has_elevator", nullable = false)
-    private Boolean hasElevator = false;
-
-    @Column(name = "allow_cooking", nullable = false)
-    private Boolean allowCooking = false;
-
-    @Column(name = "allow_pet", nullable = false)
-    private Boolean allowPet = false;
-
-    /**
-     * Tiện ích bổ sung dạng tự do (VD: "Ban công, Tủ lạnh, Máy giặt")
-     */
-    @Column(name = "extra_amenities")
-    private String extraAmenities;
-
-    // ==================== PHÍ DỊCH VỤ HIỂN THỊ ====================
-
-    @Column(name = "electricity_price_per_kwh")
-    private BigDecimal electricityPricePerKwh;
-
-    @Column(name = "water_price_per_m3")
-    private BigDecimal waterPricePerM3;
-
-    @Column(name = "internet_fee")
+    @Column(name = "internet_fee", nullable = false)
     private Double internetFee = 0.0;
 
-    @Column(name = "parking_fee")
+    @Column(name = "parking_fee", nullable = false)
     private Double parkingFee = 0.0;
 
-    // ==================== THỐNG KÊ ====================
-
-    @Column(name = "view_count", nullable = false)
-    private Long viewCount = 0L;
-
-    @Column(name = "contact_count", nullable = false)
-    private Long contactCount = 0L;
+    @Column(name = "cleaning_fee", nullable = false)
+    private Double cleaningFee = 0.0;
 
     // ==================== TRẠNG THÁI ====================
 
@@ -117,11 +94,11 @@ public class RoomPosts implements Serializable {
         DRAFT,
         /** Đang hiển thị công khai */
         ACTIVE,
-        /** Tạm ẩn */
+        /** Tạm ẩn bởi landlord */
         INACTIVE,
-        /** Đã có người thuê, ẩn khỏi danh sách */
+        /** Đã có người thuê — Rooms + Contracts đã được tạo */
         RENTED,
-        /** Đã bị xóa mềm */
+        /** Đã xoá mềm */
         DELETED
     }
 
@@ -129,8 +106,6 @@ public class RoomPosts implements Serializable {
     @Column(name = "status", nullable = false, length = 15)
     private Status status = Status.DRAFT;
 
-    @Column(name = "published_at")
-    private LocalDateTime publishedAt;
 
     @Column(name = "expired_at")
     private LocalDateTime expiredAt;
@@ -141,30 +116,33 @@ public class RoomPosts implements Serializable {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "main_image_url")
+    private String mainImageUrl;
     // ==================== RELATIONSHIPS ====================
 
     /**
-     * Bài đăng thuộc về phòng nào
-     * FK: room_posts.room_id → rooms.id
-     */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id", nullable = false)
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private Rooms room;
-
-    /**
-     * Người đăng bài
+     * Người đăng bài.
      * FK: room_posts.landlord_id → landlords.user_id
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "landlord_id", nullable = false)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private LandLord landLord;
+    private User user;
 
     /**
-     * Danh sách ảnh của bài đăng
+     * Phòng được tạo ra sau khi bài đăng này chuyển sang RENTED.
+     * NULL cho đến khi hệ thống tạo Rooms từ bài đăng này.
+     * FK: room_posts.room_id → rooms.id
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "room_id", nullable = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Rooms room;
+
+    /**
+     * Danh sách ảnh của bài đăng.
      */
     @OneToMany(mappedBy = "roomPost", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @ToString.Exclude
@@ -172,7 +150,7 @@ public class RoomPosts implements Serializable {
     private List<RoomPostImages> images = new ArrayList<>();
 
     /**
-     * Danh sách yêu cầu thuê từ khách hàng
+     * Danh sách yêu cầu thuê từ khách hàng.
      */
     @OneToMany(mappedBy = "roomPost", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @ToString.Exclude

@@ -61,8 +61,20 @@ public class Contracts implements Serializable {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    @Column(name = "electricity_price_per_kwh")
+    private Double electricityPricePerKwh;
+
+    @Column(name = "water_price_per_m3")
+    private Double waterPricePerM3;
+
+    @Column(name = "internet_fee", nullable = false)
+    private Double internetFee = 0.0;
+
+    @Column(name = "parking_fee", nullable = false)
+    private Double parkingFee = 0.0;
+
+    @Column(name = "cleaning_fee", nullable = false)
+    private Double cleaningFee = 0.0;
 
     // ==================== RELATIONSHIPS ====================
 
@@ -90,10 +102,8 @@ public class Contracts implements Serializable {
      * Nhiều hợp đồng thuộc 1 Phòng
      * FK: contracts.room_id → rooms.id
      */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id", nullable = false)
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "room_id")
     private Rooms room;
 
     /**

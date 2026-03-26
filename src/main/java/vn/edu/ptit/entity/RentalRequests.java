@@ -1,32 +1,30 @@
-package vn.edu.ptit.dto.Request;
+package vn.edu.ptit.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
-import vn.edu.ptit.entity.Contracts;
-import vn.edu.ptit.entity.Customer;
-import vn.edu.ptit.entity.LandLord;
-import vn.edu.ptit.entity.RoomPosts;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
- * Yêu cầu thuê phòng — do Customer gửi sau khi xem bài đăng.
- * Flow: PENDING → APPROVED (→ tạo Contract) | REJECTED | CANCELLED
+ * Yêu cầu thuê phòng — Customer gửi sau khi xem bài đăng.
+ *
+ * Flow:
+ *   Customer gửi yêu cầu (PENDING)
+ *       → Landlord duyệt (APPROVED)
+ *           → Service tạo Rooms mới từ thông tin RoomPost
+ *           → Service tạo Contracts liên kết Rooms + Customer + Landlord
+ *           → status chuyển CONTRACTED, gán contractId
+ *           → RoomPost.status chuyển RENTED, gán roomId
+ *       → Landlord từ chối (REJECTED)
+ *       → Customer tự huỷ (CANCELLED)
  */
 @Entity
 @Data
-@Table(
-    name = "rental_requests",
-    uniqueConstraints = {
-        // Mỗi khách chỉ được có 1 yêu cầu đang PENDING/APPROVED cho 1 bài đăng
-        @UniqueConstraint(
-            name = "uq_rental_request_active",
-            columnNames = {"room_post_id", "customer_id", "status"}
-        )
-    }
-)
+@Table(name = "rental_requests")
 public class RentalRequests implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -36,25 +34,25 @@ public class RentalRequests implements Serializable {
     private Long id;
 
     /**
-     * Lời nhắn từ khách hàng gửi cho chủ nhà
+     * Lời nhắn từ khách hàng gửi chủ nhà.
      */
     @Column(name = "message", columnDefinition = "TEXT")
     private String message;
 
     /**
-     * Ngày khách muốn chuyển vào (dự kiến)
+     * Ngày khách dự kiến chuyển vào.
      */
     @Column(name = "desired_move_in_date")
     private LocalDate desiredMoveInDate;
 
     /**
-     * Số tháng dự kiến thuê
+     * Số tháng dự kiến thuê.
      */
     @Column(name = "desired_duration_months")
     private Integer desiredDurationMonths;
 
     /**
-     * Số người dự kiến ở
+     * Số người dự kiến ở cùng.
      */
     @Column(name = "num_occupants", nullable = false)
     private Integer numOccupants = 1;
@@ -70,7 +68,7 @@ public class RentalRequests implements Serializable {
         REJECTED,
         /** Khách hàng tự huỷ */
         CANCELLED,
-        /** Đã hoàn tất — Contract đã được tạo từ yêu cầu này */
+        /** Đã hoàn tất — Rooms + Contracts đã được tạo */
         CONTRACTED
     }
 
@@ -79,19 +77,19 @@ public class RentalRequests implements Serializable {
     private Status status = Status.PENDING;
 
     /**
-     * Lý do từ chối hoặc huỷ (điền khi status = REJECTED | CANCELLED)
+     * Lý do từ chối (điền khi status = REJECTED).
      */
     @Column(name = "rejection_reason")
     private String rejectionReason;
 
     /**
-     * Ghi chú nội bộ của chủ nhà
+     * Ghi chú nội bộ của chủ nhà (không hiển thị cho khách).
      */
     @Column(name = "landlord_notes")
     private String landlordNotes;
 
     /**
-     * Thời điểm chủ nhà duyệt / từ chối
+     * Thời điểm chủ nhà duyệt hoặc từ chối.
      */
     @Column(name = "reviewed_at")
     private LocalDateTime reviewedAt;
@@ -105,7 +103,7 @@ public class RentalRequests implements Serializable {
     // ==================== RELATIONSHIPS ====================
 
     /**
-     * Yêu cầu thuộc bài đăng nào
+     * Yêu cầu thuộc bài đăng nào.
      * FK: rental_requests.room_post_id → room_posts.id
      */
     @ManyToOne(fetch = FetchType.LAZY)
@@ -115,7 +113,7 @@ public class RentalRequests implements Serializable {
     private RoomPosts roomPost;
 
     /**
-     * Khách hàng gửi yêu cầu
+     * Khách hàng gửi yêu cầu.
      * FK: rental_requests.customer_id → customers.user_id
      */
     @ManyToOne(fetch = FetchType.LAZY)
@@ -125,7 +123,7 @@ public class RentalRequests implements Serializable {
     private Customer customer;
 
     /**
-     * Chủ nhà nhận yêu cầu (denormalized để query nhanh, thực ra lấy từ roomPost.landLord)
+     * Chủ nhà nhận yêu cầu (denormalized để tránh join qua roomPost).
      * FK: rental_requests.landlord_id → landlords.user_id
      */
     @ManyToOne(fetch = FetchType.LAZY)
@@ -135,10 +133,11 @@ public class RentalRequests implements Serializable {
     private LandLord landLord;
 
     /**
-     * Contract được tạo từ yêu cầu này (nullable — chỉ có khi status = CONTRACTED)
+     * Hợp đồng được tạo từ yêu cầu này.
+     * NULL cho đến khi status = CONTRACTED.
      * FK: rental_requests.contract_id → contracts.id
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contract_id", nullable = true)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude

@@ -1,5 +1,6 @@
-package vn.edu.ptit.dto.request;
+package vn.edu.ptit.dto.Request;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import vn.edu.ptit.entity.RoomPosts;
@@ -9,8 +10,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Request cập nhật bài đăng (chỉ các field được phép sửa sau khi đăng).
- * Dùng PATCH — null = giữ nguyên giá trị cũ.
+ * Request cập nhật bài đăng — kiểu PATCH (null = giữ nguyên giá trị cũ).
+ * Chỉ được phép cập nhật khi status = DRAFT hoặc ACTIVE.
+ * Không thể sửa bài đăng đang ở trạng thái RENTED hoặc DELETED.
  */
 @Data
 public class UpdateRoomPostRequest {
@@ -21,36 +23,54 @@ public class UpdateRoomPostRequest {
     @Size(max = 5000)
     private String description;
 
-    @DecimalMin(value = "0.0", inclusive = false, message = "Giá cho thuê phải lớn hơn 0")
-    private BigDecimal postedPrice;
+    @DecimalMin(value = "0.0", inclusive = false, message = "Giá thuê phải lớn hơn 0")
+    private BigDecimal monthlyRent;
 
-    private Boolean hasWifi;
-    private Boolean hasAirConditioner;
-    private Boolean hasWaterHeater;
-    private Boolean hasParking;
-    private Boolean hasSecurity;
-    private Boolean hasElevator;
-    private Boolean allowCooking;
-    private Boolean allowPet;
+    @DecimalMin(value = "0.0", inclusive = false)
+    private BigDecimal depositAmount;
 
-    @Size(max = 500)
-    private String extraAmenities;
+    @Positive
+    private Double areaM2;
 
+    @Min(value = 1)
+    private Integer maxOccupants;
+
+    private String roomType;
+
+    private String address;
+    private String ward;
+    private String district;
+    private String city;
+
+    @DecimalMin(value = "0.0", inclusive = false)
     private BigDecimal electricityPricePerKwh;
+
+    @DecimalMin(value = "0.0", inclusive = false)
     private BigDecimal waterPricePerM3;
+
+    @PositiveOrZero
     private Double internetFee;
+
+    @PositiveOrZero
     private Double parkingFee;
 
-    /**
-     * Nếu có giá trị → thay toàn bộ danh sách ảnh.
-     * Nếu null → giữ nguyên danh sách ảnh hiện tại.
-     */
-    private List<CreateRoomPostRequest.ImageItem> images;
+    @PositiveOrZero
+    private Double cleaningFee;
 
+    /**
+     * Nếu không null → thay toàn bộ gallery bằng danh sách mới.
+     * Nếu null → giữ nguyên gallery hiện tại.
+     */
+    @Size(max = 10, message = "Tối đa 10 ảnh mỗi bài đăng")
+    @Valid
+    private List<String> images;
+
+    @Future(message = "Thời hạn bài đăng phải là thời điểm trong tương lai")
     private LocalDateTime expiredAt;
 
     /**
-     * Thay đổi trạng thái: ACTIVE ↔ INACTIVE | DELETED
+     * Chỉ cho phép chuyển: DRAFT ↔ ACTIVE, ACTIVE → INACTIVE, * → DELETED.
+     * Service sẽ validate các chuyển trạng thái không hợp lệ.
      */
     private RoomPosts.Status status;
 }

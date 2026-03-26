@@ -13,25 +13,8 @@ import java.util.Optional;
 @Repository
 public interface RoomPostImageRepository extends JpaRepository<RoomPostImages, Long> {
 
-    /**
-     * Lấy tất cả ảnh của bài đăng, sắp xếp theo thứ tự hiển thị
-     */
-    List<RoomPostImages> findByRoomPost_IdOrderByDisplayOrderAsc(Long roomPostId);
-
-    /**
-     * Lấy ảnh thumbnail của bài đăng
-     */
-    Optional<RoomPostImages> findByRoomPost_IdAndThumbnailTrue(Long roomPostId);
-
-    /**
-     * Xoá toàn bộ ảnh của bài đăng (dùng khi cập nhật lại ảnh)
-     */
     @Modifying
     @Query("DELETE FROM RoomPostImages img WHERE img.roomPost.id = :roomPostId")
     void deleteAllByRoomPostId(@Param("roomPostId") Long roomPostId);
 
-    /**
-     * Đếm số ảnh của bài đăng
-     */
-    long countByRoomPost_Id(Long roomPostId);
 }

@@ -1,4 +1,4 @@
-package vn.edu.ptit.dto.request;
+package vn.edu.ptit.dto.Request;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -7,6 +7,7 @@ import java.time.LocalDate;
 
 /**
  * Request gửi yêu cầu thuê phòng từ phía Customer.
+ * Mỗi customer chỉ được có 1 yêu cầu PENDING hoặc APPROVED cho cùng 1 bài đăng.
  */
 @Data
 public class CreateRentalRequestRequest {

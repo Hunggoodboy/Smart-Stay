@@ -49,7 +49,7 @@ public class User implements Serializable {
     @Column(name = "is_active", nullable = false)
     private Boolean active = false;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
@@ -63,13 +63,23 @@ public class User implements Serializable {
     @Column(name = "role", nullable = false, length = 25)
     private Role role = Role.CUSTOMER;
 
+    // ==================== RELATIONSHIPS ====================
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<UtilityBills> utilityBills;
+    /**
+     * Đã xóa List<UtilityBills> — hóa đơn điện nước thuộc về LandLord, không phải User chung
+     * Nếu cần truy vấn, thực hiện qua LandLord extends User
+     */
 
     @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<ChatMessages> receiverChatMessages;
 
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<ChatMessages> sentChatMessages;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<RoomPosts>  roomPosts;
 }

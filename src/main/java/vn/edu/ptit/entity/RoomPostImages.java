@@ -7,8 +7,8 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * Ảnh của bài đăng cho thuê phòng.
- * Một bài đăng có thể có nhiều ảnh; ảnh đại diện được đánh dấu bằng isThumbnail.
+ * Ảnh gallery của bài đăng cho thuê phòng.
+ * Ảnh đại diện được đánh dấu bằng isThumbnail = true.
  */
 @Entity
 @Data
@@ -23,21 +23,6 @@ public class RoomPostImages implements Serializable {
 
     @Column(name = "image_url", nullable = false)
     private String imageUrl;
-
-    /**
-     * Thứ tự hiển thị (0 = đầu tiên)
-     */
-    @Column(name = "display_order", nullable = false)
-    private Integer displayOrder = 0;
-
-    /**
-     * Đánh dấu ảnh đại diện (thumbnail) cho bài đăng
-     */
-    @Column(name = "is_thumbnail", nullable = false)
-    private Boolean thumbnail = false;
-
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
 
     // ==================== RELATIONSHIPS ====================
 
