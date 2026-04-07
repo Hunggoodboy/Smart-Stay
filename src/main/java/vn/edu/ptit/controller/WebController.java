@@ -13,6 +13,7 @@ import vn.edu.ptit.service.AuthService;
 @AllArgsConstructor
 public class WebController {
     private final AuthService authService;
+
     @GetMapping("login")
     public String login() {
         return "auth";
@@ -32,6 +33,7 @@ public class WebController {
     public String payment() {
         return "payment";
     }
+
     @GetMapping("/chatMessage")
     public String chatMessage() {
         return "chatMessage";

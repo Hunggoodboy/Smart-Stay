@@ -22,15 +22,15 @@ import org.springframework.security.web.DefaultSecurityFilterChain;
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
-        private final UserDetailsService userDetailsService;
+    private final UserDetailsService userDetailsService;
 
-        @Bean
-        public AuthenticationProvider authenticationProvider() {
-                DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
-                daoAuthenticationProvider.setUserDetailsService(userDetailsService);
-                daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
-                return daoAuthenticationProvider;
-        }
+    @Bean
+    public AuthenticationProvider authenticationProvider(){
+        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
+        daoAuthenticationProvider.setUserDetailsService(userDetailsService);
+        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
+        return daoAuthenticationProvider;
+    }
 
     @Bean
     public DefaultSecurityFilterChain SecurityFilterChain(HttpSecurity http) throws Exception {
@@ -39,8 +39,8 @@ public class SecurityConfig {
                 .sessionManagement(s->
                         s.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/static/**","/auth", "/css/**","/webjars/**","/", "/js/**","/room-posted", "/images/**", "/api/user/login", "/api/user/register", "/rooms/**", "/room-detail/**").permitAll()
-                        .requestMatchers("/api/utility-bills", "/chatMessage", "/api/post-room", "/payment" , "/postRooms", "myHome").authenticated()
+                        .requestMatchers("/static/**","/auth","/login", "/register", "/css/**","/webjars/**","/", "/rooms/**","/room-detail/**", "/js/**","/room-posted", "/images/**", "/api/user/login", "/api/user/register", "/payment").permitAll()
+                        .requestMatchers("/api/utility-bills", "/chatMessage", "/api/post-room", "/payment" , "/postRooms", "myHome", "/api/rental-requests").authenticated()
                         .requestMatchers("/api/setBill").hasRole("LANDLORD")
                         .anyRequest().authenticated()
                 )

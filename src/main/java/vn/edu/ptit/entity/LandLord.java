@@ -62,4 +62,10 @@ public class LandLord extends User {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private List<Notifications> notifications;
+
+    @OneToMany(mappedBy = "landlord", cascade = CascadeType.ALL)
+    private List<RentalRequests>  rentalRequests;
+
+    @OneToMany(mappedBy = "landlord", cascade = CascadeType.ALL)
+    private List<RoomPosts>  roomPosts;
 }

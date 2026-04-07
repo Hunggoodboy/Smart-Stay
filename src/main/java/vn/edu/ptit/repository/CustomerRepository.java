@@ -1,10 +1,15 @@
 package vn.edu.ptit.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import vn.edu.ptit.entity.Customer;
 
+import java.util.Optional;
+
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
-    public Customer findById(long id);
+    @Query("select c From Customer c where c.id = :userId")
+    Optional<Customer> findCustomerById(@Param("userId") Long userId);
 }

@@ -29,12 +29,14 @@ public class RoomPostService {
     private final RoomPostRepository roomPostRepository;
     private final AuthService  authService;
     private final FileService fileService;
-
+    private final LandLordRepository landLordRepository;
     @Transactional
     public ApiResponse createNewRoomPost(CreateRoomPostRequest createRoomPostRequest, MultipartFile mainImg, List<MultipartFile> imageUrls) throws IOException {
         RoomPosts roomPosts = new RoomPosts();
         BeanUtils.copyProperties(createRoomPostRequest, roomPosts);
-        roomPosts.setUser(authService.getUser());
+        LandLord landLord = new LandLord();
+
+        roomPosts.setLandLord(authService.getUser());
         roomPosts.setStatus(RoomPosts.Status.ACTIVE);
         roomPosts.setCreatedAt(LocalDateTime.now());
         if(mainImg != null && !mainImg.isEmpty()) {

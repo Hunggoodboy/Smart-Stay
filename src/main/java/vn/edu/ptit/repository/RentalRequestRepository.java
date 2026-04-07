@@ -19,18 +19,18 @@ public interface RentalRequestRepository extends JpaRepository<RentalRequests, L
     /**
      * Tất cả yêu cầu gửi đến landlord, mới nhất trước.
      */
-    Page<RentalRequests> findByLandLord_IdOrderByCreatedAtDesc(Long landlordId, Pageable pageable);
+    Page<RentalRequests> findByUser_IdOrderByCreatedAtDesc(Long landlordId, Pageable pageable);
 
     /**
      * Lọc yêu cầu theo status cho landlord.
      */
-    Page<RentalRequests> findByLandLord_IdAndStatusOrderByCreatedAtDesc(
+    Page<RentalRequests> findByUser_IdAndStatusOrderByCreatedAtDesc(
             Long landlordId, RentalRequests.Status status, Pageable pageable);
 
     /**
      * Đếm yêu cầu PENDING chủ nhà chưa xử lý — dùng hiển thị badge thông báo.
      */
-    long countByLandLord_IdAndStatus(Long landlordId, RentalRequests.Status status);
+    long countByUser_IdAndStatus(Long landlordId, RentalRequests.Status status);
 
     /**
      * Lấy tất cả yêu cầu PENDING của một bài đăng cụ thể.
@@ -73,7 +73,7 @@ public interface RentalRequestRepository extends JpaRepository<RentalRequests, L
     @Query("""
             SELECT r.status, COUNT(r)
             FROM RentalRequests r
-            WHERE r.landLord.id = :landlordId
+            WHERE r.user.id = :landlordId
             GROUP BY r.status
             """)
     List<Object[]> countGroupByStatusForLandlord(@Param("landlordId") Long landlordId);

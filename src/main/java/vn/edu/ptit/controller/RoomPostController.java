@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import vn.edu.ptit.dto.Request.CreateRoomPostRequest;
+import vn.edu.ptit.dto.Request.RentalRequestDTO;
 import vn.edu.ptit.dto.Response.ApiResponse;
 import vn.edu.ptit.dto.Response.RoomPostDetailResponse;
 import vn.edu.ptit.dto.Response.RoomPostSummaryResponse;
@@ -35,4 +36,5 @@ public class RoomPostController {
     private ResponseEntity<RoomPostDetailResponse> getRoomPostById(@PathVariable Long id){
         return ResponseEntity.ok(roomPostService.getRoomPostDetail(id));
     }
+
 }

@@ -10,4 +10,6 @@ import java.util.Optional;
 public interface LandLordRepository extends JpaRepository<LandLord, Long> {
     Optional<LandLord> findLandLordById(Long userId);
     LandLord getReferenceById(Long userId);
+
+    boolean existsLandLordById(Long userId);
 }

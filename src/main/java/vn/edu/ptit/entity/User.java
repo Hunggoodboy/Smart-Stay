@@ -80,6 +80,4 @@ public class User implements Serializable {
     @EqualsAndHashCode.Exclude
     private List<ChatMessages> sentChatMessages;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<RoomPosts>  roomPosts;
 }
