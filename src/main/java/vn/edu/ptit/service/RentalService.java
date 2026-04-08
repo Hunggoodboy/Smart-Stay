@@ -11,6 +11,7 @@ import vn.edu.ptit.entity.RoomPosts;
 import vn.edu.ptit.repository.CustomerRepository;
 import vn.edu.ptit.repository.RentalRequestRepository;
 import vn.edu.ptit.repository.RoomPostRepository;
+import vn.edu.ptit.service.Authentication.AuthService;
 
 import java.time.LocalDateTime;
 
@@ -26,7 +27,7 @@ public class RentalService {
         BeanUtils.copyProperties(request, rentalRequests);
         RoomPosts roomPost = roomPostRepository.findById(request.getRoomPostId()).orElseThrow();
         rentalRequests.setRoomPost(roomPost);
-        rentalRequests.setCustomer(roomPost.getUser());
+        rentalRequests.setLandlord(roomPost.getLandlord());
         System.out.println(authService.getCurrentUserId());
         Customer customerRef = new Customer();
         customerRef.setId(authService.getCurrentUserId());

@@ -14,4 +14,5 @@ public interface ContractsRepository extends JpaRepository<Contracts, Long> {
     Optional<Contracts> findContractsByUserId(@Param("userId") Long userId);
     @Query("select c from Contracts c where c.room.id = :roomId")
     Optional<Contracts> findContractsByRoomId(@Param("roomId") Long roomId);
+    Optional<Contracts> findByRoomIdAndStatus(Long roomId, String status);
 }

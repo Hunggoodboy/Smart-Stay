@@ -69,10 +69,13 @@ function hideMessage(target) {
 }
 
 async function postJson(url, payload, defaultMessage = 'Đã có lỗi xảy ra, vui lòng thử lại.') {
+    const token = localStorage.getItem('smartstay_token'); // Lấy token đã lưu
     const response = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify(payload)
     });
 
@@ -181,6 +184,7 @@ if (formLogin) {
             const data = await postJson(API_ROUTES.sessions, payload);
             if (data && data.user) {
                 localStorage.setItem('smartstay_user', JSON.stringify(data.user));
+                localStorage.setItem('smartstay_token', data.accessToken);
             }
             showMessage(loginMessage, data && data.message ? data.message : 'Đăng nhập thành công.', true);
             window.location.href = '/';
@@ -192,6 +196,7 @@ if (formLogin) {
         }
     });
 }
+
 
 // Khởi tạo trạng thái ban đầu
 if (window.location.pathname === '/register') {

@@ -14,6 +14,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @Table(name = "landlords")
+@NoArgsConstructor
 @DiscriminatorValue("LANDLORD")
 @PrimaryKeyJoinColumn(name = "user_id")
 public class LandLord extends User {
@@ -22,9 +23,6 @@ public class LandLord extends User {
 
     @Column(name = "id_card_number", unique = true)
     private String idCardNumber;
-
-    @Column(name = "business_license_url")
-    private String businessLicenseUrl;
 
     @Column(name = "address")
     private String address;

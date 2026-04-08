@@ -8,11 +8,13 @@ import vn.edu.ptit.dto.UserDTO;
 public class AuthResponse {
     private String message;
     private boolean success;
+    private String accessToken;
     private UserDTO user;
 
-    public AuthResponse(String message, boolean success, UserDTO user) {
+    public AuthResponse(String message, boolean success, UserDTO user, String accessToken) {
         this.message = message;
         this.success = success;
         this.user = user;
+        this.accessToken = accessToken;
     }
 }

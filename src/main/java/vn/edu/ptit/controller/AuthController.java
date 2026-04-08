@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import vn.edu.ptit.dto.Response.AuthResponse;
 import vn.edu.ptit.dto.Request.LoginRequest;
 import vn.edu.ptit.dto.Request.RegisterRequest;
-import vn.edu.ptit.service.AuthService;
+import vn.edu.ptit.service.Authentication.AuthService;
 
 @RestController
 @AllArgsConstructor

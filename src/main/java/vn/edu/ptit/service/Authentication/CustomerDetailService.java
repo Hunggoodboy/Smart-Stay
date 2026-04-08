@@ -1,4 +1,4 @@
-package vn.edu.ptit.service;
+package vn.edu.ptit.service.Authentication;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,8 +13,10 @@ public class CustomerDetailService implements UserDetailsService {
     private final UserRepository userRepository;
         @Override
     public UserDetails loadUserByUsername(String username) {
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("Can't find this user"));
-        return org.springframework.security.core.userdetails.User.withUsername(user.getUsername())
+            System.out.println(username);
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("Can't find"));
+        return org.springframework.security.core.userdetails.User
+                .withUsername(user.getUsername())
                 .password(user.getPassword())
                 .roles(user.getRole().name())
                 .build();

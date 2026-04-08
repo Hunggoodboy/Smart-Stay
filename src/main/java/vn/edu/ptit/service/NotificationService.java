@@ -5,8 +5,8 @@ import org.springframework.stereotype.Service;
 import vn.edu.ptit.dto.Response.NotificationsResponse;
 import vn.edu.ptit.entity.Notifications;
 import vn.edu.ptit.repository.NotificationsRepository;
+import vn.edu.ptit.service.Authentication.AuthService;
 
-import java.util.Collections;
 import java.util.List;
 
 @Service

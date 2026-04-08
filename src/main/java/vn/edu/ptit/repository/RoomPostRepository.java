@@ -23,18 +23,18 @@ public interface RoomPostRepository extends JpaRepository<RoomPosts, Long> {
     /**
      * Tất cả bài đăng của landlord (mọi status), mới nhất trước.
      */
-    Page<RoomPosts> findByUser_IdOrderByCreatedAtDesc(Long landlordId, Pageable pageable);
+    Page<RoomPosts> findByLandlordIdOrderByCreatedAtDesc(Long landlordId, Pageable pageable);
 
     /**
      * Bài đăng của landlord lọc theo status.
      */
-    Page<RoomPosts> findByUser_IdAndStatusOrderByCreatedAtDesc(
+    Page<RoomPosts> findByLandlordIdAndStatusOrderByCreatedAtDesc(
             Long landlordId, RoomPosts.Status status, Pageable pageable);
 
     /**
      * Đếm bài đăng đang ACTIVE của landlord.
      */
-    long countByUser_IdAndStatus(Long landlordId, RoomPosts.Status status);
+    long countByLandlordIdAndStatus(Long landlordId, RoomPosts.Status status);
 
     // ==================== TÌM KIẾM CÔNG KHAI ====================
 

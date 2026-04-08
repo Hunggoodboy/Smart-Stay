@@ -1,10 +1,8 @@
-package vn.edu.ptit.service;
+package vn.edu.ptit.service.Authentication;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,21 +16,28 @@ import org.springframework.stereotype.Service;
 import vn.edu.ptit.dto.Response.AuthResponse;
 import vn.edu.ptit.dto.Request.LoginRequest;
 import vn.edu.ptit.dto.Request.RegisterRequest;
+import vn.edu.ptit.dto.Response.UserResponse;
 import vn.edu.ptit.dto.UserDTO;
+import vn.edu.ptit.entity.LandLord;
 import vn.edu.ptit.entity.User;
+import vn.edu.ptit.repository.LandLordRepository;
 import vn.edu.ptit.repository.UserRepository;
+import vn.edu.ptit.service.JWT.jwtService;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authManager;
     private final SecurityContextRepository securityContextRepository =
             new HttpSessionSecurityContextRepository();
+    private final LandLordRepository landLordRepository;
+    private final AuthenticationManager authManager;
+    private final jwtService jwtService;
+
     private boolean checkUsernameExists(String username) {
         return userRepository.findByUsername(username).isPresent();
     }
@@ -40,13 +45,13 @@ public class AuthService {
     public AuthResponse register(RegisterRequest registerRequest) {
         try {
             if(registerRequest.getUsername() == null || registerRequest.getPassword() == null || registerRequest.getConfirmPassword() == null || registerRequest.getFullName() == null || registerRequest.getPhoneNumber() == null) {
-                return new AuthResponse("Vui lòng điền đầy đủ thông tin", false, null);
+                return new AuthResponse("Vui lòng điền đầy đủ thông tin", false, null, null);
             }
             else if(!registerRequest.getPassword().equals(registerRequest.getConfirmPassword())) {
-                return new AuthResponse("Mật khẩu và xác nhận mật khẩu không khớp", false, null);
+                return new AuthResponse("Mật khẩu và xác nhận mật khẩu không khớp", false, null, null);
             }
             else if(checkUsernameExists(registerRequest.getUsername())) {
-                return new AuthResponse("Tên đăng nhập đã tồn tại", false, null);
+                return new AuthResponse("Tên đăng nhập đã tồn tại", false, null, null);
             }
             User user = new User();
             user.setUsername(registerRequest.getUsername());
@@ -59,10 +64,10 @@ public class AuthService {
             user.setCreatedAt(LocalDateTime.now());
             userRepository.save(user);
             UserDTO userDTO = UserDTO.fromEntity(user);
-            return new AuthResponse("Đăng ký thành công", true, userDTO);
+            return new AuthResponse("Đăng ký thành công", true, userDTO, null);
         }
         catch (Exception e) {
-            return new AuthResponse("Đăng ký thất bại: " + e.getMessage(), false, null);
+            return new AuthResponse("Đăng ký thất bại: " + e.getMessage(), false, null, null);
         }
     }
     public AuthResponse login(LoginRequest loginRequest, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
@@ -75,13 +80,14 @@ public class AuthService {
             SecurityContextHolder.setContext(context);
             securityContextRepository.saveContext(context, httpRequest, httpResponse);
             User user = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("Tên đăng nhập hoặc mật khẩu không chính xác"));
-            return new AuthResponse("Đăng nhập thành công", true, UserDTO.fromEntity(user));
+            String token = jwtService.generateToken(user.getUsername());
+            return new AuthResponse("Đăng nhập thành công", true, UserDTO.fromEntity(user),  token);
         }
         catch (BadCredentialsException e) {
-            return new AuthResponse("Tên đăng nhập hoặc mật khẩu không chính xác", false, null);
+            return new AuthResponse("Tên đăng nhập hoặc mật khẩu không chính xác", false, null, null);
         }
         catch (Exception ex) {
-            return new AuthResponse("Đăng nhập thất bại: " + ex.getMessage(), false, null);
+            return new AuthResponse("Đăng nhập thất bại: " + ex.getMessage(), false, null, null);
         }
     }
 
@@ -90,7 +96,8 @@ public class AuthService {
         if(authentication == null || !authentication.isAuthenticated()) {
             throw  new IllegalStateException("Người dùng chưa đăng nhập");
         }
-        User user = userRepository.findByUsername(authentication.getName()).orElseThrow(() -> new RuntimeException("User not found"));
+        Long userId = Long.parseLong(authentication.getName());
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         return UserDTO.fromEntity(user);
     }
     public User getUser() {
@@ -103,10 +110,14 @@ public class AuthService {
     }
     public Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if(authentication == null || !authentication.isAuthenticated()) {
-            throw  new IllegalStateException("Người dùng chưa đăng nhập");
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalStateException("Người dùng chưa đăng nhập");
         }
-        User user = userRepository.findByUsername(authentication.getName()).orElseThrow(() -> new RuntimeException("User not found"));
-        return user.getId();
+        return Long.parseLong(authentication.getName());
+    }
+    public LandLord getCurrentLandLord() {
+        Long currentUserId = getCurrentUserId();
+        LandLord landLord = landLordRepository.findLandLordById(currentUserId).orElseThrow(() -> new RuntimeException("Bạn chưa đăng ký diện chủ nhà, vui lòng gửi yêu cầu đăng ký bạn là chủ nhà trước"));
+        return landLord;
     }
 }

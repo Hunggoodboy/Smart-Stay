@@ -3,17 +3,14 @@ package vn.edu.ptit.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import vn.edu.ptit.dto.Request.ChatMessageRequest;
 import vn.edu.ptit.dto.Response.ChatMessagesResponse;
 import vn.edu.ptit.dto.Response.ConversationResponse;
-import vn.edu.ptit.dto.UserDTO;
 import vn.edu.ptit.entity.ChatMessages;
-import vn.edu.ptit.entity.LandLord;
 import vn.edu.ptit.entity.User;
 import vn.edu.ptit.repository.*;
+import vn.edu.ptit.service.Authentication.AuthService;
 
 import java.security.Principal;
 import java.time.LocalDateTime;

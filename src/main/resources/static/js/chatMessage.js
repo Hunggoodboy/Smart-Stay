@@ -5,7 +5,9 @@ const stompClient = new StompJs.Client({
 // ==================== LOAD CURRENT USER ====================
 
 async function loadCurrentUserId() {
-    const res = await fetch('/api/user/myid');
+    const res = await fetch('/api/user/myid', {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
     const id = await res.json();
     $('#sender-id').val(id);
 }

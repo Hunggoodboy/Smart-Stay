@@ -9,8 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserResponse {
     private Long id;
-    private String fullName;
-    private String roomNumber;
-    private String roomName;
-    private String Address;
+    private String role;
+    private boolean expired;
 }

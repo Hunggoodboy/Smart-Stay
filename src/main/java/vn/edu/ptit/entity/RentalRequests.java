@@ -9,19 +9,6 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/**
- * Yêu cầu thuê phòng — Customer gửi sau khi xem bài đăng.
- *
- * Flow:
- *   Customer gửi yêu cầu (PENDING)
- *       → Landlord duyệt (APPROVED)
- *           → Service tạo Rooms mới từ thông tin RoomPost
- *           → Service tạo Contracts liên kết Rooms + Customer + Landlord
- *           → status chuyển CONTRACTED, gán contractId
- *           → RoomPost.status chuyển RENTED, gán roomId
- *       → Landlord từ chối (REJECTED)
- *       → Customer tự huỷ (CANCELLED)
- */
 @Entity
 @Data
 @Table(name = "rental_requests")
@@ -130,13 +117,8 @@ public class RentalRequests implements Serializable {
     @JoinColumn(name = "landlord_id", nullable = false)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private LandLord landLord;
+    private LandLord landlord;
 
-    /**
-     * Hợp đồng được tạo từ yêu cầu này.
-     * NULL cho đến khi status = CONTRACTED.
-     * FK: rental_requests.contract_id → contracts.id
-     */
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contract_id", nullable = true)
     @ToString.Exclude

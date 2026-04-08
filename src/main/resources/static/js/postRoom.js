@@ -394,6 +394,7 @@ function buildRequestBody() {
    SUBMIT
    ============================================= */
 async function submitForm() {
+    const token = localStorage.getItem('smartstay_token');
     const btn = document.getElementById('submit-btn');
     if (!btn) return;
 
@@ -413,6 +414,9 @@ async function submitForm() {
     try {
         const res = await fetch(API_ENDPOINT, {
             method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}` // <--- Chỉ thêm token, để trình duyệt tự lo Content-Type
+            },
             body: formData, // Trình duyệt tự động set Header multipart/form-data
         });
 

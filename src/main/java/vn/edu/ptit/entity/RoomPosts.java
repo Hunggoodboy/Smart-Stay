@@ -128,7 +128,7 @@ public class RoomPosts implements Serializable {
     @JoinColumn(name = "landlord_id", nullable = false)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private LandLord landLord;
+    private LandLord landlord;
 
     /**
      * Phòng được tạo ra sau khi bài đăng này chuyển sang RENTED.

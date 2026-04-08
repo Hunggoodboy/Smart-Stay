@@ -15,28 +15,30 @@ import vn.edu.ptit.entity.RoomPostImages;
 import vn.edu.ptit.entity.RoomPosts;
 import vn.edu.ptit.entity.User;
 import vn.edu.ptit.repository.LandLordRepository;
-import vn.edu.ptit.repository.RoomPostImageRepository;
 import vn.edu.ptit.repository.RoomPostRepository;
+import vn.edu.ptit.service.Authentication.AuthService;
 
 import java.io.IOException;
+import java.security.InvalidParameterException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class RoomPostService {
     private final RoomPostRepository roomPostRepository;
-    private final AuthService  authService;
+    private final AuthService authService;
     private final FileService fileService;
     private final LandLordRepository landLordRepository;
     @Transactional
     public ApiResponse createNewRoomPost(CreateRoomPostRequest createRoomPostRequest, MultipartFile mainImg, List<MultipartFile> imageUrls) throws IOException {
         RoomPosts roomPosts = new RoomPosts();
         BeanUtils.copyProperties(createRoomPostRequest, roomPosts);
-        LandLord landLord = new LandLord();
-
-        roomPosts.setLandLord(authService.getUser());
+        LandLord landLord = authService.getCurrentLandLord();
+        if(landLord.getVerified() == false){
+            throw new InvalidParameterException("Bạn cần chờ admin xác thực tài khoản chủ nhà trước khi đăng bài");
+        }
+        roomPosts.setLandlord(landLord);
         roomPosts.setStatus(RoomPosts.Status.ACTIVE);
         roomPosts.setCreatedAt(LocalDateTime.now());
         if(mainImg != null && !mainImg.isEmpty()) {
@@ -66,7 +68,7 @@ public class RoomPostService {
                     .roomType(post.getRoomType())
                     .status(post.getStatus())
                     .thumbnailUrl(post.getMainImageUrl())
-                    .landlordName(post.getUser().getFullName())
+                    .landlordName(post.getLandlord().getFullName())
                     .publishedAt(post.getCreatedAt())
                     .build();
                 }
@@ -75,7 +77,7 @@ public class RoomPostService {
 
     public RoomPostDetailResponse getRoomPostDetail(Long id) {
         RoomPosts room = roomPostRepository.findById(id).orElseThrow();
-        User user = room.getUser();
+        User user = room.getLandlord();
         RoomPostDetailResponse response = new RoomPostDetailResponse();
         BeanUtils.copyProperties(room, response);
         List<RoomPostImages> images = room.getImages();

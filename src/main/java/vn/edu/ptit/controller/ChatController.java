@@ -4,16 +4,12 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import vn.edu.ptit.dto.Request.ChatMessageRequest;
 import vn.edu.ptit.dto.Response.ConversationResponse;
 import vn.edu.ptit.entity.User;
-import vn.edu.ptit.repository.ContractsRepository;
-import vn.edu.ptit.repository.RoomsRepository;
 import vn.edu.ptit.repository.UserRepository;
-import vn.edu.ptit.service.AuthService;
 import vn.edu.ptit.service.ChatMessageService;
 
 import java.security.Principal;
