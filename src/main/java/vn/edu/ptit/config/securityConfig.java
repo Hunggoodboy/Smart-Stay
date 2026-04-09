@@ -25,6 +25,26 @@ import vn.edu.ptit.repository.UserRepository;
 public class securityConfig {
     private final JwtFilter jwtFilter;
 
+    private static final String[] PUBLIC_URLS = {
+            "/", "/login", "/register", "/rooms/**",
+            "/css/**", "/js/**", "/images/**",
+            "/room-posted", "/room-detail/**",
+            "/api/user/login", "/api/user/register",
+            "/postRooms", "/MyRentalRequest", "/myHome", "/payment", "/chatMessage", "/adminVerify", "/registerLandLord"
+    };
+
+    private static final String[] LANDLORD_API_URLS = {
+            "/api/post-room/**", "/api/billing/**",
+            "/api/setBill/**", "/api/landlord/**",
+    };
+
+    private static final String[] AUTHENTICATED_API_URLS = {
+            "/api/user/me", "/api/user/myid", "/api/user/tenant",
+            "/api/notifications/**", "/api/utility-bills/**",
+            "/api/chat/**", "/api/customer/**", "/api/landlord/requestToLandLord"
+    };
+
+
     @Bean
     public DefaultSecurityFilterChain SecurityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -32,19 +52,13 @@ public class securityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .addFilterBefore(jwtFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
-                .authorizeRequests(auth -> auth
-                        .requestMatchers("/css/**", "/index", "/js/**", "/images/**", "/login", "/register", "/api/user/**").permitAll()
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(PUBLIC_URLS).permitAll()
+                        .requestMatchers(LANDLORD_API_URLS).hasAuthority("LANDLORD")
+                        .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
+                        .requestMatchers(AUTHENTICATED_API_URLS).authenticated()
+                        .anyRequest().authenticated()
                 )
-//                .formLogin(form -> form
-//                        .loginPage("/login")
-//                        .loginProcessingUrl("/login")
-//                        .defaultSuccessUrl("/", true)
-//                        .failureUrl("/login?error=true")
-//                        .permitAll())
-//                .logout(logout -> logout
-//                        .logoutUrl("/logout")
-//                        .logoutSuccessUrl("/login?logout=true")
-//                        .permitAll())
                 .csrf(csrf -> csrf.disable());
         return http.build();
     }

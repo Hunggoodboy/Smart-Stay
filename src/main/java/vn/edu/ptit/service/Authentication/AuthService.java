@@ -92,25 +92,18 @@ public class AuthService {
     }
 
     public UserDTO getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if(authentication == null || !authentication.isAuthenticated()) {
-            throw  new IllegalStateException("Người dùng chưa đăng nhập");
-        }
-        Long userId = Long.parseLong(authentication.getName());
+        Long userId = getCurrentUserId();
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         return UserDTO.fromEntity(user);
     }
     public User getUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if(authentication == null || !authentication.isAuthenticated()) {
-            throw  new IllegalStateException("Người dùng chưa đăng nhập");
-        }
-        User user = userRepository.findByUsername(authentication.getName()).orElseThrow(() -> new RuntimeException("User not found"));
+        Long userId = getCurrentUserId();
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         return user;
     }
     public Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
+        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
             throw new IllegalStateException("Người dùng chưa đăng nhập");
         }
         return Long.parseLong(authentication.getName());

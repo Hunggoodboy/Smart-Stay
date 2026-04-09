@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Hệ thống Quản trị | Smart Stay</title>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/uno.css}">
+    <style>
+        :root { --primary: #1d4ed8; --bg: #f8fafc; }
+        body { background: var(--bg); font-family: 'Be Vietnam Pro', sans-serif; padding: 40px; margin: 0; color: #1e293b; }
+        .dashboard-container { max-width: 1200px; margin: 0 auto; }
+        .glass-table-card { background: white; border-radius: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); border: 1px solid #e2e8f0; overflow: hidden; }
+        .table-head { background: #f8fafc; color: #64748b; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; }
+        .avatar-circle { width: 44px; height: 44px; border-radius: 14px; object-fit: cover; background: #eff6ff; }
+        .badge { padding: 6px 14px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+        .badge-pending { background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; }
+        .badge-success { background: #f0fdf4; color: #166534; border: 1px solid #dcfce7; }
+        .btn-approve { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 14px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-approve:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(29, 78, 216, 0.2); }
+        .tab-btn { padding: 10px 24px; border-radius: 14px; font-weight: 700; font-size: 14px; cursor: pointer; border: 1px solid transparent; background: transparent; color: #94a3b8; transition: 0.2s; }
+        .tab-active { background: white; color: var(--primary); border-color: #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+    <header style="background: white; padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 100;">
+
+        <a href="/" style="display: flex; align-items: center; gap: 8px; text-decoration: none; font-weight: bold; font-size: 20px; color: #0f172a;">
+            <span style="background: #1d4ed8; color: white; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px;">S</span>
+            SmartStay
+        </a>
+
+        <nav id="dynamicNavLinks" style="display: flex; gap: 24px; font-weight: 600; font-size: 14px; color: #475569;">
+            <a href="/" style="text-decoration: none; color: inherit;">Khám phá</a>
+        </nav>
+
+        <div id="navActions" style="display: flex; align-items: center; gap: 16px;">
+        </div>
+    </header>
+
+    <div class="glass-table-card">
+        <table class="w-full text-left border-collapse">
+            <thead class="table-head">
+            <tr>
+                <th class="p-6">Thông tin cá nhân</th>
+                <th class="p-6">Định danh & Địa chỉ</th>
+                <th class="p-6">Trạng thái</th>
+                <th class="p-6 text-right">Thao tác</th>
+            </tr>
+            </thead>
+            <tbody id="requestTableBody">
+            </tbody>
+        </table>
+    </div>
+</div>
+<script src="/js/adminVerify.js"></script>
+<script src="/js/navbar.js"></script>
+</body>
+</html>

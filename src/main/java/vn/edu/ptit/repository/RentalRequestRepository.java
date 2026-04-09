@@ -13,4 +13,9 @@ import java.util.Optional;
 
 @Repository
 public interface RentalRequestRepository extends JpaRepository<RentalRequests, Long> {
+    @Query("SELECT r, r.roomPost.mainImageUrl, r.customer.id" +
+            " FROM RentalRequests r " +
+            "where r.landlord.id = :userId " +
+            "order by r.createdAt desc")
+    List<Object[]> findAllWithRoomPostAndCustomerByLandLordIdOrderByCreatedAt(@Param("userId") Long userId);
 }

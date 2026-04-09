@@ -20,29 +20,6 @@ public class RentalRequests implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /**
-     * Lời nhắn từ khách hàng gửi chủ nhà.
-     */
-    @Column(name = "message", columnDefinition = "TEXT")
-    private String message;
-
-    /**
-     * Ngày khách dự kiến chuyển vào.
-     */
-    @Column(name = "desired_move_in_date")
-    private LocalDate desiredMoveInDate;
-
-    /**
-     * Số tháng dự kiến thuê.
-     */
-    @Column(name = "desired_duration_months")
-    private Integer desiredDurationMonths;
-
-    /**
-     * Số người dự kiến ở cùng.
-     */
-    @Column(name = "num_occupants", nullable = false)
-    private Integer numOccupants = 1;
 
     // ==================== TRẠNG THÁI ====================
 
@@ -63,17 +40,6 @@ public class RentalRequests implements Serializable {
     @Column(name = "status", nullable = false, length = 15)
     private Status status = Status.PENDING;
 
-    /**
-     * Lý do từ chối (điền khi status = REJECTED).
-     */
-    @Column(name = "rejection_reason")
-    private String rejectionReason;
-
-    /**
-     * Ghi chú nội bộ của chủ nhà (không hiển thị cho khách).
-     */
-    @Column(name = "landlord_notes")
-    private String landlordNotes;
 
     /**
      * Thời điểm chủ nhà duyệt hoặc từ chối.
@@ -84,8 +50,6 @@ public class RentalRequests implements Serializable {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 
     // ==================== RELATIONSHIPS ====================
 

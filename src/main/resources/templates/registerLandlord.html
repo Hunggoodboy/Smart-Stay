@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng ký Chủ nhà | Smart Stay</title>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/uno.css}">
+    <style>
+        body { background: radial-gradient(circle at top, #fef3c7 0%, #ffffff 35%, #dbeafe 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: 'Be Vietnam Pro', sans-serif; }
+        .form-card { background: rgba(255,255,255,0.8); backdrop-filter: blur(12px); border-radius: 32px; border: 1px solid white; padding: 48px; width: 100%; max-width: 480px; box-shadow: 0 20px 60px rgba(15,23,42,0.1); }
+        .input-box { width: 100%; padding: 14px 20px; border-radius: 16px; border: 1px solid #e2e8f0; background: white; margin-top: 8px; transition: 0.2s; }
+        .input-box:focus { border-color: #1d4ed8; outline: none; box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.1); }
+        .btn-submit { width: 100%; background: #0f172a; color: white; padding: 16px; border-radius: 16px; font-weight: 700; border: none; margin-top: 24px; cursor: pointer; }
+    </style>
+</head>
+<body>
+<div class="form-card text-center">
+    <h1 class="text-3xl font-bold [font-family:'Space_Grotesk'] mb-2">Trở thành Chủ nhà</h1>
+    <p class="text-slate-500 text-sm mb-10">Bắt đầu kinh doanh phòng trọ chuyên nghiệp ngay hôm nay.</p>
+
+    <form id="regForm" class="text-left">
+        <div class="mb-5">
+            <label class="text-sm font-bold text-slate-700">Số Căn cước công dân (CCCD)</label>
+            <input type="text" id="idCard" required class="input-box" placeholder="12 số căn cước">
+        </div>
+        <div class="mb-5">
+            <label class="text-sm font-bold text-slate-700">Địa chỉ thường trú</label>
+            <input type="text" id="address" required class="input-box" placeholder="Số nhà, tên đường, quận/huyện...">
+        </div>
+        <button type="submit" class="btn-submit">Gửi yêu cầu xác thực</button>
+    </form>
+</div>
+
+<script>
+    document.getElementById('regForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const token = localStorage.getItem('smartstay_token');
+        const res = await fetch('/api/landlord/requestToLandLord', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({
+                idCardNumber: document.getElementById('idCard').value,
+                address: document.getElementById('address').value
+            })
+        });
+        if (res.ok) { alert("Gửi yêu cầu thành công!"); window.location.href = '/myHome'; }
+    });
+</script>
+</body>
+</html>

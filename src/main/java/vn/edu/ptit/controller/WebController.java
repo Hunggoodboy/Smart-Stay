@@ -47,7 +47,20 @@ public class WebController {
     }
 
     @GetMapping("/rooms/{id}")
-    public String roomDetais(@PathVariable Long id){
+    public String roomDetail(@PathVariable Long id){
         return "roomDetail";
+    }
+
+    @GetMapping("/MyRentalRequest")
+    public String rentalRequest() {
+        return "rentalRequests";
+    }
+    @GetMapping("/adminVerify")
+    public String adminVerify() {
+        return "adminVerify";
+    }
+    @GetMapping("/registerLandLord")
+    public String registerLandLord() {
+        return "registerLandlord";
     }
 }

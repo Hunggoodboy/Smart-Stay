@@ -7,7 +7,7 @@ import lombok.*;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@Table(name = "admins")
+@Table(name = "admin")
 @DiscriminatorValue("ADMIN")
 @PrimaryKeyJoinColumn(name = "user_id")
 public class Admin extends User {

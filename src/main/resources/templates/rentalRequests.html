@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý yêu cầu thuê - Smart Stay</title>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/uno.css}">
+    <style>
+        /* CSS nội bộ để đồng bộ màu sắc với dự án của bạn */
+        :root {
+            --primary: #1d4ed8;
+            --amber: #fbbf24;
+            --slate: #0f172a;
+        }
+        body {
+            background: radial-gradient(circle at top, #fef3c7 0%, #ffffff 35%, #dbeafe 100%);
+            min-height: 100vh;
+            font-family: 'Be Vietnam Pro', sans-serif;
+        }
+        .request-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+        .request-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+        }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-PENDING { background: #eff6ff; color: #1d4ed8; }
+        .status-APPROVED { background: #ecfdf5; color: #059669; }
+        .status-REJECTED { background: #fef2f2; color: #dc2626; }
+
+        /* Modal chi tiết */
+        #detail-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body class="p-6">
+<div class="max-w-6xl mx-auto">
+    <header class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-slate-900 [font-family:'Space_Grotesk']">Yêu cầu thuê nhà</h1>
+            <p class="text-slate-500 text-sm">Quản lý và phản hồi các yêu cầu từ khách hàng tiềm năng.</p>
+        </div>
+        <a href="/" class="text-primary font-semibold hover:underline">← Về trang chủ</a>
+    </header>
+
+    <div id="request-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="col-span-full py-20 text-center text-slate-400">Đang tải danh sách yêu cầu...</div>
+    </div>
+</div>
+
+<div id="detail-overlay" onclick="closeDetail(event)">
+    <div id="detail-card" class="bg-white rounded-3xl p-8 w-full max-w-xl shadow-2xl m-4" onclick="event.stopPropagation()">
+        <div class="flex justify-between items-start mb-6">
+            <h2 class="text-2xl font-bold text-slate-900">Chi tiết yêu cầu</h2>
+            <button onclick="closeDetail()" class="text-slate-400 hover:text-slate-600">✕</button>
+        </div>
+        <div id="detail-content">
+        </div>
+        <div class="mt-8 flex gap-3" id="action-buttons">
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/rentalRequests.js}" src="../static/js/rentalRequests.js"></script>
+</body>
+</html>

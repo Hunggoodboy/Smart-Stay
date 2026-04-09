@@ -299,7 +299,7 @@
     // 4. Hàm gọi API gửi yêu cầu thuê phòng thật
     async function sendRequest() {
         const btn = document.getElementById('btnAction');
-
+        const token = localStorage.getItem('smartstay_token');
         // Đổi trạng thái UI báo hiệu đang xử lý
         btn.textContent = 'Đang gửi...';
         btn.disabled = true;
@@ -310,39 +310,32 @@
                 roomPostId: parseInt(roomId) // Biến roomId đã được lấy tự động ở đầu file
             };
 
-            // Nhớ đổi URL endpoint này cho khớp với @PostMapping trong Controller của bạn
-            const response = await fetch('/api/rental-requests', {
+            const response = await fetch('/api/customer/requests', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
-                    // Nếu dự án của bạn dùng JWT Token thì mở comment dòng dưới và truyền token vào:
-                    // 'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify(payload)
             });
 
-            if (response.ok) {
-                // Thành công
-                alert('Đã gửi yêu cầu thuê phòng thành công! Vui lòng chờ chủ nhà duyệt.');
-                btn.textContent = 'Đang chờ duyệt...';
-                btn.classList.add('btn-disabled');
-                btn.style.background = ''; // Xóa màu cũ nếu có
-            } else {
-                // Xử lý khi Backend trả về lỗi (ví dụ: đã gửi rồi, hoặc lỗi server)
-                const errorData = await response.json().catch(() => ({}));
-                alert('Lỗi: ' + (errorData.message || 'Không thể gửi yêu cầu lúc này.'));
-
-                // Phục hồi lại nút bấm để user thử lại
-                btn.textContent = 'Gửi yêu cầu thuê phòng';
-                btn.disabled = false;
+            if (!response.ok) {
+                if (response.status === 401) {
+                    alert("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại!");
+                    window.location.href = '/login';
+                    return;
+                }
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Gửi yêu cầu thất bại');
             }
 
-        } catch (error) {
-            console.error('Lỗi khi gọi API:', error);
-            alert('Lỗi kết nối mạng, vui lòng thử lại sau!');
+            const data = await response.json();
+            alert("Gửi yêu cầu thuê phòng thành công!");
 
-            // Phục hồi lại nút
-            btn.textContent = 'Gửi yêu cầu thuê phòng';
+        } catch (error) {
+            alert("Lỗi: " + error.message);
+        } finally {
+            btn.textContent = 'Gửi yêu cầu';
             btn.disabled = false;
         }
     }

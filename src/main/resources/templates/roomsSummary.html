@@ -8,6 +8,54 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" th:href="@{/css/roomsSummary.css}" />
+    <style>
+        /* Admin badge */
+        .nav-link-admin {
+            color: #b45309 !important;
+            background: #fffbeb !important;
+            border: 1px solid #fde68a;
+            display: none !important; /* ẩn mặc định, JS bật khi là ADMIN */
+            align-items: center;
+            gap: 5px;
+        }
+        .nav-link-admin:hover {
+            background: #fef3c7 !important;
+            border-color: #f59e0b;
+            color: #92400e !important;
+        }
+        .nav-link-admin.visible { display: inline-flex !important; }
+
+        /* User info chip */
+        .nav-user {
+            display: none; /* ẩn mặc định */
+            align-items: center; gap: 8px;
+            font-size: 14px; font-weight: 500;
+            color: var(--ink-2); padding: 6px 12px;
+            border-radius: var(--r-sm);
+            background: var(--tag-bg);
+            border: 1px solid var(--border);
+        }
+        .nav-user.visible { display: flex; }
+        .nav-user-avatar {
+            width: 26px; height: 26px; border-radius: 50%;
+            background: var(--brand); color: #fff;
+            font-size: 12px; font-weight: 700;
+            display: grid; place-items: center;
+        }
+
+        /* Logout button */
+        .btn-logout {
+            display: none; /* ẩn mặc định */
+            font-family: var(--font-body);
+            font-size: 14px; font-weight: 600;
+            color: #fff; background: #dc2626;
+            border: none; padding: 9px 20px;
+            border-radius: var(--r-sm); cursor: pointer;
+            transition: background .15s;
+        }
+        .btn-logout:hover { background: #b91c1c; }
+        .btn-logout.visible { display: inline-flex; align-items: center; }
+    </style>
 </head>
 <body>
 
@@ -21,14 +69,39 @@
             <span class="logo-text">Smart<em>Stay</em></span>
         </a>
 
+        <!-- ── Tất cả link điều hướng từ WebController ── -->
         <nav class="nav-links">
-            <a href="/rooms"       class="nav-link active">Khám phá</a>
-            <a href="/postRooms" class="nav-link">Đăng phòng cần cho thuê</a>
+            <a href="/"                 class="nav-link active">Khám phá</a>
+            <a href="/postRooms"        class="nav-link">Đăng phòng</a>
+            <a href="/MyRentalRequest"  class="nav-link">Yêu cầu thuê</a>
+            <a href="/myHome"           class="nav-link">Trang của tôi</a>
+            <a href="/payment"          class="nav-link">Thanh toán</a>
+            <a href="/chatMessage"      class="nav-link">Tin nhắn</a>
+            <a href="/registerLandLord" class="nav-link">Trở thành chủ nhà</a>
+
+            <!-- Chỉ hiện khi ADMIN – JS xử lý -->
+            <a href="/adminVerify" class="nav-link nav-link-admin" id="btnAdminVerify">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                Kiểm duyệt
+            </a>
         </nav>
 
+        <!-- ── Actions: mặc định hiện Login/Register ── -->
         <div class="nav-actions">
-            <a href="/login"    class="btn-ghost">Đăng nhập</a>
-            <a href="/register" class="btn-primary">Đăng ký</a>
+            <!-- Luôn hiện, JS ẩn khi đã login -->
+            <a href="/login"    class="btn-ghost"   id="btnLogin">Đăng nhập</a>
+            <a href="/register" class="btn-primary" id="btnRegister">Đăng ký</a>
+
+            <!-- Ẩn mặc định, JS hiện khi đã login -->
+            <span class="nav-user" id="navUser">
+                <span class="nav-user-avatar" id="userAvatar">U</span>
+                <span id="userName">User</span>
+            </span>
+            <button class="btn-logout" id="btnLogout">Đăng xuất</button>
         </div>
 
         <button class="hamburger" id="hamburger" aria-label="Menu">
@@ -63,10 +136,8 @@
      ══════════════════════════════ -->
 <main class="main-content">
 
-    <!-- Filter bar -->
     <div class="filter-bar">
         <div class="filter-row">
-
             <div class="filter-group">
                 <label class="filter-label">Loại nhà</label>
                 <div class="select-wrap">
@@ -81,7 +152,6 @@
                     <svg class="select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                 </div>
             </div>
-
             <div class="filter-group">
                 <label class="filter-label">Mức giá</label>
                 <div class="select-wrap">
@@ -95,7 +165,6 @@
                     <svg class="select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                 </div>
             </div>
-
             <div class="filter-group">
                 <label class="filter-label">Sắp xếp</label>
                 <div class="select-wrap">
@@ -107,17 +176,14 @@
                     <svg class="select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                 </div>
             </div>
-
             <button class="btn-reset" id="btnReset">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
                 Xoá lọc
             </button>
-
         </div>
         <div class="active-tags" id="activeTags"></div>
     </div>
 
-    <!-- Results header -->
     <div class="results-header">
         <div class="results-count" id="resultsCount">Đang tải…</div>
         <div class="view-toggle">
@@ -155,5 +221,63 @@
 </footer>
 
 <script th:src="@{/js/roomsSummary.js}"></script>
+<script>
+    /* ══════════════════════════════════════════════
+       NAV AUTH – kiểm tra JWT, chỉ xử lý:
+       1. Ẩn Login/Register khi đã login
+       2. Hiện tên user + nút Logout
+       3. Hiện nút Kiểm duyệt nếu là ADMIN
+       ══════════════════════════════════════════════ */
+    (function () {
+        function parseJwt(token) {
+            try {
+                const base64 = token.split('.')[1]
+                    .replace(/-/g, '+').replace(/_/g, '/');
+                return JSON.parse(atob(base64));
+            } catch { return null; }
+        }
+
+        const token   = localStorage.getItem('smartstay_token');
+        const payload = token ? parseJwt(token) : null;
+        const isLoggedIn = payload && (payload.exp * 1000 > Date.now());
+
+        if (!isLoggedIn) {
+            // Chưa login: giữ nguyên Login + Register, không làm gì thêm
+            return;
+        }
+
+        // ── Ẩn Login / Register ──────────────────────────────
+        document.getElementById('btnLogin').style.display    = 'none';
+        document.getElementById('btnRegister').style.display = 'none';
+
+        // ── Hiện tên user ────────────────────────────────────
+        const username = payload.sub || payload.username || payload.name || 'User';
+        document.getElementById('userAvatar').textContent = username.charAt(0).toUpperCase();
+        document.getElementById('userName').textContent   = username;
+        document.getElementById('navUser').classList.add('visible');
+        document.getElementById('btnLogout').classList.add('visible');
+
+        // ── Lấy roles ────────────────────────────────────────
+        // Sửa field name nếu backend dùng tên khác (roles / role / authorities)
+        const rawRoles = [].concat(
+            payload.roles || payload.authorities || payload.role || []
+        );
+        const roles   = rawRoles.map(r =>
+            (typeof r === 'string' ? r : (r.authority || '')).toUpperCase()
+        );
+        const isAdmin = roles.some(r => r.includes('ADMIN'));
+
+        // ── Hiện nút Kiểm duyệt nếu ADMIN ────────────────────
+        if (isAdmin) {
+            document.getElementById('btnAdminVerify').classList.add('visible');
+        }
+
+        // ── Logout ────────────────────────────────────────────
+        document.getElementById('btnLogout').addEventListener('click', function () {
+            localStorage.removeItem('smartstay_token');
+            window.location.href = '/login';
+        });
+    })();
+</script>
 </body>
 </html>
