@@ -11,13 +11,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import vn.edu.ptit.Filter.JwtFilter;
-import vn.edu.ptit.entity.User;
-import vn.edu.ptit.repository.UserRepository;
 
 @EnableWebSecurity
 @Configuration
@@ -30,7 +27,7 @@ public class securityConfig {
             "/css/**", "/js/**", "/images/**",
             "/room-posted", "/room-detail/**",
             "/api/user/login", "/api/user/register",
-            "/postRooms", "/MyRentalRequest", "/myHome", "/payment", "/chatMessage", "/adminVerify", "/registerLandLord"
+            "/postRooms", "/MyRentalRequest", "/myHome", "/payment", "/incident-report", "/chatMessage", "/adminVerify", "/registerLandLord"
     };
 
     private static final String[] LANDLORD_API_URLS = {

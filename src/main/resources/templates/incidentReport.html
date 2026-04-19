@@ -1,17 +1,49 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hóa Đơn & Thanh Toán</title>
+    <title>Báo cáo sự cố | Smart Stay</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/uno.css}">
-    <link rel="stylesheet" href="../static/css/uno.css">
+    <style>
+        .incident-select-menu {
+            padding: 6px;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.14), 0 2px 6px rgba(15, 23, 42, 0.08);
+        }
+
+        .incident-select-option {
+            appearance: none;
+            border: 0;
+            outline: 0;
+            box-shadow: none;
+            background: transparent;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .incident-select-option:hover {
+            background: #eff6ff;
+            color: #1e40af;
+        }
+
+        .incident-select-option:focus-visible {
+            background: #dbeafe;
+            color: #1d4ed8;
+            outline: 0;
+        }
+
+        .incident-select-option.is-active {
+            background: #dbeafe;
+            color: #1d4ed8;
+            font-weight: 600;
+        }
+    </style>
 </head>
 
 <body
@@ -20,6 +52,7 @@
         <div class="absolute -top-22 -left-22 h-64 w-64 rounded-full bg-amber-300/45 blur-3xl animate-pulse"></div>
         <div class="absolute -bottom-24 -right-20 h-80 w-80 rounded-full bg-sky-300/45 blur-3xl animate-pulse"></div>
     </div>
+
     <header class="fixed top-0 left-0 z-50 w-full border-b border-gray-200 bg-white font-sans shadow-sm">
         <div class="px-4 py-3 sm:px-6">
             <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -38,11 +71,14 @@
                         <a href="/myHome"
                             class="cursor-pointer rounded-lg px-3 py-2 text-slate-600 no-underline transition hover:bg-gray-50 hover:text-slate-900">Tổng
                             quan</a>
-                        <a class="cursor-pointer rounded-lg bg-slate-100 px-3 py-2 text-slate-900">Hóa đơn & thanh
-                            toán</a>
-                        <a class="cursor-pointer rounded-lg px-3 py-2 transition hover:bg-gray-50 hover:text-slate-900">Hợp
+                        <a href="/payment"
+                            class="cursor-pointer rounded-lg px-3 py-2 text-slate-600 no-underline transition hover:bg-gray-50 hover:text-slate-900">Hóa
+                            đơn & thanh toán</a>
+                        <a href="#"
+                            class="cursor-pointer rounded-lg px-3 py-2 text-slate-600 no-underline transition hover:bg-gray-50 hover:text-slate-900">Hợp
                             đồng</a>
-                        <a class="cursor-pointer rounded-lg px-3 py-2 transition hover:bg-gray-50 hover:text-slate-900">Báo
+                        <a href="/incident-report"
+                            class="cursor-pointer rounded-lg bg-slate-100 px-3 py-2 text-slate-900 no-underline">Báo
                             cáo sự cố</a>
                     </nav>
                 </div>
@@ -190,87 +226,159 @@
             </div>
         </div>
     </header>
-    <main id="tenant-dashboard" data-endpoint="/api/dashboard/tenant"
-        class="relative z-10 mx-auto max-w-7xl px-4 pt-28 pb-8 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col gap-6">
-                <div class="flex justify-between items-center mb-6 border-b border-gray-50 pb-4">
-                    <h2 class="text-lg font-bold text-gray-800 m-0 flex items-center gap-2">
-                        <div class="i-mdi-receipt-text-clock-outline text-blue-600 text-xl"></div>
-                        <span id="billingMonth">Chi tiết hóa đơn Tháng 3/2026</span>
-                    </h2>
-                    <span id="payment-status-chip"
-                        class="bg-red-50 text-red-600 px-3 py-1.5 rounded-full text-xs font-semibold border border-red-100 flex items-center gap-1.5">
-                        <span id="payment-status-dot" class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
-                        <span id="statusPreview">Chưa thanh toán</span>
-                    </span>
+
+    <main class="relative z-10 mx-auto max-w-7xl px-4 pt-28 pb-8 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-6 items-start">
+            <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
+                <div class="mb-10 max-w-3xl">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.14em] text-blue-600 m-0 mb-4">Báo cáo sự
+                        cố</p>
+                    <h1
+                        class="max-w-2xl text-[30px] leading-[1.12] md:text-[38px] md:leading-[1.08] font-extrabold tracking-[-0.03em] text-gray-900 m-0 mb-5 ">
+                        Gửi phản ánh nhanh cho chủ nhà
+                    </h1>
                 </div>
 
-                <div class="rounded-xl border border-gray-100 bg-gray-50 p-5 space-y-4">
-                    <div>
-                        <p id="dueDatePreview" class="text-sm text-gray-500 font-medium m-0 mb-1">Cần thanh toán trước
-                            05/04/2026
-                        </p>
-                        <p class="text-4xl font-extrabold text-gray-900 m-0 tracking-tight"><span
-                                id="totalAmountPreview">4.250.000</span> <span
-                                class="text-xl text-gray-400 font-bold">VNĐ</span>
-                        </p>
-                    </div>
-                </div>
-
-                <button id="pay-now-button"
-                    class="w-full bg-blue-600 hover:bg-blue-700 active:scale-95 text-white px-8 py-3.5 rounded-xl font-semibold transition-all shadow-md shadow-blue-200/50 flex items-center justify-center gap-2 cursor-pointer">
-                    <div class="i-mdi-credit-card-outline text-xl"></div>
-                    Thanh toán
-                </button>
-                <p class="m-0 text-xs text-gray-500 text-center">Bạn có thể thanh toán online hoặc tại quầy quản lý</p>
-            </div>
-
-            <div class="lg:col-span-2 space-y-6">
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                    <h3 class="m-0 text-base font-bold text-gray-800 mb-5">Thông tin hóa đơn</h3>
+                <form class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="rounded-xl border border-gray-100 bg-gray-50 p-4">
-                            <p class="m-0 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tiền điện</p>
-                            <p class="m-0 mt-1 text-xl font-bold text-gray-900"><span id="electricityAmount">0</span>
-                                VNĐ</p>
-                        </div>
-                        <div class="rounded-xl border border-gray-100 bg-gray-50 p-4">
-                            <p class="m-0 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tiền nước</p>
-                            <p class="m-0 mt-1 text-xl font-bold text-gray-900"><span id="waterAmount">0</span> VNĐ</p>
-                        </div>
-                        <div class="rounded-xl border border-gray-100 bg-gray-50 p-4">
-                            <p class="m-0 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tiền dịch vụ</p>
-                            <p class="m-0 mt-1 text-xl font-bold text-gray-900"><span id="serviceAmount">0</span> VNĐ
-                            </p>
-                        </div>
-                        <div class="rounded-xl border border-gray-100 bg-gray-50 p-4">
-                            <p class="m-0 text-xs font-semibold text-gray-500 uppercase tracking-wide">Trạng thái</p>
-                            <p id="status" class="m-0 mt-1 text-xl font-bold text-gray-900">Chưa thanh toán</p>
-                        </div>
-                        <div class="rounded-xl border border-gray-100 bg-gray-50 p-4">
-                            <p class="m-0 text-xs font-semibold text-gray-500 uppercase tracking-wide">Ngày tạo</p>
-                            <p id="createdAt" class="m-0 mt-1 text-base font-semibold text-gray-900">Chưa xác định
-                            </p>
-                        </div>
-                        <div class="rounded-xl border border-gray-100 bg-gray-50 p-4">
-                            <p class="m-0 text-xs font-semibold text-gray-500 uppercase tracking-wide">Hạn nộp</p>
-                            <p id="dueDate" class="m-0 mt-1 text-base font-semibold text-gray-900">Chưa xác định
-                            </p>
-                        </div>
+                        <label class="flex flex-col gap-2">
+                            <span class="text-[15px] font-semibold tracking-[-0.01em] text-gray-700">Loại sự cố</span>
+                            <div class="relative custom-select" data-select-root>
+                                <input type="hidden" name="incidentType" value="Hỏng thiết bị" data-select-value>
+                                <button type="button"
+                                    class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-left text-[15px] leading-6 text-gray-700 outline-none transition hover:bg-white focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                                    data-select-trigger aria-haspopup="listbox" aria-expanded="false">
+                                    <span data-select-label>Hỏng thiết bị</span>
+                                    <svg class="ml-3 shrink-0 text-gray-400" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                        stroke-linejoin="round" aria-hidden="true">
+                                        <path d="m6 9 6 6 6-6"></path>
+                                    </svg>
+                                </button>
+                                <div class="incident-select-menu hidden absolute z-30 mt-2 w-full overflow-hidden rounded-xl border border-gray-200 bg-white py-1"
+                                    data-select-menu role="listbox">
+                                    <button type="button"
+                                        class="incident-select-option is-active block w-full px-4 py-2.5 text-left text-[15px] text-slate-700 transition hover:bg-blue-50"
+                                        data-option-value="Hỏng thiết bị">Hỏng thiết bị</button>
+                                    <button type="button"
+                                        class="incident-select-option block w-full px-4 py-2.5 text-left text-[15px] text-slate-700 transition hover:bg-blue-50"
+                                        data-option-value="Rò rỉ nước">Rò rỉ nước</button>
+                                    <button type="button"
+                                        class="incident-select-option block w-full px-4 py-2.5 text-left text-[15px] text-slate-700 transition hover:bg-blue-50"
+                                        data-option-value="Mất điện">Mất điện</button>
+                                    <button type="button"
+                                        class="incident-select-option block w-full px-4 py-2.5 text-left text-[15px] text-slate-700 transition hover:bg-blue-50"
+                                        data-option-value="Vệ sinh / mùi / côn trùng">Vệ sinh / mùi / côn trùng</button>
+                                    <button type="button"
+                                        class="incident-select-option block w-full px-4 py-2.5 text-left text-[15px] text-slate-700 transition hover:bg-blue-50"
+                                        data-option-value="Khác">Khác</button>
+                                </div>
+                            </div>
+                        </label>
+
+                        <label class="flex flex-col gap-2">
+                            <span class="text-[15px] font-semibold tracking-[-0.01em] text-gray-700">Mức độ ưu
+                                tiên</span>
+                            <div class="relative custom-select" data-select-root>
+                                <input type="hidden" name="priority" value="Khẩn cấp" data-select-value>
+                                <button type="button"
+                                    class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-left text-[15px] leading-6 text-gray-700 outline-none transition hover:bg-white focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                                    data-select-trigger aria-haspopup="listbox" aria-expanded="false">
+                                    <span data-select-label>Khẩn cấp</span>
+                                    <svg class="ml-3 shrink-0 text-gray-400" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                        stroke-linejoin="round" aria-hidden="true">
+                                        <path d="m6 9 6 6 6-6"></path>
+                                    </svg>
+                                </button>
+                                <div class="incident-select-menu hidden absolute z-30 mt-2 w-full overflow-hidden rounded-xl border border-gray-200 bg-white py-1"
+                                    data-select-menu role="listbox">
+                                    <button type="button"
+                                        class="incident-select-option is-active block w-full px-4 py-2.5 text-left text-[15px] text-slate-700 transition hover:bg-blue-50"
+                                        data-option-value="Khẩn cấp">Khẩn cấp</button>
+                                    <button type="button"
+                                        class="incident-select-option block w-full px-4 py-2.5 text-left text-[15px] text-slate-700 transition hover:bg-blue-50"
+                                        data-option-value="Trong ngày">Trong ngày</button>
+                                    <button type="button"
+                                        class="incident-select-option block w-full px-4 py-2.5 text-left text-[15px] text-slate-700 transition hover:bg-blue-50"
+                                        data-option-value="Trong tuần">Trong tuần</button>
+                                </div>
+                            </div>
+                        </label>
                     </div>
-                    <div class="mt-5 rounded-xl border border-blue-100 bg-blue-50 p-4">
-                        <p class="m-0 text-xs font-semibold text-blue-600 uppercase tracking-wide">Tổng tiền</p>
-                        <p class="m-0 mt-1 text-2xl font-extrabold text-blue-700"><span
-                                id="totalAmount">4.250.000</span>
-                            VNĐ</p>
+
+                    <label class="flex flex-col gap-2">
+                        <span class="text-[15px] font-semibold tracking-[-0.01em] text-gray-700">Tiêu đề</span>
+                        <input type="text"
+                            class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-[15px] leading-6 outline-none focus:border-blue-500 focus:bg-white placeholder:text-gray-400">
+                    </label>
+
+                    <label class="flex flex-col gap-2">
+                        <span class="text-[15px] font-semibold tracking-[-0.01em] text-gray-700">Mô tả chi tiết</span>
+                        <textarea rows="6"
+                            placeholder="Mô tả tình trạng, vị trí, thời điểm phát hiện và thông tin cần thiết khác..."
+                            class="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-[15px] leading-7 outline-none focus:border-blue-500 focus:bg-white placeholder:text-gray-400"></textarea>
+                    </label>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label class="flex flex-col gap-2">
+                            <span class="text-[15px] font-semibold tracking-[-0.01em] text-gray-700">Phòng / khu
+                                vực</span>
+                            <input type="text"
+                                class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-[15px] leading-6 outline-none focus:border-blue-500 focus:bg-white placeholder:text-gray-400">
+                        </label>
+
+                        <label class="flex flex-col gap-2">
+                            <span class="text-[15px] font-semibold tracking-[-0.01em] text-gray-700">Số điện thoại liên
+                                hệ</span>
+                            <input type="text"
+                                class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-[15px] leading-6 outline-none focus:border-blue-500 focus:bg-white placeholder:text-gray-400">
+                        </label>
+                    </div>
+
+                    <label
+                        class="flex items-center gap-3 rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-4 py-4 text-[15px] leading-6 text-gray-600">
+                        <input type="checkbox"
+                            class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <span>Gửi kèm ảnh chụp hiện trạng nếu có</span>
+                    </label>
+
+                    <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                        <button type="button"
+                            class="rounded-xl bg-blue-600 px-6 py-3.5 text-[15px] font-semibold text-white shadow-md shadow-blue-200 transition hover:bg-blue-700 active:scale-[0.99]">Gửi
+                            báo cáo</button>
+                        <button type="reset"
+                            class="rounded-xl border border-gray-200 bg-white px-6 py-3.5 text-[15px] font-semibold text-slate-700 transition hover:border-gray-300 hover:bg-gray-50">Nhập
+                            lại</button>
+                    </div>
+                </form>
+            </section>
+
+            <aside class="space-y-6">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h2 class="text-[18px] leading-tight font-bold tracking-[-0.02em] text-gray-900 m-0 mb-4">Khi nào
+                        nên báo sự cố?</h2>
+                    <div class="space-y-3 text-[15px] leading-7 text-gray-600">
+                        <p class="m-0">• Thiết bị điện, nước, khóa cửa hoặc máy lạnh bị hỏng.</p>
+                        <p class="m-0">• Có rò rỉ, ngập nước, mất điện hoặc mùi bất thường.</p>
+                        <p class="m-0">• Phát sinh tình huống cần chủ nhà kiểm tra sớm.</p>
                     </div>
                 </div>
-            </div>
+
+                <div class="bg-[linear-gradient(to_right,_#1e3a8a,_#3b82f6)] rounded-2xl p-6 text-white shadow-md">
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.14em] text-blue-100 m-0 mb-2">Mẹo</p>
+                    <h3 class="text-[20px] leading-tight font-bold tracking-[-0.02em] m-0 mb-3">Mô tả càng rõ, xử lý
+                        càng nhanh</h3>
+                    <p class="text-[15px] leading-7 text-blue-50 m-0">Nếu có thể, hãy ghi thêm vị trí, thời gian phát
+                        hiện và ảnh minh
+                        họa để giảm thời gian trao đổi qua lại.</p>
+                </div>
+            </aside>
         </div>
     </main>
 
+    <script th:src="@{/js/incidentReport.js}" src="../static/js/incidentReport.js"></script>
+    <script th:src="@{/js/script.js}" src="../static/js/script.js"></script>
 </body>
-<script th:src="@{/js/script.js}" src="../static/js/script.js"></script>
 
 </html>
