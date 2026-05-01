@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Chi tiết hợp đồng | Smart Stay</title>
+    <link rel="stylesheet" href="/css/uno.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <style>
+        /* Giao diện tờ giấy A4 có viền xanh của Hùng */
+        .a4-paper {
+            width: 210mm; min-height: 297mm; margin: 40px auto;
+            background: white; padding: 20mm 25mm;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+            font-family: 'Times New Roman', serif; font-size: 18px; line-height: 1.6;
+            border-left: 15px solid #2563eb; /* VIỀN XANH ĐẬM */
+            position: relative;
+        }
+        .signature-font { font-family: 'Dancing Script', cursive; font-size: 38px; color: #1d4ed8; }
+        .data-field { font-weight: bold; color: #1a1a1a; border-bottom: 1px dashed #ddd; padding: 0 4px; }
+        @media print { .no-print { display: none; } .a4-paper { margin: 0; box-shadow: none; } }
+    </style>
+</head>
+<body class="bg-slate-200 pb-24">
+
+<div class="a4-paper">
+    <header class="text-center mb-12">
+        <h2 class="font-bold text-xl uppercase tracking-tight">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h2>
+        <p class="font-bold underline underline-offset-8">Độc lập - Tự do - Hạnh phúc</p>
+        <h1 class="text-4xl font-black mt-16 mb-2">HỢP ĐỒNG THUÊ NHÀ</h1>
+        <p class="text-slate-500 italic">Số: <span id="cCode" class="font-bold text-slate-800">...</span></p>
+    </header>
+
+    <div class="space-y-8">
+        <!-- BÊN A -->
+        <section>
+            <h3 class="font-bold italic underline text-blue-700 mb-2 uppercase tracking-wide">BÊN CHO THUÊ (BÊN A):</h3>
+            <div class="grid gap-1">
+                <p>Họ và tên: <span id="lanName" class="data-field">...</span></p>
+                <p>Số điện thoại: <span id="lanPhone" class="data-field">...</span></p>
+                <p>Email: <span id="lanEmail" class="data-field">...</span></p>
+            </div>
+        </section>
+
+        <!-- BÊN B -->
+        <section>
+            <h3 class="font-bold italic underline text-blue-700 mb-2 uppercase tracking-wide">BÊN THUÊ (BÊN B):</h3>
+            <div class="grid gap-1">
+                <p>Họ và tên: <span id="cusName" class="data-field">...</span></p>
+                <p>Số điện thoại: <span id="cusPhone" class="data-field">...</span></p>
+                <p>Email liên hệ: <span id="cusEmail" class="data-field">...</span></p>
+            </div>
+        </section>
+
+        <!-- NỘI DUNG -->
+        <section class="bg-blue-50/40 p-6 rounded-2xl border border-blue-100">
+            <h3 class="font-bold italic underline text-blue-700 mb-3 uppercase tracking-wide">NỘI DUNG THỎA THUẬN:</h3>
+            <ul class="space-y-2">
+                <li>Địa chỉ phòng: <span id="roomAddr" class="font-bold italic text-blue-900">...</span></li>
+                <li>Giá thuê tháng: <span id="rentPrice" class="text-xl font-black text-blue-700">...</span> <b>VNĐ</b></li>
+                <li>Tiền điện: <span id="vElec" class="font-bold">...</span> VNĐ/kWh | Nước: <span id="vWater" class="font-bold">...</span> VNĐ/m3</li>
+                <li>Ngày đóng tiền: <span class="font-bold italic">Ngày <span id="vDate">5</span> hàng tháng</span></li>
+            </ul>
+        </section>
+    </div>
+
+    <!-- CHỮ KÝ -->
+    <div class="mt-32 flex justify-between px-10">
+        <div class="text-center w-1/2">
+            <p class="font-bold uppercase mb-10">Đại diện Bên A</p>
+            <div id="sigA" class="signature-font h-16"></div>
+            <p class="font-bold" id="nameBottomA"></p>
+        </div>
+        <div class="text-center w-1/2">
+            <p class="font-bold uppercase mb-10">Đại diện Bên B</p>
+            <div id="sigB" class="h-16 flex items-center justify-center">
+                <span id="txtWait" class="text-slate-300 italic">Đang chờ ký tên...</span>
+            </div>
+            <p class="font-bold" id="nameBottomB"></p>
+        </div>
+    </div>
+</div>
+
+<!-- THANH ĐIỀU KHIỂN -->
+<div class="fixed bottom-0 left-0 right-0 p-6 bg-white/80 backdrop-blur-xl border-t border-slate-200 flex justify-center gap-4 no-print shadow-2xl">
+    <button onclick="location.href='/myContracts'" class="px-8 py-3 bg-slate-100 text-slate-700 rounded-2xl font-black hover:bg-slate-200 transition">← Danh sách</button>
+    <div id="btnGroup"></div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", async () => {
+        const contractId = window.location.pathname.split('/').pop();
+        const token = localStorage.getItem('smartstay_token');
+
+        try {
+            const res = await fetch(`/api/contract/get-my-contracts`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+
+            // KHẮC PHỤC LỖI: Tìm đúng hợp đồng trong mảng JSON
+            const c = data.find(item => item.id == contractId);
+            if (!c) throw new Error("Không thấy hợp đồng");
+
+            // Mapping dữ liệu từ JSON chính xác
+            document.getElementById("cCode").innerText = c.contractCode;
+            document.getElementById("lanName").innerText = c.landLord.fullName;
+            document.getElementById("lanPhone").innerText = c.landLord.phoneNumber;
+            document.getElementById("lanEmail").innerText = c.landLord.email;
+            document.getElementById("nameBottomA").innerText = c.landLord.fullName;
+            document.getElementById("sigA").innerText = c.landLord.fullName;
+
+            document.getElementById("cusName").innerText = c.customer.fullName;
+            document.getElementById("cusPhone").innerText = c.customer.phoneNumber;
+            document.getElementById("cusEmail").innerText = c.customer.email;
+            document.getElementById("nameBottomB").innerText = c.customer.fullName;
+
+            document.getElementById("roomAddr").innerText = c.roomAddress;
+            document.getElementById("rentPrice").innerText = c.monthlyRent.toLocaleString();
+            document.getElementById("vElec").innerText = c.electricityPricePerKwh.toLocaleString();
+            document.getElementById("vWater").innerText = c.waterPricePerM3.toLocaleString();
+            document.getElementById("vDate").innerText = c.billingDate;
+
+            // Xử lý nút bấm theo trạng thái
+            if (c.status === 'PENDING') {
+                const b = document.createElement("button");
+                b.className = "px-12 py-3 bg-blue-600 text-white rounded-2xl font-black shadow-xl hover:bg-blue-700 transform active:scale-95 transition";
+                b.innerText = "XÁC NHẬN KÝ HỢP ĐỒNG (BÊN B)";
+                b.onclick = () => confirmSign(contractId);
+                document.getElementById("btnGroup").appendChild(b);
+            } else {
+                document.getElementById("txtWait").remove();
+                document.getElementById("sigB").innerHTML = `<span class="signature-font">${c.customer.fullName}</span>`;
+                const b = document.createElement("button");
+                b.className = "px-12 py-3 bg-emerald-600 text-white rounded-2xl font-black shadow-xl hover:bg-emerald-700 transition";
+                b.innerText = "IN HỢP ĐỒNG / TẢI PDF";
+                b.onclick = () => window.print();
+                document.getElementById("btnGroup").appendChild(b);
+            }
+        } catch (e) { alert("Lỗi: Dữ liệu hợp đồng không hợp lệ hoặc đã bị xóa!"); }
+    });
+
+    async function confirmSign(id) {
+        if(!confirm("Bạn xác nhận đồng ý với mọi điều khoản trong hợp đồng?")) return;
+        const res = await fetch(`/api/contract/sign/${id}`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('smartstay_token')}` }
+        });
+        if(res.ok) { alert("Ký hợp đồng thành công!"); location.reload(); }
+    }
+</script>
+</body>
+</html>

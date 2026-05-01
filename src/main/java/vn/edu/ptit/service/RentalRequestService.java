@@ -72,5 +72,15 @@ public class RentalRequestService {
         }
         ).collect(Collectors.toList());
     }
-    
+    public ApiResponse changeRequestStatus(Long requestId, String status) {
+        RentalRequests rentalRequests = rentalRequestRepository.findById(requestId).orElseThrow();
+        try {
+            RentalRequests.Status newStatus = RentalRequests.Status.valueOf(status.toUpperCase());
+            rentalRequests.setStatus(newStatus);
+            rentalRequestRepository.save(rentalRequests);
+            return ApiResponse.builder().message("Cập nhật trạng thái yêu cầu thành công").success(true).build();
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.builder().message("Trạng thái không hợp lệ").success(false).build();
+        }
+    }
 }

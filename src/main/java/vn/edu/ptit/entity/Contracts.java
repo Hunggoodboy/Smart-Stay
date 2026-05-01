@@ -10,6 +10,9 @@ import java.util.List;
 
 @Entity
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @Table(name = "contracts")
 public class Contracts implements Serializable {
 
@@ -28,17 +31,12 @@ public class Contracts implements Serializable {
     @Column(name = "end_date")
     private LocalDate endDate;
 
-    @Column(name = "actual_end_date")
-    private LocalDate actualEndDate;
 
     @Column(name = "monthly_rent", nullable = false)
     private Double monthlyRent;
 
     @Column(name = "deposit_amount")
     private Double depositAmount;
-
-    @Column(name = "deposit_returned", nullable = false)
-    private Boolean depositReturned = Boolean.FALSE;
 
     @Column(name = "billing_date", nullable = false)
     private Long billingDate = 5L;
@@ -49,8 +47,6 @@ public class Contracts implements Serializable {
     @Column(name = "contract_file_url")
     private String contractFileUrl;
 
-    @Column(name = "termination_reason")
-    private String terminationReason;
 
     @Column(name = "num_occupants", nullable = false)
     private Long numOccupants = 1L;
@@ -86,17 +82,14 @@ public class Contracts implements Serializable {
     @JoinColumn(name = "landlord_id", nullable = false)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private LandLord landLord;
+    private User landLord;
 
-    /**
-     * Nhiều hợp đồng thuộc 1 Customer (người thuê)
-     * FK: contracts.customer_id → customers.id
-     */
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private Customer customer;
+    private User customer;
 
     /**
      * Nhiều hợp đồng thuộc 1 Phòng

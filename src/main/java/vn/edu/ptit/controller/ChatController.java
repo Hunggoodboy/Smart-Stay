@@ -10,6 +10,7 @@ import vn.edu.ptit.dto.Request.ChatMessageRequest;
 import vn.edu.ptit.dto.Response.ConversationResponse;
 import vn.edu.ptit.entity.User;
 import vn.edu.ptit.repository.UserRepository;
+import vn.edu.ptit.service.Authentication.AuthService;
 import vn.edu.ptit.service.ChatMessageService;
 
 import java.security.Principal;
@@ -20,18 +21,20 @@ import java.util.List;
 public class ChatController {
     private final ChatMessageService chatMessageService;
     private final UserRepository userRepository;
+    private final AuthService authService;
+
     @MessageMapping("/chat.private")
-    public void sendPrivateMessage(@Payload ChatMessageRequest chatMessageRequest, Principal principal) {
-        chatMessageService.sendPrivateMessage(chatMessageRequest, principal);
+    public void sendPrivateMessage(@Payload ChatMessageRequest chatMessageRequest) {
+        chatMessageService.sendPrivateMessage(chatMessageRequest);
     }
 
 
     @MessageMapping("/chat.history")
-    public void getChatHistory(@Payload ChatMessageRequest chatMessageRequest, Principal principal) {
+    public void getChatHistory(@Payload ChatMessageRequest chatMessageRequest) {
         Long senderId = chatMessageRequest.getSenderId();
         Long receiverId = chatMessageRequest.getReceiverId();
         if (senderId == null) {
-            User sender = userRepository.findByUsername(principal.getName())
+            User sender = userRepository.findById(authService.getCurrentUserId())
                     .orElseThrow(() -> new RuntimeException("Sender not found"));
             senderId = sender.getId();
         }

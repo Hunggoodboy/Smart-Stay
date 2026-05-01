@@ -43,19 +43,12 @@ public class ChatMessageService {
         chatMessage.setSentAt(LocalDateTime.now());
         chatMessagesRepository.save(chatMessage);
     }
-    public void sendPrivateMessage(ChatMessageRequest request, Principal principal) {
-        User sender = userRepository.findByUsername(principal.getName())
+    public void sendPrivateMessage(ChatMessageRequest request) {
+        User sender = userRepository.findById(request.getSenderId())
                 .orElseThrow(() -> new RuntimeException("Sender not found"));
 
-        // Nếu frontend không gửi receiverId → tự tìm chủ nhà
-        User receiver;
-        if (request.getReceiverId() == null || request.getReceiverId() == 0) {
-            receiver = roomsRepository.findLandLordByCustomerId(sender.getId())
-                    .orElseThrow(() -> new RuntimeException("Landlord not found"));
-        } else {
-            receiver = userRepository.findById(request.getReceiverId())
+        User receiver = userRepository.findById(request.getReceiverId())
                     .orElseThrow(() -> new RuntimeException("Receiver not found"));
-        }
 
         // Gán lại để saveMessage có đủ thông tin
         request.setSenderId(sender.getId());
@@ -76,9 +69,10 @@ public class ChatMessageService {
                 .sentAt(request.getSentAt())
                 .build();
 
-        messagingTemplate.convertAndSendToUser(receiver.getUsername(), "/queue/private", response);
-        messagingTemplate.convertAndSendToUser(sender.getUsername(),   "/queue/private", response);
+        messagingTemplate.convertAndSend("/topic/private/" + receiver.getId(), response);
+        messagingTemplate.convertAndSend("/topic/private/" + sender.getId(), response);
     }
+
     public List<ConversationResponse> getConversations() {
         Long userId = authService.getCurrentUserId();
         List<ChatMessages> chatMessages = chatMessagesRepository.findLatestMessagePerConversation(userId);
@@ -118,15 +112,13 @@ public class ChatMessageService {
         User receiver = userRepository.findById(receiverId)
                 .orElseThrow(() -> new RuntimeException("Receiver not found"));
         // Lấy tin nhắn cũ đến người nhận qua WebSocket
-        messagingTemplate.convertAndSendToUser(
-                receiver.getUsername(),
-                "/queue/history",
+        messagingTemplate.convertAndSend(
+                "/topic/history/" + receiver.getId(),
                 response
         );
         // Gửi tin nhắn đến người gửi qua WebSocket
-        messagingTemplate.convertAndSendToUser(
-                sender.getUsername(),
-                "/queue/history",
+        messagingTemplate.convertAndSend(
+                "/topic/history/" +  sender.getId(),
                 response
         );
     }

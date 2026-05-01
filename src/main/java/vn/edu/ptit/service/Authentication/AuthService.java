@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Service;
@@ -103,14 +104,38 @@ public class AuthService {
     }
     public Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if(authentication == null) {
+            throw new RuntimeException("Authentication object is null");
+        }
+        if(authentication instanceof org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) {
+            OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
+            return userRepository.findByEmail(oauth2User.getAttribute("email")).orElseThrow(() -> new RuntimeException("User not found with email: " + oauth2User.getAttribute("email"))).getId();
+        }
         if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
             throw new IllegalStateException("Người dùng chưa đăng nhập");
         }
         return Long.parseLong(authentication.getName());
     }
+
     public LandLord getCurrentLandLord() {
         Long currentUserId = getCurrentUserId();
         LandLord landLord = landLordRepository.findLandLordById(currentUserId).orElseThrow(() -> new RuntimeException("Bạn chưa đăng ký diện chủ nhà, vui lòng gửi yêu cầu đăng ký bạn là chủ nhà trước"));
         return landLord;
+    }
+
+    public Long getCurrentUserIdOrNull() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // Nếu không có ai, hoặc là anonymousUser (Khách vãng lai) -> Trả về null
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            return null;
+        }
+
+        try {
+            // Nếu đã giải mã thành công ở JwtFilter, tên đăng nhập sẽ nằm ở đây
+            return Long.parseLong(authentication.getName());
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

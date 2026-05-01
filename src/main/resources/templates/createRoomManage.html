@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Tạo Quản Lý Phòng | SmartStay</title>
+    <link rel="stylesheet" href="/css/uno.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root { --brand: #316bf2; --surface: #faf9f7; --border: #e5e7eb; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--surface); color: #1f2937; }
+        .card { background: #fff; border: 1px solid var(--border); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .input-group label { display: block; font-size: 13px; font-weight: 700; color: #6b7280; margin-bottom: 6px; text-transform: uppercase; }
+        .input-group input, .input-group select, .input-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 12px; outline: none; transition: 0.2s; font-family: inherit; }
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--brand); box-shadow: 0 0 0 4px rgba(49, 107, 242, 0.1); }
+        .btn-submit { background: var(--brand); color: white; padding: 16px; border-radius: 14px; font-weight: 700; width: 100%; cursor: pointer; border: none; font-size: 16px; }
+        .section-title { font-size: 18px; font-weight: 700; color: #1f2937; border-bottom: 2px solid var(--surface); padding-bottom: 8px; margin-top: 24px; margin-bottom: 16px; }
+    </style>
+</head>
+<body class="p-6 md:p-12">
+<div class="max-w-4xl mx-auto">
+    <header class="mb-10 text-center">
+        <h1 style="font-family: 'Fraunces', serif;" class="text-4xl mb-2">Quản lý phòng mới</h1>
+        <p class="text-slate-500">Thiết lập trạng thái thuê và gán khách hàng cho phòng</p>
+    </header>
+
+    <form id="manageForm" class="card p-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- PHẦN 1: THÔNG TIN CƠ BẢN -->
+            <div class="md:col-span-2 section-title">1. Thông tin cơ bản</div>
+
+            <div class="input-group">
+                <label>Số phòng / Tiêu đề (*)</label>
+                <input type="text" id="roomNumber" required>
+            </div>
+            <div class="input-group">
+                <label>Loại phòng</label>
+                <select id="roomType">
+                    <option value="PHONG_TRO">Phòng trọ</option>
+                    <option value="CHUNG_CU_MINI">Chung cư mini</option>
+                    <option value="CHUNG_CU">Chung cư</option>
+                    <option value="STUDIO">Studio</option>
+                    <option value="NHA_NGUYEN_CAN">Nhà nguyên căn</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Diện tích (m2)</label>
+                <input type="number" id="areaM2" step="0.1">
+            </div>
+            <div class="input-group">
+                <label>Sức chứa tối đa (người)</label>
+                <input type="number" id="maxOccupants">
+            </div>
+            <div class="input-group md:col-span-2">
+                <label>Mô tả chi tiết</label>
+                <textarea id="description" rows="3" placeholder="Nhập mô tả về phòng..."></textarea>
+            </div>
+
+            <!-- PHẦN 2: ĐỊA CHỈ -->
+            <div class="md:col-span-2 section-title">2. Vị trí / Địa chỉ</div>
+            <div class="input-group md:col-span-2">
+                <label>Địa chỉ chi tiết (Số nhà, đường) (*)</label>
+                <input type="text" id="address" required>
+            </div>
+            <div class="input-group">
+                <label>Phường / Xã</label>
+                <input type="text" id="ward">
+            </div>
+            <div class="input-group">
+                <label>Quận / Huyện</label>
+                <input type="text" id="district">
+            </div>
+            <div class="input-group">
+                <label>Tỉnh / Thành phố</label>
+                <input type="text" id="city">
+            </div>
+
+            <!-- PHẦN 3: TÀI CHÍNH & TRẠNG THÁI -->
+            <div class="md:col-span-2 section-title">3. Chi phí & Trạng thái</div>
+            <div class="input-group">
+                <label>Trạng thái phòng</label>
+                <select id="status">
+                    <option value="AVAILABLE">Sẵn sàng</option>
+                    <option value="RENTED">Đã cho thuê</option>
+                    <option value="MAINTENANCE">Bảo trì</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Giá thuê gốc (VNĐ/tháng) (*)</label>
+                <input type="number" id="rentPrice" required>
+            </div>
+            <div class="input-group">
+                <label>Tiền điện (VNĐ/kWh)</label>
+                <input type="number" id="elecPrice" value="0">
+            </div>
+            <div class="input-group">
+                <label>Tiền nước (VNĐ/m3)</label>
+                <input type="number" id="waterPrice" value="0">
+            </div>
+            <div class="input-group">
+                <label>Phí Internet (VNĐ/tháng)</label>
+                <input type="number" id="internetFee" value="0">
+            </div>
+            <div class="input-group">
+                <label>Phí gửi xe (VNĐ/tháng)</label>
+                <input type="number" id="parkingFee" value="0">
+            </div>
+            <div class="input-group md:col-span-2">
+                <label>Phí vệ sinh (VNĐ/tháng)</label>
+                <input type="number" id="cleaningFee" value="0">
+            </div>
+
+            <!-- PHẦN 4: THÔNG TIN KHÁCH HÀNG & HỢP ĐỒNG -->
+            <div class="md:col-span-2 section-title">4. Gán Khách thuê (Tùy chọn)</div>
+            <div class="input-group">
+                <label>Email người thuê</label>
+                <input type="email" id="customerEmail" placeholder="khachhang@gmail.com">
+                <p class="text-[11px] text-slate-400 mt-2 italic">* Tự động đổi trạng thái sang "Đã cho thuê" nếu nhập.</p>
+            </div>
+            <div class="input-group">
+                <label>Mã hợp đồng</label>
+                <input type="text" id="contractCode" placeholder="VD: HD-2026-001">
+            </div>
+
+        </div>
+
+        <div class="mt-10">
+            <button type="submit" class="btn-submit">LƯU THÔNG TIN PHÒNG</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // LẤY DỮ LIỆU TỪ TRANG CHI TIẾT CHUYỂN SANG (NẾU CÓ)
+        const rawData = sessionStorage.getItem('temp_room_data');
+        if (rawData) {
+            const data = JSON.parse(rawData);
+
+            // Map dữ liệu vào form
+            document.getElementById('roomNumber').value = data.roomNumber || '';
+            document.getElementById('address').value = data.address || '';
+            document.getElementById('areaM2').value = data.areaM2 || '';
+            document.getElementById('maxOccupants').value = data.maxOccupants || '';
+            document.getElementById('rentPrice').value = data.rentPrice || '';
+            document.getElementById('elecPrice').value = data.electricityPricePerKwh || 0;
+            document.getElementById('waterPrice').value = data.waterPricePerM3 || 0;
+
+            // Xử lý map select box loại phòng
+            const typeMap = {
+                'Phòng trọ': 'PHONG_TRO', 'Chung cư mini': 'CHUNG_CU_MINI',
+                'Chung cư': 'CHUNG_CU', 'Studio': 'STUDIO', 'Nhà nguyên căn': 'NHA_NGUYEN_CAN'
+            };
+            if(data.roomType && typeMap[data.roomType]) {
+                document.getElementById('roomType').value = typeMap[data.roomType];
+            }
+        }
+    });
+
+    document.getElementById('manageForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const token = localStorage.getItem('smartstay_token');
+
+        // MAP TOÀN BỘ GIÁ TRỊ TỪ FORM SANG DTO
+        const payload = {
+            roomNumber: document.getElementById('roomNumber').value,
+            roomType: document.getElementById('roomType').value,
+            description: document.getElementById('description').value,
+            contractCode: document.getElementById('contractCode').value,
+            address: document.getElementById('address').value,
+            ward: document.getElementById('ward').value,
+            district: document.getElementById('district').value,
+            city: document.getElementById('city').value,
+            areaM2: parseFloat(document.getElementById('areaM2').value) || null,
+            maxOccupants: parseInt(document.getElementById('maxOccupants').value) || null,
+            rentPrice: parseFloat(document.getElementById('rentPrice').value) || 0,
+            electricityPricePerKwh: parseFloat(document.getElementById('elecPrice').value) || 0,
+            waterPricePerM3: parseFloat(document.getElementById('waterPrice').value) || 0,
+            internetFee: parseFloat(document.getElementById('internetFee').value) || 0,
+            parkingFee: parseFloat(document.getElementById('parkingFee').value) || 0,
+            cleaningFee: parseFloat(document.getElementById('cleaningFee').value) || 0,
+            status: document.getElementById('status').value,
+            customerEmail: document.getElementById('customerEmail').value
+        };
+
+        try {
+            const res = await fetch('/api/room-management/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                alert("Tạo quản lý phòng thành công!");
+                window.location.href = '/my-rooms';
+            } else {
+                const err = await res.json();
+                alert("Lỗi: " + err.message);
+            }
+        } catch (error) {
+            alert("Không thể kết nối Server.");
+        }
+    };
+</script>
+</body>
+</html>

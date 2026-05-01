@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Hợp đồng của tôi | Smart Stay</title>
+    <link rel="stylesheet" href="/css/uno.css">
+    <style>
+        .contract-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .contract-card:hover { transform: translateY(-4px); }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen p-4 md:p-10">
+<div class="max-w-4xl mx-auto">
+    <header class="mb-10">
+        <h1 class="text-3xl font-black text-slate-900 tracking-tight">Hợp đồng của tôi</h1>
+        <p class="text-slate-500 font-medium">Quản lý và theo dõi các thỏa thuận thuê nhà của bạn</p>
+    </header>
+
+    <div id="contractList" class="grid gap-5">
+        <!-- Shimmer Loading -->
+        <div class="h-40 bg-white rounded-2xl border-l-4 border-blue-500 animate-pulse"></div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", async () => {
+        const token = localStorage.getItem('smartstay_token');
+        try {
+            const response = await fetch('/api/contract/get-my-contracts', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const contracts = await response.json();
+            renderContracts(contracts);
+        } catch (error) {
+            document.getElementById("contractList").innerHTML = `
+                    <div class="p-6 bg-red-50 text-red-600 rounded-2xl border-2 border-red-100 font-bold text-center">
+                        ⚠️ Không thể kết nối dữ liệu. Vui lòng kiểm tra lại Server!
+                    </div>`;
+        }
+    });
+
+    function renderContracts(contracts) {
+        const container = document.getElementById("contractList");
+        if (!contracts.length) {
+            container.innerHTML = `<div class="text-center py-20 text-slate-400 font-medium bg-white rounded-3xl border-2 border-dashed">Bạn chưa có hợp đồng nào.</div>`;
+            return;
+        }
+
+        container.innerHTML = contracts.map(c => `
+                <div onclick="location.href='/contractDetail/${c.id}'"
+                     class="contract-card bg-white p-6 rounded-2xl shadow-sm border-l-4 border-blue-500 flex flex-col md:flex-row justify-between items-center gap-6 cursor-pointer group">
+
+                    <div class="flex-1 w-full space-y-4">
+                        <div class="flex items-center gap-3">
+                            <span class="text-[10px] font-black bg-blue-50 text-blue-600 px-2 py-1 rounded uppercase tracking-tighter">${c.contractCode}</span>
+                            <span class="text-[10px] font-black px-2 py-1 rounded ${c.status === 'PENDING' ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}">
+                                ${c.status === 'PENDING' ? 'CHỜ XÁC NHẬN' : 'ĐÃ KÝ KẾT'}
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Bên cho thuê (A)</p>
+                                <p class="text-slate-800 font-extrabold">${c.landLord?.fullName || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Bên thuê (B)</p>
+                                <p class="text-blue-600 font-extrabold">${c.customer?.fullName || 'N/A'}</p>
+                            </div>
+                        </div>
+
+                        <div class="pt-2 border-t border-slate-50 flex items-center gap-4 text-xs font-bold text-slate-500">
+                            <span>🏠 ${c.roomAddress || 'Phòng chưa gán'}</span>
+                            <span>💵 ${c.monthlyRent.toLocaleString()} VNĐ/tháng</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 text-blue-500 font-black group-hover:gap-4 transition-all">
+                        Xem chi tiết <span class="text-xl">→</span>
+                    </div>
+                </div>
+            `).join('');
+    }
+</script>
+</body>
+</html>

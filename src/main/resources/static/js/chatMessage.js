@@ -1,39 +1,65 @@
+const token = localStorage.getItem('smartstay_token');
+const receiverId = localStorage.getItem('chat_receiver_id'); // Lấy tự động ID người nhận
+let senderId = null;
+
 const stompClient = new StompJs.Client({
-    webSocketFactory: () => new SockJS('/gs-guide-websocket')
+    webSocketFactory: () => new SockJS('/gs-guide-websocket'),
+    debug: function (str) { console.log(str); }
 });
 
-// ==================== LOAD CURRENT USER ====================
+// ==================== KHỞI TẠO ====================
+async function initChat() {
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+    if (!receiverId) {
+        alert('Không tìm thấy thông tin đối tác trò chuyện!');
+        window.history.back();
+        return;
+    }
 
-async function loadCurrentUserId() {
-    const res = await fetch('/api/user/myid', {
-        headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const id = await res.json();
-    $('#sender-id').val(id);
+    try {
+        // Lấy ID của chính mình
+        const res = await fetch('/api/user/myid', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        senderId = await res.json();
+
+        // Cập nhật UI cơ bản
+        document.getElementById('headerName').innerText = `Đối tác #${receiverId}`;
+        document.getElementById('headerAvatar').innerText = "C";
+
+        // Bắt đầu kết nối WebSocket
+        stompClient.activate();
+    } catch (error) {
+        alert("Lỗi xác thực người dùng");
+    }
 }
 
-// ==================== CONNECT / DISCONNECT ====================
-
+// ==================== WEBSOCKET EVENTS ====================
 stompClient.onConnect = (frame) => {
-    console.log('Connected: ' + frame);
-    setConnected(true);
+    updateStatus(true);
 
-    // Subscribe nhận tin nhắn mới
-    stompClient.subscribe('/user/queue/private', (message) => {
+    // Đăng ký nhận tin nhắn mới
+    stompClient.subscribe('/topic/private/' + senderId, (message) => {
         const msg = JSON.parse(message.body);
-        showMessage(msg);
+        renderMessage(msg);
     });
 
-    // Subscribe nhận lịch sử tin nhắn
-    stompClient.subscribe('/user/queue/history', (message) => {
+    // Đăng ký nhận lịch sử
+    stompClient.subscribe('/topic/history/' + senderId, (message) => {
         const messages = JSON.parse(message.body);
-        messages.forEach(msg => showMessage(msg));
-    });
+        const area = document.getElementById('messagesArea');
+        area.innerHTML = ''; // Xóa chữ "Đang tải"
 
-    // Load lịch sử ngay sau khi connect
-    const senderId = $('#sender-id').val();
-    const receiverId = $('#receiver-id').val();
-    if (senderId && receiverId) {
+        if(messages.length === 0) {
+            area.innerHTML = '<div style="text-align:center; color:#94a3b8; font-size:13px; margin-top:20px;">Hãy gửi lời chào đầu tiên! 👋</div>';
+        } else {
+            messages.forEach(msg => renderMessage(msg));
+        }
+    });
+    setTimeout(() => {
         stompClient.publish({
             destination: '/app/chat.history',
             body: JSON.stringify({
@@ -41,81 +67,26 @@ stompClient.onConnect = (frame) => {
                 receiverId: parseInt(receiverId)
             })
         });
-    }
+    }, 500);
+    // GỌI LỊCH SỬ NGAY KHI KẾT NỐI XONG
+    stompClient.publish({
+        destination: '/app/chat.history',
+        body: JSON.stringify({
+            senderId: parseInt(senderId),
+            receiverId: parseInt(receiverId)
+        })
+    });
 };
 
-stompClient.onWebSocketError = (error) => {
-    console.error('WebSocket error:', error);
-    setConnected(false);
-};
+stompClient.onDisconnect = () => updateStatus(false);
+stompClient.onWebSocketError = () => updateStatus(false);
 
-stompClient.onStompError = (frame) => {
-    console.error('STOMP error:', frame.headers['message']);
-    setConnected(false);
-};
-
-stompClient.onDisconnect = () => {
-    setConnected(false);
-};
-
-function connect() {
-    stompClient.activate();
-}
-
-function disconnect() {
-    stompClient.deactivate();
-    setConnected(false);
-}
-
-// ==================== UI STATE ====================
-
-function setConnected(connected) {
-    const banner = document.getElementById('connection-banner');
-    const bannerText = document.getElementById('banner-text');
-    const bannerBtn = document.getElementById('banner-connect-btn');
-    const status = document.getElementById('connection-status');
-    const connectBtn = document.getElementById('connect-btn');
-    const disconnectBtn = document.getElementById('disconnect-btn');
-
-    if (connected) {
-        banner.classList.add('connected');
-        bannerText.textContent = 'Đã kết nối WebSocket';
-        bannerBtn.textContent = 'Ngắt';
-        bannerBtn.onclick = disconnect;
-        status.textContent = 'Online';
-        status.className = 'header-status online';
-        connectBtn.classList.add('active');
-        connectBtn.disabled = true;
-        disconnectBtn.disabled = false;
-    } else {
-        banner.classList.remove('connected');
-        bannerText.textContent = 'WebSocket chưa kết nối';
-        bannerBtn.textContent = 'Kết nối';
-        bannerBtn.onclick = connect;
-        status.textContent = 'Offline';
-        status.className = 'header-status';
-        connectBtn.classList.remove('active');
-        connectBtn.disabled = false;
-        disconnectBtn.disabled = true;
-    }
-}
-
-// ==================== SEND MESSAGE ====================
-
+// ==================== GỬI VÀ HIỂN THỊ ====================
 function sendMessage() {
-    const content = $('#message-input').val().trim();
-    const receiverId = $('#receiver-id').val();
-    const senderId = $('#sender-id').val();
+    const input = document.getElementById('messageInput');
+    const content = input.value.trim();
 
-    if (!content) return;
-    if (!receiverId || !senderId) {
-        alert('Vui lòng nhập Receiver ID!');
-        return;
-    }
-    if (!stompClient.connected) {
-        alert('Chưa kết nối WebSocket!');
-        return;
-    }
+    if (!content || !stompClient.connected) return;
 
     const request = {
         senderId: parseInt(senderId),
@@ -130,90 +101,51 @@ function sendMessage() {
         body: JSON.stringify(request)
     });
 
-    $('#message-input').val('');
-    autoResizeTextarea();
+    input.value = '';
+    input.style.height = 'auto'; // Reset chiều cao ô nhập
 }
 
-// ==================== SHOW MESSAGE ====================
+function renderMessage(msg) {
+    const isMe = msg.senderId === senderId;
+    const area = document.getElementById('messagesArea');
 
-function showMessage(msg) {
-    const currentUserId = parseInt($('#sender-id').val());
-    const isMe = msg.senderId === currentUserId;
+    // Nếu có tin nhắn mới, xóa dòng "Hãy gửi lời chào"
+    if(area.innerHTML.includes('Hãy gửi lời chào')) area.innerHTML = '';
 
-    $('#empty-state').hide();
+    const timeString = msg.sentAt
+        ? new Date(msg.sentAt).toLocaleTimeString('vi-VN', {hour: '2-digit', minute: '2-digit'})
+        : new Date().toLocaleTimeString('vi-VN', {hour: '2-digit', minute: '2-digit'});
 
-    if (!isMe) {
-        $('#receiver-name').text('User ' + msg.senderId);
-        $('#receiver-avatar').text(String(msg.senderId).charAt(0).toUpperCase());
+    const html = `
+        <div class="msg-row ${isMe ? 'me' : 'them'}">
+            <div class="bubble">${msg.content}</div>
+            <div class="time">${timeString}</div>
+        </div>
+    `;
+
+    area.insertAdjacentHTML('beforeend', html);
+    area.scrollTop = area.scrollHeight; // Tự động cuộn xuống tin nhắn mới nhất
+}
+
+function updateStatus(isOnline) {
+    const dot = document.getElementById('statusDot');
+    const text = document.getElementById('statusText');
+    if (isOnline) {
+        dot.classList.add('online');
+        text.innerText = 'Đang hoạt động';
+    } else {
+        dot.classList.remove('online');
+        text.innerText = 'Mất kết nối';
     }
-
-    const time = msg.sentAt
-        ? new Date(msg.sentAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
-        : new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-
-    const wrapper = $('<div>').addClass('msg-wrapper').addClass(isMe ? 'me' : 'them');
-    const bubble = $('<div>').addClass('msg-bubble').text(msg.content);
-    const meta = $('<div>').addClass('msg-meta').text(time);
-
-    wrapper.append(bubble).append(meta);
-    $('#typing-indicator').before(wrapper);
-
-    const messagesEl = document.getElementById('messages');
-    messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 
-// ==================== TEXTAREA AUTO RESIZE ====================
-
-function autoResizeTextarea() {
-    const textarea = document.getElementById('message-input');
-    textarea.style.height = 'auto';
-    textarea.style.height = Math.min(textarea.scrollHeight, 100) + 'px';
-}
-
-// ==================== EVENT LISTENERS ====================
-
-$(function () {
-    // Load current user ID ngay khi trang load
-    loadCurrentUserId().then(() => {
-        connect();
-    });
-
-    $('#connect-btn').click(connect);
-    $('#disconnect-btn').click(disconnect);
-    $('#banner-connect-btn').click(connect);
-
-    $('#send-btn').click(sendMessage);
-
-    $('#message-input').on('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
-
-    $('#message-input').on('input', autoResizeTextarea);
-
-    // Load lại lịch sử khi đổi receiver
-    $('#receiver-id').on('input', function () {
-        const id = $(this).val();
-        if (id) {
-            $('#receiver-name').text('User ' + id);
-            $('#receiver-avatar').text(id.charAt(0));
-
-            if (stompClient.connected && $('#sender-id').val()) {
-                $('#messages').find('.msg-wrapper').remove();
-                $('#empty-state').show();
-                stompClient.publish({
-                    destination: '/app/chat.history',
-                    body: JSON.stringify({
-                        senderId: parseInt($('#sender-id').val()),
-                        receiverId: parseInt(id)
-                    })
-                });
-            }
-        } else {
-            $('#receiver-name').text('Chọn người nhận');
-            $('#receiver-avatar').text('?');
-        }
-    });
+// Bắt sự kiện Enter để gửi tin nhắn
+document.getElementById('messageInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
 });
+
+// Khởi chạy khi vào trang
+document.addEventListener('DOMContentLoaded', initChat);

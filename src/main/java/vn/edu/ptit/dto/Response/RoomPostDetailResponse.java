@@ -71,8 +71,8 @@ public class RoomPostDetailResponse {
      */
     private String myRequestStatus;
 
-    // ==================== INNER CLASSES ====================
+    // ==================== Sở hữu ====================
 
-
+    private boolean isOwner;
 
 }

@@ -110,110 +110,107 @@ async function loadLandlordPosts() {
     }
 }
 
+// Thay thế toàn bộ hàm renderPostCards cũ bằng hàm này[cite: 18]
 function renderPostCards(posts) {
     const listEl = document.getElementById('landlord-posts-list');
     if (!listEl) return;
 
     if (!Array.isArray(posts) || posts.length === 0) {
         listEl.innerHTML = `
-            <div class="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-5 py-8 text-center">
+            <div class="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-5 py-8 text-center col-span-full">
                 <p class="text-base font-semibold text-gray-800 m-0">Chưa có bài đăng nào</p>
                 <p class="mt-2 text-sm text-gray-500">Tạo bài đăng đầu tiên để bắt đầu quản lý nhà của bạn.</p>
                 <div class="mt-4">
-                    <a href="/postRooms" class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white no-underline hover:bg-slate-800">Đăng nhà mới</a>
+                    <a href="/postRooms" class="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white no-underline hover:bg-blue-700">Đăng nhà mới</a>
                 </div>
             </div>`;
         return;
     }
 
+    // Đảm bảo listEl hiển thị dưới dạng Grid
+    listEl.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4';
     listEl.innerHTML = '';
+
     posts.forEach(p => {
         const statusMeta = getStatusMeta(p.status);
         const card = document.createElement('article');
-        card.className = 'group overflow-hidden rounded-[1.5rem] border border-gray-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.05)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(15,23,42,0.08)]';
 
-        const shell = document.createElement('div');
-        shell.className = 'grid gap-0 md:grid-cols-[180px_minmax(0,1fr)]';
+        // Cấu trúc Card: Ảnh trên, chữ dưới
+        card.className = 'flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md hover:-translate-y-1';
 
+        // 1. Phần Ảnh (Thumbnail)
         const thumbWrap = document.createElement('div');
-        thumbWrap.className = 'relative h-48 md:h-full bg-slate-100';
+        thumbWrap.className = 'relative h-48 w-full bg-slate-100 border-b border-gray-100';
+
         const thumb = document.createElement('img');
         thumb.src = p.thumbnailUrl || '../static/images/default-room.png';
-        thumb.alt = p.title || '';
+        thumb.alt = p.title || 'Ảnh phòng';
         thumb.className = 'h-full w-full object-cover';
-        const overlay = document.createElement('div');
-        overlay.className = 'absolute inset-0 bg-gradient-to-t from-slate-950/30 via-transparent to-transparent';
+
         const statusTag = document.createElement('span');
-        statusTag.className = `absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm ${statusMeta.badgeClass}`;
+        statusTag.className = `absolute left-3 top-3 rounded-md px-2.5 py-1 text-[11px] font-bold text-white shadow-sm ${statusMeta.badgeClass}`;
         statusTag.textContent = statusMeta.label;
 
         thumbWrap.appendChild(thumb);
-        thumbWrap.appendChild(overlay);
         thumbWrap.appendChild(statusTag);
 
+        // 2. Phần Nội dung (Body)
         const body = document.createElement('div');
-        body.className = 'flex flex-col justify-between gap-4 p-5 md:p-6';
+        body.className = 'flex flex-1 flex-col p-5';
 
         const top = document.createElement('div');
-        top.className = 'space-y-3';
 
-        const info = document.createElement('div');
-        info.innerHTML = `
-            <div class="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">
-                <span>${escapeHtml(p.roomType || 'Loại phòng')}</span>
-                <span class="h-1 w-1 rounded-full bg-gray-300"></span>
-                <span>${p.areaM2 ? `${p.areaM2} m²` : 'Chưa rõ diện tích'}</span>
+        const typeLabel = escapeHtml(p.roomType || 'Loại phòng').replace(/_/g, ' ');
+        const area = p.areaM2 ? `${p.areaM2} m²` : 'Chưa cập nhật';
+        const title = escapeHtml(p.title || 'Chưa có tiêu đề');
+        const addr = escapeHtml(getAddress(p));
+        const price = formatMoney(p.monthlyRent);
+
+        top.innerHTML = `
+            <div class="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-2">
+                <span class="bg-blue-50 px-2 py-0.5 rounded text-blue-700 border border-blue-100">${typeLabel}</span>
+                <span>•</span>
+                <span>${area}</span>
             </div>
-            <h3 class="mt-2 text-xl font-bold leading-tight text-gray-900">${escapeHtml(p.title || '')}</h3>
-            <p class="mt-2 text-sm leading-6 text-gray-500">${escapeHtml(getAddress(p))}</p>
-            <div class="mt-4 flex flex-wrap items-center gap-3 text-sm font-semibold text-gray-700">
-                <span class="inline-flex items-center gap-1 rounded-full bg-slate-50 px-3 py-1.5">
-                    <div class="i-mdi-currency-vnd text-slate-500"></div>
-                    ${formatMoney(p.monthlyRent)} / tháng
-                </span>
-                <span class="inline-flex items-center gap-1 rounded-full bg-slate-50 px-3 py-1.5">
-                    <div class="i-mdi-image-multiple-outline text-slate-500"></div>
-                    Ảnh đại diện
-                </span>
+            <h3 class="text-base font-bold text-gray-900 leading-snug line-clamp-2 m-0">${title}</h3>
+            <p class="mt-2 text-xs text-gray-500 line-clamp-1">${addr}</p>
+            <div class="mt-4 text-[15px] font-black text-blue-700">
+                ${price} <span class="text-xs text-gray-400 font-medium">/ tháng</span>
             </div>`;
 
-        top.appendChild(info);
-
+        // 3. Phần Nút Hành động (Actions)
         const actions = document.createElement('div');
-        actions.className = 'flex flex-wrap gap-2';
+        actions.className = 'mt-5 flex gap-3 border-t border-gray-100 pt-4';
 
         const viewBtn = document.createElement('a');
         viewBtn.href = `/rooms/${p.id}`;
-        viewBtn.className = 'inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 no-underline';
+        viewBtn.className = 'flex-1 text-center rounded-xl bg-slate-900 px-3 py-2.5 text-[13px] font-bold text-white transition hover:bg-slate-800 no-underline';
         viewBtn.textContent = 'Xem chi tiết';
-
-        const editBtn = document.createElement('a');
-        editBtn.href = '/postRooms';
-        editBtn.className = 'inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 no-underline';
-        editBtn.textContent = 'Mở form đăng';
 
         const copyBtn = document.createElement('button');
         copyBtn.type = 'button';
-        copyBtn.className = 'inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50';
+        copyBtn.className = 'flex-1 text-center rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-[13px] font-bold text-gray-700 transition hover:bg-gray-50 cursor-pointer';
         copyBtn.textContent = 'Sao chép link';
+
         copyBtn.addEventListener('click', function () {
             navigator.clipboard.writeText(`${window.location.origin}/rooms/${p.id}`);
-            copyBtn.textContent = 'Đã sao chép';
+            copyBtn.textContent = 'Đã chép!';
+            copyBtn.className = 'flex-1 text-center rounded-xl bg-emerald-50 px-3 py-2.5 text-[13px] font-bold text-emerald-700 border border-emerald-200 transition cursor-pointer';
             setTimeout(function () {
                 copyBtn.textContent = 'Sao chép link';
-            }, 1200);
+                copyBtn.className = 'flex-1 text-center rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-[13px] font-bold text-gray-700 transition hover:bg-gray-50 cursor-pointer';
+            }, 1500);
         });
 
         actions.appendChild(viewBtn);
-        actions.appendChild(editBtn);
         actions.appendChild(copyBtn);
 
         body.appendChild(top);
         body.appendChild(actions);
 
-        shell.appendChild(thumbWrap);
-        shell.appendChild(body);
-        card.appendChild(shell);
+        card.appendChild(thumbWrap);
+        card.appendChild(body);
+
         listEl.appendChild(card);
     });
 }

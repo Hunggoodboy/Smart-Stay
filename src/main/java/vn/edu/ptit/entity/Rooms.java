@@ -9,6 +9,9 @@ import java.util.List;
 
 @Entity
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @Table(name = "rooms")
 public class Rooms implements Serializable {
 
@@ -92,8 +95,11 @@ public class Rooms implements Serializable {
     @JoinColumn(name = "landlord_id", nullable = false)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private LandLord landLord;
+    private User landLord;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id")
+    private User customer;
     /**
      * 1 Phòng có 1 hợp đồng (theo thời gian)
      */

@@ -70,4 +70,20 @@ public class WebController {
     public String landlordView() {
         return "landlord_index";
     }
+    @GetMapping("/contract/create")
+    public String createContract() {
+        return "contractCreation";
+    }
+    @GetMapping("/myContracts")
+    public String myContracts() {
+        return "myContracts";
+    }
+    @GetMapping("/contractDetail/{id}")
+    public String contractDetail(@PathVariable Long id){
+        return "contractDetail";
+    }
+    @GetMapping("/createRoomManage")
+    public String createRoomManage() {
+        return "createRoomManage";
+    }
 }

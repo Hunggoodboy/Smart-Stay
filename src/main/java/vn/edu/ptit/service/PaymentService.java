@@ -10,6 +10,7 @@ import vn.edu.ptit.dto.Response.ApiResponse;
 import vn.edu.ptit.dto.Response.UtilityBillsResponse;
 import vn.edu.ptit.dto.UserDTO;
 import vn.edu.ptit.entity.Contracts;
+import vn.edu.ptit.entity.Customer;
 import vn.edu.ptit.entity.RentPayments;
 import vn.edu.ptit.entity.UtilityBills;
 import vn.edu.ptit.repository.*;
@@ -28,6 +29,7 @@ public class PaymentService {
     private final RoomsRepository roomsRepository;
     private final LandLordRepository landLordRepository;
     private final RentPaymentsRepository rentPaymentsRepository;
+    private final CustomerRepository customerRepository;
 
     public List<UtilityBillsResponse> getBillByCurrentUser(Authentication authentication) {
         UserDTO userDTO = authService.getCurrentUser();
@@ -77,7 +79,8 @@ public class PaymentService {
         // 1. Set các mối quan hệ (Foreign Keys)
         rentPayments.setContract(contract);
         rentPayments.setRoom(utilityBills.getRoom());
-        rentPayments.setCustomer(contract.getCustomer()); // Khách thuê lấy từ hợp đồng
+        Customer customer = customerRepository.findCustomerById(contract.getCustomer().getId()).orElseThrow(() -> new RuntimeException("Không tìm thấy khách thuê"));
+        rentPayments.setCustomer(customer); // Khách thuê lấy từ hợp đồng
         rentPayments.setUtilityBill(utilityBills);
 
         // 2. Set thông tin kỳ thanh toán

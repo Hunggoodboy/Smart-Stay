@@ -11,37 +11,37 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import vn.edu.ptit.Filter.JwtFilter;
-import vn.edu.ptit.entity.User;
-import vn.edu.ptit.repository.UserRepository;
 
 @EnableWebSecurity
 @Configuration
 @AllArgsConstructor
-public class securityConfig {
+public class SecurityConfig {
     private final JwtFilter jwtFilter;
 
     private static final String[] PUBLIC_URLS = {
             "/", "/login", "/register", "/rooms/**",
             "/css/**", "/js/**", "/images/**",
-            "/room-posted", "/room-detail/**",
+            "/api/auth/**"
+            ,"/room-posted", "/room-detail/**",
             "/api/user/login", "/api/user/register",
-            "/postRooms", "/MyRentalRequest", "/myHome", "/payment", "/chatMessage", "/adminVerify", "/registerLandLord"
+            "/postRooms", "/MyRentalRequest", "/myHome", "/payment", "/chatMessage", "/adminVerify", "/registerLandLord", "/error", "/gs-guide-websocket/**"
+            ,"/contract/create", "/myContracts", "/contractDetail/**" , "/createRoomManage", "/landlord-view/**"
     };
 
     private static final String[] LANDLORD_API_URLS = {
             "/api/post-room/**", "/api/billing/**",
-            "/api/setBill/**", "/api/landlord/**",
+            "/api/setBill/**", "/api/landlord/**", "/api/room-management/**"
     };
 
     private static final String[] AUTHENTICATED_API_URLS = {
             "/api/user/me", "/api/user/myid", "/api/user/tenant",
             "/api/notifications/**", "/api/utility-bills/**",
             "/api/chat/**", "/api/customer/**", "/api/landlord/requestToLandLord"
+            ,"/api/contract/**", "/get-my-contracts"
     };
 
 

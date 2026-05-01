@@ -32,21 +32,7 @@ public class LandLord extends User {
 
     // ==================== RELATIONSHIPS ====================
 
-    /**
-     * 1 Landlord đăng nhiều phòng cho thuê
-     */
-    @OneToMany(mappedBy = "landLord", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private List<Rooms> rooms;
 
-    /**
-     * 1 Landlord có nhiều hợp đồng cho thuê
-     */
-    @OneToMany(mappedBy = "landLord", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private List<Contracts> contracts;
 
     /**
      * 1 Landlord tham gia nhiều phòng chat

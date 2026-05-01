@@ -85,4 +85,5 @@ public interface RoomPostRepository extends JpaRepository<RoomPosts, Long> {
               AND p.expiredAt < CURRENT_TIMESTAMP
             """)
     List<RoomPosts> findExpiredActivePosts();
+
 }

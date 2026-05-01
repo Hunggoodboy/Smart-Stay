@@ -80,4 +80,33 @@ public class User implements Serializable {
     @EqualsAndHashCode.Exclude
     private List<ChatMessages> sentChatMessages;
 
+    /**
+     * 1 Landlord đăng nhiều phòng cho thuê
+     */
+
+    @OneToMany(mappedBy = "landLord", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<Rooms> ownedRooms; // Danh sách các phòng mà User này sở hữu/quản lý[
+
+    @OneToOne(mappedBy = "customer", fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Rooms rentedRoom; // Phòng mà User này hiện đang thuê
+
+
+    /**
+     * 1 Người dùng ký nhiều hợp đồng thuê phòng
+     */
+    @OneToMany(mappedBy = "landLord", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<Contracts> landlordContracts;
+
+    // Danh sách các hợp đồng mà User này đóng vai trò là Người thuê (Bên B)
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<Contracts> customerContracts;
+
 }

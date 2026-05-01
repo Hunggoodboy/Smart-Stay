@@ -1,254 +1,915 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Stay | Landlord Dashboard</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/uno.css}" href="../static/css/uno.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Stay | Bảng điều khiển chủ nhà</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" th:href="@{/css/uno.css}" href="../static/css/uno.css" />
+    <style>
+        :root {
+            --blue-50:  #eff6ff;
+            --blue-100: #dbeafe;
+            --blue-200: #bfdbfe;
+            --blue-400: #60a5fa;
+            --blue-500: #3b82f6;
+            --blue-600: #2563eb;
+            --blue-700: #1d4ed8;
+            --blue-800: #1e40af;
+            --blue-900: #1e3a8a;
+            --navy:     #0f172a;
+            --ocean:    #0ea5e9;
+            --sky-100:  #e0f2fe;
+            --white:    #ffffff;
+            --gray-50:  #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --radius-card: 1.25rem;
+            --shadow-card: 0 2px 16px rgba(30,64,175,0.08), 0 1px 4px rgba(30,64,175,0.06);
+            --shadow-hero: 0 20px 60px rgba(14,165,233,0.18), 0 4px 16px rgba(30,64,175,0.14);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: #f0f6ff;
+            color: var(--gray-800);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ─────────── HEADER ─────────── */
+        .ss-header {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1.5px solid var(--blue-100);
+            box-shadow: 0 2px 12px rgba(37,99,235,0.07);
+        }
+        .ss-header-inner {
+            max-width: 1280px; margin: 0 auto;
+            padding: 0 1.5rem;
+            height: 64px;
+            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+        }
+        .ss-brand { display: flex; align-items: center; gap: 0.65rem; text-decoration: none; }
+        .ss-brand-icon {
+            width: 38px; height: 38px; border-radius: 10px;
+            background: linear-gradient(135deg, var(--navy) 0%, var(--blue-700) 100%);
+            display: grid; place-items: center;
+            color: #fff; font-weight: 900; font-size: 1rem; letter-spacing: -0.5px;
+            font-family: 'Playfair Display', serif;
+            box-shadow: 0 2px 8px rgba(29,78,216,0.25);
+        }
+        .ss-brand-text { display: flex; flex-direction: column; }
+        .ss-brand-name { font-weight: 800; font-size: 1rem; color: var(--navy); line-height: 1.1; }
+        .ss-brand-sub { font-size: 0.7rem; color: var(--gray-400); font-weight: 600; }
+
+        .ss-nav { display: flex; align-items: center; gap: 0.25rem; }
+        .ss-nav a {
+            padding: 0.45rem 0.9rem; border-radius: 8px;
+            font-size: 0.82rem; font-weight: 700; color: var(--gray-500);
+            text-decoration: none; transition: all 0.18s;
+            white-space: nowrap;
+        }
+        .ss-nav a:hover { background: var(--blue-50); color: var(--blue-700); }
+        .ss-nav a.active { background: var(--blue-600); color: #fff; }
+
+        .ss-header-right { display: flex; align-items: center; gap: 0.75rem; }
+        .ss-avatar-btn {
+            display: flex; align-items: center; gap: 0.5rem;
+            background: none; border: none; cursor: pointer;
+            padding: 0.3rem 0.6rem 0.3rem 0.3rem; border-radius: 10px;
+            transition: background 0.15s;
+        }
+        .ss-avatar-btn:hover { background: var(--gray-100); }
+        .ss-avatar-img { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--blue-200); }
+        .ss-user-name { font-size: 0.8rem; font-weight: 700; color: var(--gray-700); }
+        .ss-user-role { font-size: 0.7rem; color: var(--gray-400); }
+
+        /* ─────────── LAYOUT ─────────── */
+        .ss-body { padding-top: 64px; }
+        .ss-main { max-width: 1280px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+        /* ─────────── HERO SECTION ─────────── */
+        .ss-hero {
+            background: linear-gradient(130deg, var(--navy) 0%, var(--blue-700) 50%, var(--ocean) 100%);
+            border-radius: 1.5rem;
+            padding: 2.5rem 2.5rem 2.25rem;
+            color: #fff;
+            position: relative; overflow: hidden;
+            box-shadow: var(--shadow-hero);
+            margin-bottom: 2rem;
+        }
+        .ss-hero::before {
+            content: '';
+            position: absolute; top: -60px; right: -60px;
+            width: 260px; height: 260px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+        }
+        .ss-hero::after {
+            content: '';
+            position: absolute; bottom: -40px; left: 30%;
+            width: 180px; height: 180px;
+            border-radius: 50%;
+            background: rgba(14,165,233,0.15);
+        }
+        .ss-hero-inner { display: flex; flex-direction: column; gap: 1.5rem; position: relative; z-index: 1; }
+        .ss-hero-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; }
+        .ss-hero-badge {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.18);
+            border-radius: 100px; padding: 0.3rem 0.9rem;
+            font-size: 0.68rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+            color: rgba(186,230,253,0.95); margin-bottom: 0.75rem;
+        }
+        .ss-hero-badge span { width: 7px; height: 7px; border-radius: 50%; background: #86efac; }
+        .ss-hero h1 { font-size: 2rem; font-weight: 900; line-height: 1.15; margin-bottom: 0.45rem; }
+        .ss-hero p { font-size: 0.88rem; color: rgba(186,230,253,0.9); line-height: 1.65; max-width: 480px; margin-bottom: 1.1rem; }
+        .ss-hero-btns { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+        .ss-btn-primary {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            background: #fff; color: var(--navy);
+            padding: 0.6rem 1.3rem; border-radius: 100px;
+            font-size: 0.82rem; font-weight: 800; text-decoration: none;
+            transition: transform 0.16s, box-shadow 0.16s;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+        }
+        .ss-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.18); }
+        .ss-btn-ghost {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            background: rgba(255,255,255,0.12); color: #fff;
+            border: 1px solid rgba(255,255,255,0.25);
+            padding: 0.6rem 1.3rem; border-radius: 100px;
+            font-size: 0.82rem; font-weight: 700; text-decoration: none;
+            transition: background 0.16s;
+        }
+        .ss-btn-ghost:hover { background: rgba(255,255,255,0.2); }
+
+        /* Stats: 3 cards in ONE horizontal row */
+        .ss-hero-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.85rem; }
+        .ss-stat-card {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.14);
+            border-radius: 1rem; padding: 0.95rem 1.1rem;
+            backdrop-filter: blur(8px);
+            cursor: pointer; transition: background 0.15s;
+        }
+        .ss-stat-card:hover { background: rgba(255,255,255,0.17); }
+        .ss-stat-label { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(186,230,253,0.75); }
+        .ss-stat-value { font-size: 2.2rem; font-weight: 900; line-height: 1.1; margin: 0.2rem 0 0.15rem; }
+        .ss-stat-sub { font-size: 0.68rem; color: rgba(186,230,253,0.7); }
+
+        /* ─────────── SECTION GRID ─────────── */
+        .ss-grid { display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem; align-items: start; }
+        .ss-left { display: flex; flex-direction: column; gap: 1.5rem; }
+        .ss-right { display: flex; flex-direction: column; gap: 1.5rem; }
+
+        /* ─────────── CARD ─────────── */
+        .ss-card {
+            background: var(--white);
+            border: 1.5px solid var(--blue-100);
+            border-radius: var(--radius-card);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-card);
+        }
+        .ss-card-header {
+            display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+        .ss-card-title-wrap {}
+        .ss-card-icon { font-size: 1.1rem; margin-right: 0.4rem; }
+        .ss-card-title { font-size: 1rem; font-weight: 800; color: var(--navy); display: flex; align-items: center; gap: 0.4rem; }
+        .ss-card-sub { font-size: 0.78rem; color: var(--gray-400); margin-top: 0.2rem; }
+        .ss-btn-dark {
+            background: var(--navy); color: #fff;
+            border: none; border-radius: 100px;
+            padding: 0.5rem 1.1rem; font-size: 0.78rem; font-weight: 700;
+            cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem;
+            transition: background 0.15s, transform 0.13s;
+            white-space: nowrap;
+        }
+        .ss-btn-dark:hover { background: var(--blue-800); transform: translateY(-1px); }
+        .ss-btn-blue {
+            background: var(--blue-600); color: #fff;
+            border: none; border-radius: 100px;
+            padding: 0.5rem 1.1rem; font-size: 0.78rem; font-weight: 700;
+            cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem;
+            transition: background 0.15s;
+            white-space: nowrap;
+        }
+        .ss-btn-blue:hover { background: var(--blue-700); }
+
+        /* ─────────── POSTS CARDS ─────────── */
+        #landlord-posts-list { min-height: 60px; }
+        .posts-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); gap: 1rem; }
+        .post-card {
+            border: 1.5px solid var(--blue-100); border-radius: 1rem;
+            overflow: hidden; background: #fff;
+            transition: box-shadow 0.18s, transform 0.18s;
+        }
+        .post-card:hover { box-shadow: 0 6px 24px rgba(37,99,235,0.12); transform: translateY(-2px); }
+        .post-card-img { position: relative; height: 150px; background: var(--gray-100); }
+        .post-card-img img { width: 100%; height: 100%; object-fit: cover; }
+        .post-card-badge {
+            position: absolute; top: 0.5rem; left: 0.5rem;
+            border-radius: 6px; padding: 0.2rem 0.6rem;
+            font-size: 0.65rem; font-weight: 800; color: #fff;
+            text-transform: uppercase; letter-spacing: 0.06em;
+        }
+        .post-card-body { padding: 0.85rem 1rem 1rem; }
+        .post-card-type { font-size: 0.65rem; font-weight: 800; color: var(--blue-600); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.3rem; }
+        .post-card-title { font-size: 0.88rem; font-weight: 800; color: var(--navy); line-height: 1.3; margin-bottom: 0.25rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .post-card-addr { font-size: 0.72rem; color: var(--gray-400); margin-bottom: 0.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .post-card-price { font-size: 0.9rem; font-weight: 900; color: var(--blue-700); margin-bottom: 0.75rem; }
+        .post-card-actions { display: flex; gap: 0.5rem; border-top: 1px solid var(--blue-50); padding-top: 0.65rem; }
+        .post-card-actions a, .post-card-actions button {
+            flex: 1; text-align: center; border-radius: 8px; padding: 0.4rem;
+            font-size: 0.73rem; font-weight: 700; cursor: pointer;
+            text-decoration: none; border: none; transition: all 0.15s;
+        }
+        .btn-view { background: var(--blue-50); color: var(--blue-700); }
+        .btn-view:hover { background: var(--blue-100); }
+        .btn-copy { background: var(--gray-100); color: var(--gray-700); }
+        .btn-copy:hover { background: var(--gray-200); }
+
+        /* ─────────── FILTER BAR ─────────── */
+        .ss-filters { display: grid; grid-template-columns: 1.4fr 0.7fr 0.7fr; gap: 0.75rem; margin-bottom: 1rem; }
+        .ss-input-wrap {
+            display: flex; align-items: center; gap: 0.5rem;
+            background: var(--gray-50); border: 1.5px solid var(--blue-100);
+            border-radius: 10px; padding: 0 0.75rem;
+            transition: border-color 0.15s;
+        }
+        .ss-input-wrap:focus-within { border-color: var(--blue-400); box-shadow: 0 0 0 3px rgba(96,165,250,0.15); }
+        .ss-input-wrap input {
+            flex: 1; background: none; border: none; outline: none;
+            font-family: 'Nunito', sans-serif; font-size: 0.82rem; color: var(--gray-700);
+            padding: 0.65rem 0;
+        }
+        .ss-input-wrap input::placeholder { color: var(--gray-300); }
+        .ss-select {
+            background: var(--white); border: 1.5px solid var(--blue-100);
+            border-radius: 10px; padding: 0.65rem 0.85rem;
+            font-family: 'Nunito', sans-serif; font-size: 0.82rem; color: var(--gray-700);
+            outline: none; cursor: pointer; width: 100%;
+            transition: border-color 0.15s;
+        }
+        .ss-select:focus { border-color: var(--blue-400); box-shadow: 0 0 0 3px rgba(96,165,250,0.15); }
+
+        /* ─────────── TABLE ─────────── */
+        .ss-table-wrap { overflow-x: auto; border: 1.5px solid var(--blue-100); border-radius: 1rem; }
+        .ss-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+        .ss-table thead { background: linear-gradient(90deg, var(--blue-50) 0%, #f0f9ff 100%); }
+        .ss-table th {
+            padding: 0.85rem 1.1rem; text-align: left;
+            font-size: 0.68rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+            color: var(--blue-700); white-space: nowrap;
+        }
+        .ss-table td { padding: 0.9rem 1.1rem; border-top: 1px solid var(--gray-100); vertical-align: middle; }
+        .ss-table tbody tr:hover { background: var(--blue-50); }
+        .ss-table-title { font-weight: 700; color: var(--navy); }
+        .ss-table-sub { font-size: 0.72rem; color: var(--gray-400); margin-top: 2px; }
+        .ss-table-price { font-weight: 800; color: var(--blue-700); }
+
+        /* Status badges */
+        .badge {
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            border-radius: 100px; padding: 0.22rem 0.7rem;
+            font-size: 0.68rem; font-weight: 800; border: 1.5px solid transparent;
+        }
+        .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+        .badge-active { background: #f0fdf4; color: #16a34a; border-color: #bbf7d0; }
+        .badge-active .badge-dot { background: #22c55e; }
+        .badge-rented { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+        .badge-rented .badge-dot { background: #f59e0b; }
+        .badge-draft { background: var(--gray-100); color: var(--gray-500); border-color: var(--gray-200); }
+        .badge-draft .badge-dot { background: var(--gray-400); }
+        .badge-inactive { background: var(--gray-100); color: var(--gray-500); border-color: var(--gray-200); }
+        .badge-inactive .badge-dot { background: var(--gray-400); }
+        .badge-unknown { background: var(--gray-100); color: var(--gray-500); border-color: var(--gray-200); }
+        .badge-unknown .badge-dot { background: var(--gray-400); }
+
+        .tbl-btn-view {
+            background: var(--navy); color: #fff;
+            border-radius: 8px; padding: 0.35rem 0.75rem;
+            font-size: 0.72rem; font-weight: 700; text-decoration: none;
+            display: inline-block; transition: background 0.14s;
+        }
+        .tbl-btn-view:hover { background: var(--blue-800); }
+        .tbl-btn-copy {
+            background: var(--gray-100); color: var(--gray-700);
+            border: none; border-radius: 8px; padding: 0.35rem 0.75rem;
+            font-size: 0.72rem; font-weight: 700; cursor: pointer;
+            transition: background 0.14s;
+        }
+        .tbl-btn-copy:hover { background: var(--gray-200); }
+
+        /* ─────────── ROOM MANAGEMENT TABLE ─────────── */
+        .room-room-name { font-weight: 700; color: var(--navy); }
+        .room-room-sub { font-size: 0.72rem; color: var(--gray-400); margin-top: 1px; }
+
+        /* ─────────── MESSAGES CARD ─────────── */
+        .msg-item {
+            display: flex; align-items: flex-start; gap: 0.75rem;
+            padding: 0.75rem 0.9rem; border-radius: 0.85rem;
+            background: var(--gray-50); border: 1.5px solid var(--gray-100);
+            text-decoration: none; transition: all 0.15s;
+            margin-bottom: 0.6rem;
+        }
+        .msg-item:hover { border-color: var(--blue-200); background: var(--blue-50); }
+        .msg-avatar {
+            width: 40px; height: 40px; flex-shrink: 0;
+            border-radius: 50%; background: var(--blue-100);
+            display: grid; place-items-center;
+            font-weight: 800; font-size: 1rem; color: var(--blue-700);
+        }
+        .msg-name { font-size: 0.82rem; font-weight: 700; color: var(--navy); }
+        .msg-preview { font-size: 0.73rem; color: var(--gray-400); margin-top: 1px; }
+        .msg-time { font-size: 0.68rem; color: var(--gray-400); margin-top: 3px; font-weight: 600; }
+        .msg-badge { background: #fee2e2; color: #dc2626; border-radius: 100px; padding: 0.1rem 0.45rem; font-size: 0.65rem; font-weight: 800; margin-left: auto; flex-shrink: 0; }
+
+        /* ─────────── COUNT BADGE ─────────── */
+        .count-badge {
+            background: var(--blue-50); color: var(--blue-700);
+            border-radius: 100px; padding: 0.2rem 0.65rem;
+            font-size: 0.72rem; font-weight: 800; border: 1px solid var(--blue-100);
+        }
+
+        /* ─────────── EMPTY STATE ─────────── */
+        .ss-empty {
+            text-align: center; padding: 2.5rem 1rem;
+            border: 2px dashed var(--blue-100); border-radius: 1rem;
+            color: var(--gray-400);
+        }
+        .ss-empty p { font-size: 0.85rem; margin-top: 0.5rem; }
+
+        /* ─────────── LOADING ─────────── */
+        .ss-loading { display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 2rem; color: var(--gray-400); font-size: 0.85rem; }
+        .ss-spinner {
+            width: 18px; height: 18px; border-radius: 50%;
+            border: 2.5px solid var(--blue-100);
+            border-top-color: var(--blue-500);
+            animation: spin 0.75s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ─────────── DIVIDER ─────────── */
+        .ss-divider { height: 1px; background: linear-gradient(90deg, var(--blue-100) 0%, transparent 100%); margin: 1rem 0; }
+
+        /* ─────────── SECTION TABS (for house management) ─────────── */
+        .ss-tabs { display: flex; gap: 0.4rem; margin-bottom: 1.1rem; }
+        .ss-tab {
+            padding: 0.4rem 1rem; border-radius: 8px;
+            font-size: 0.78rem; font-weight: 700; cursor: pointer;
+            border: 1.5px solid transparent; transition: all 0.15s;
+            color: var(--gray-500); background: var(--gray-100);
+        }
+        .ss-tab.active { background: var(--blue-600); color: #fff; border-color: var(--blue-600); }
+
+        /* ─────────── ROOM DETAIL MODAL ─────────── */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0; z-index: 200;
+            background: rgba(15,23,42,0.55); backdrop-filter: blur(4px);
+            align-items: center; justify-content: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: #fff; border-radius: 1.25rem; padding: 2rem;
+            width: 100%; max-width: 540px; max-height: 90vh; overflow-y: auto;
+            box-shadow: 0 24px 64px rgba(15,23,42,0.22);
+            animation: slideUp 0.25s ease;
+        }
+        @keyframes slideUp { from { opacity:0; transform: translateY(24px); } to { opacity:1; transform: translateY(0); } }
+        .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+        .modal-title { font-size: 1.05rem; font-weight: 800; color: var(--navy); }
+        .modal-close { background: var(--gray-100); border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 1rem; display: grid; place-items: center; transition: background 0.14s; }
+        .modal-close:hover { background: var(--gray-200); }
+        .modal-row { display: flex; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid var(--gray-100); font-size: 0.82rem; }
+        .modal-row:last-child { border-bottom: none; }
+        .modal-key { color: var(--gray-500); font-weight: 600; }
+        .modal-val { font-weight: 700; color: var(--navy); text-align: right; }
+
+        /* ─────────── RESPONSIVE ─────────── */
+        @media (max-width: 1100px) {
+            .ss-grid { grid-template-columns: 1fr; }
+            .ss-right { order: -1; flex-direction: row; flex-wrap: wrap; }
+            .ss-right > * { flex: 1; min-width: 280px; }
+        }
+        @media (max-width: 768px) {
+            .ss-filters { grid-template-columns: 1fr; }
+            .ss-hero h1 { font-size: 1.6rem; }
+            .ss-nav { display: none; }
+        }
+        @media (max-width: 480px) {
+            .ss-hero-stats { grid-template-columns: 1fr; }
+            .ss-main { padding: 1.25rem 1rem 3rem; }
+        }
+
+        /* ─────────── PAGE ENTRANCE ANIMATION ─────────── */
+        .fade-in { animation: fadeIn 0.4s ease both; }
+        @keyframes fadeIn { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform: translateY(0); } }
+        .delay-1 { animation-delay: 0.08s; }
+        .delay-2 { animation-delay: 0.16s; }
+        .delay-3 { animation-delay: 0.24s; }
+        .delay-4 { animation-delay: 0.32s; }
+    </style>
 </head>
-
-<body
-    class="min-h-screen bg-[radial-gradient(circle_at_top,_#fef3c7_0%,_#ffffff_35%,_#dbeafe_100%)] text-slate-800 antialiased [font-family:'Be_Vietnam_Pro',sans-serif]">
-    <div class="relative z-10 mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <header class="fixed top-0 left-0 z-50 w-full border-b border-gray-200 bg-white font-sans shadow-sm">
-            <div class="px-4 py-3 sm:px-6">
-                <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                    <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
-                        <div class="flex items-center gap-3">
-                            <div
-                                class="grid h-10 w-10 place-items-center rounded-xl bg-[linear-gradient(145deg,_#0f172a,_#1d4ed8)] text-sm text-white font-extrabold [font-family:'Space_Grotesk',sans-serif]">
-                                S</div>
-                            <div class="flex flex-col justify-center">
-                                <p class="m-0 text-base font-bold">Smart Stay</p>
-                                <p class="hidden m-0 text-sm font-medium text-slate-500 sm:block">Bảng điều khiển chủ
-                                    nhà</p>
-                            </div>
-                        </div>
-                        <nav class="flex flex-wrap gap-3 text-sm font-semibold">
-                            <a class="cursor-pointer rounded-lg bg-slate-100 px-3 py-2 text-slate-900 no-underline">Tổng
-                                quan</a>
-                            <a href="/landlord/posts"
-                                class="cursor-pointer rounded-lg px-3 py-2 text-slate-600 no-underline transition hover:bg-gray-50 hover:text-slate-900 visited:text-slate-600">Quản
-                                lý bài đăng</a>
-                            <a href="#house-management"
-                                class="cursor-pointer rounded-lg px-3 py-2 text-slate-600 no-underline transition hover:bg-gray-50 hover:text-slate-900 visited:text-slate-600">Quản
-                                lý chi tiết nhà</a>
-                            <a href="/landlord/contracts"
-                                class="cursor-pointer rounded-lg px-3 py-2 text-slate-600 no-underline transition hover:bg-gray-50 hover:text-slate-900 visited:text-slate-600">Hợp
-                                đồng</a>
-                        </nav>
-                    </div>
-
-                    <div class="flex items-center gap-3">
-                        <div class="h-6 w-px bg-gray-300"></div>
-                        <div class="relative" id="user-menu">
-                            <button onclick="toggleUserMenu()" id="user-menu-button" type="button" aria-expanded="false"
-                                class="flex items-center gap-2 rounded-xl p-1.5 text-left hover:bg-gray-50 border-0 bg-transparent outline-none cursor-pointer">
-                                <img src="https://ui-avatars.com/api/?name=Ch%E1%BB%A7%20nh%C3%A0&background=eff6ff&color=1d4ed8"
-                                    alt="Avatar" id="user-avatar" class="w-8 h-8 rounded-full border border-gray-200">
-                                <div class="hidden sm:block text-left">
-                                    <p id="user-name-label"
-                                        class="text-sm font-semibold text-gray-700 m-0 leading-tight">Chủ nhà</p>
-                                    <p id="user-role-label" class="text-xs text-gray-500 m-0">Landlord</p>
-                                </div>
-                                <div id="user-menu-chevron" class="i-mdi-chevron-down text-gray-400 transition"></div>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+<body>
+<!-- ═══════════ HEADER ═══════════ -->
+<header class="ss-header">
+    <div class="ss-header-inner">
+        <!-- Brand -->
+        <a class="ss-brand" href="/landlord">
+            <div class="ss-brand-icon">S</div>
+            <div class="ss-brand-text">
+                <span class="ss-brand-name">Smart Stay</span>
+                <span class="ss-brand-sub">Bảng điều khiển chủ nhà</span>
             </div>
-        </header>
+        </a>
 
-        <div class="pt-[80px]"></div>
+        <!-- Navigation -->
+        <nav class="ss-nav">
+            <a class="active" href="#">Tổng quan</a>
+            <a href="/landlord/posts">Quản lý bài đăng</a>
+            <a href="#house-management">Quản lý chi tiết nhà</a>
+            <a href="myContracts">Hợp đồng</a>
+        </nav>
 
-        <main id="landlord-dashboard" data-endpoint="/api/dashboard/landlord"
-            class="max-w-7xl mx-auto p-4 md:p-6 space-y-6 font-sans text-gray-800">
+        <!-- User -->
+        <div class="ss-header-right">
+            <div class="relative" id="user-menu">
+                <button onclick="toggleUserMenu()" id="user-menu-button" type="button" aria-expanded="false" class="ss-avatar-btn">
+                    <img src="https://ui-avatars.com/api/?name=Ch%E1%BB%A7%20nh%C3%A0&background=dbeafe&color=1d4ed8"
+                         alt="Avatar" id="user-avatar" class="ss-avatar-img" />
+                    <div class="hidden sm:block" style="text-align:left;">
+                        <div id="user-name-label" class="ss-user-name">Chủ nhà</div>
+                        <div id="user-role-label" class="ss-user-role">Landlord</div>
+                    </div>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:#94a3b8;margin-left:2px;"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</header>
 
-            <section
-                class="overflow-hidden rounded-[2rem] border border-white/60 bg-[linear-gradient(135deg,_#0f172a_0%,_#1d4ed8_52%,_#38bdf8_100%)] p-6 text-white shadow-[0_20px_70px_rgba(15,23,42,0.25)] md:p-8 lg:p-10">
-                <div class="grid gap-8 lg:grid-cols-[1.4fr_0.9fr] lg:items-center">
-                    <div class="space-y-5">
-                        <div
-                            class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-sky-100">
-                            <span class="h-2 w-2 rounded-full bg-emerald-300"></span>
-                            Landlord workspace
-                        </div>
-                        <div class="space-y-3">
-                            <h1 id="welcome-message" class="text-3xl font-black leading-tight md:text-5xl">Xin chào, Chủ
-                                nhà! 👋</h1>
-                            <p id="landlord-summary" class="max-w-2xl text-sm leading-7 text-sky-100/95 md:text-base">
-                                Quản lý nhà trọ, bài đăng, yêu cầu thuê và hợp đồng ngay trên một màn hình.
-                            </p>
-                        </div>
-                        <div class="flex flex-wrap gap-3">
-                            <a href="/postRooms"
-                                class="inline-flex items-center justify-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50 no-underline">
-                                <div class="i-mdi-plus-circle-outline text-lg text-blue-600"></div>
+<!-- ═══════════ BODY ═══════════ -->
+<div class="ss-body">
+    <main class="ss-main" id="landlord-dashboard" data-endpoint="/api/dashboard/landlord">
+
+        <!-- ── HERO ── -->
+        <section class="ss-hero fade-in">
+            <div class="ss-hero-inner">
+                <!-- Top: text + buttons -->
+                <div class="ss-hero-top">
+                    <div>
+                        <div class="ss-hero-badge"><span></span>Landlord Workspace</div>
+                        <h1 id="welcome-message">Xin chào, Chủ nhà! 👋</h1>
+                        <p id="landlord-summary">Quản lý nhà trọ, bài đăng, yêu cầu thuê và hợp đồng ngay trên một màn hình.</p>
+                        <div class="ss-hero-btns">
+                            <a href="/postRooms" class="ss-btn-primary">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
                                 Đăng nhà mới
                             </a>
-                            <a href="/landlord/contracts"
-                                class="inline-flex items-center justify-center gap-2 rounded-full border border-white/30 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/20 no-underline">
-                                <div class="i-mdi-file-document-outline text-lg"></div>
+                            <a href="/landlord/contracts" class="ss-btn-ghost">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                                 Hợp đồng
                             </a>
                         </div>
                     </div>
-
-                    <div
-                        class="grid gap-4 rounded-[1.75rem] border border-white/15 bg-white/10 p-5 backdrop-blur-sm sm:grid-cols-3 lg:grid-cols-1">
-                        <div class="rounded-2xl bg-white/10 p-4">
-                            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-sky-100/80">Tổng bài đăng
-                            </p>
-                            <p id="postsCount" class="mt-2 text-3xl font-black">0</p>
-                            <p class="mt-1 text-xs text-sky-100/80">Tất cả bài đăng của bạn</p>
-                        </div>
-                        <div class="rounded-2xl bg-white/10 p-4">
-                            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-sky-100/80">Đang hoạt động
-                            </p>
-                            <p id="activePostsCount" class="mt-2 text-3xl font-black">0</p>
-                            <p class="mt-1 text-xs text-sky-100/80">Bài đang hiển thị công khai</p>
-                        </div>
-                        <div class="rounded-2xl bg-white/10 p-4">
-                            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-sky-100/80">Đã cho thuê</p>
-                            <p id="rentedPostsCount" class="mt-2 text-3xl font-black">0</p>
-                            <p class="mt-1 text-xs text-sky-100/80">Bài đã chuyển sang phòng thực tế</p>
-                        </div>
+                </div>
+                <!-- Bottom: 3 stats horizontal -->
+                <div class="ss-hero-stats">
+                    <div class="ss-stat-card" onclick="document.getElementById('house-management').scrollIntoView({behavior:'smooth'})">
+                        <div class="ss-stat-label">Tổng số phòng</div>
+                        <div class="ss-stat-value" id="postsCount">—</div>
+                        <div class="ss-stat-sub">Tất cả phòng đang quản lý</div>
+                    </div>
+                    <div class="ss-stat-card" onclick="filterRoomsByStatus('AVAILABLE')">
+                        <div class="ss-stat-label">Phòng trống</div>
+                        <div class="ss-stat-value" id="activePostsCount">—</div>
+                        <div class="ss-stat-sub">Sẵn sàng cho thuê</div>
+                    </div>
+                    <div class="ss-stat-card" onclick="filterRoomsByStatus('RENTED')">
+                        <div class="ss-stat-label">Đã cho thuê</div>
+                        <div class="ss-stat-value" id="rentedPostsCount">—</div>
+                        <div class="ss-stat-sub">Đang có người ở</div>
                     </div>
                 </div>
-            </section>
+            </div>
+        </section>
 
-            <div class="grid gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.85fr)]">
+        <!-- ── MAIN GRID ── -->
+        <div class="ss-grid">
+            <!-- LEFT COLUMN -->
+            <div class="ss-left">
 
-                <section class="space-y-6">
-                    <div class="rounded-[1.75rem] border border-gray-100 bg-white p-6 shadow-sm">
-                        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                            <div>
-                                <h2 class="text-lg font-bold text-gray-900 m-0 flex items-center gap-2">
-                                    <div class="i-mdi-view-grid-plus text-blue-600 text-xl"></div>
-                                    Nhà của tôi
-                                </h2>
-                                <p class="mt-1 text-sm text-gray-500">Xem, sửa và mở rộng thông tin từng bài đăng.</p>
+                <!-- ── QUẢN LÝ BÀI ĐĂNG ── -->
+                <section class="ss-card fade-in delay-1">
+                    <div class="ss-card-header">
+                        <div class="ss-card-title-wrap">
+                            <div class="ss-card-title">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                                Nhà của tôi
                             </div>
-                            <div class="flex flex-wrap gap-2 text-sm font-semibold">
-                                <a href="/postRooms"
-                                    class="rounded-full bg-slate-900 px-4 py-2.5 text-white transition hover:bg-slate-800 no-underline">Tạo
-                                    bài mới</a>
-                            </div>
+                            <div class="ss-card-sub">Xem, sửa và mở rộng thông tin từng bài đăng</div>
                         </div>
-
-                        <div id="landlord-posts-list" class="mt-6 space-y-4">
-                            <div
-                                class="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-5 py-8 text-sm text-gray-500">
-                                Đang tải danh sách nhà...
-                            </div>
-                        </div>
+                        <a href="/postRooms" class="ss-btn-dark">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            Tạo bài mới
+                        </a>
                     </div>
-
-                    <div id="house-management" class="rounded-[1.75rem] border border-gray-100 bg-white p-6 shadow-sm">
-                        <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                            <div>
-                                <h2 class="text-lg font-bold text-gray-900 m-0 flex items-center gap-2">
-                                    <div class="i-mdi-home-search-outline text-blue-600 text-xl"></div>
-                                    Quản lý nhà của tôi
-                                </h2>
-                                <p class="mt-1 text-sm text-gray-500">Lọc, sắp xếp và theo dõi trạng thái từng nhà.</p>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600"
-                                    id="houseCountLabel">0 nhà</span>
-                                <a href="/postRooms"
-                                    class="rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 no-underline">Thêm
-                                    nhà</a>
-                            </div>
-                        </div>
-
-                        <div class="mt-5 grid gap-3 md:grid-cols-[1.2fr_0.6fr_0.6fr]">
-                            <div
-                                class="flex items-center gap-2 rounded-xl border border-gray-200 bg-slate-50 px-4 py-3 text-gray-500 transition focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100">
-                                <div class="text-gray-400">
-                                    <div class="i-mdi-magnify text-lg"></div>
-                                </div>
-                                <input id="houseSearchInput" type="text" placeholder="Tìm theo tên hoặc địa chỉ"
-                                    class="w-full border-0 bg-transparent text-sm text-gray-700 outline-none shadow-none placeholder:text-gray-400 focus:outline-none focus:ring-0" />
-                            </div>
-                            <select id="houseStatusFilter"
-                                class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100">
-                                <option value="all">Tất cả trạng thái</option>
-                                <option value="ACTIVE">Đang hoạt động</option>
-                                <option value="RENTED">Đã cho thuê</option>
-                                <option value="DRAFT">Nháp</option>
-                                <option value="INACTIVE">Tạm ẩn</option>
-                            </select>
-                            <select id="houseSortSelect"
-                                class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100">
-                                <option value="newest">Mới nhất</option>
-                                <option value="priceAsc">Giá thấp → cao</option>
-                                <option value="priceDesc">Giá cao → thấp</option>
-                            </select>
-                        </div>
-
-                        <div class="mt-6 overflow-hidden rounded-2xl border border-gray-100">
-                            <div class="overflow-x-auto">
-                                <table class="min-w-full text-left text-sm">
-                                    <thead class="bg-slate-50 text-xs uppercase tracking-[0.18em] text-slate-500">
-                                        <tr>
-                                            <th class="px-5 py-4">Nhà</th>
-                                            <th class="px-5 py-4">Giá thuê</th>
-                                            <th class="px-5 py-4">Trạng thái</th>
-                                            <th class="px-5 py-4">Hành động</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="house-management-body" class="divide-y divide-gray-100 bg-white">
-                                        <tr>
-                                            <td class="px-5 py-5" colspan="4">
-                                                <div class="text-sm text-gray-500">Đang tải dữ liệu...</div>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+                    <div id="landlord-posts-list">
+                        <div class="ss-loading"><div class="ss-spinner"></div> Đang tải danh sách nhà...</div>
                     </div>
                 </section>
 
-                <aside class="space-y-6">
-                    <div class="rounded-[1.75rem] border border-gray-100 bg-white p-6 shadow-sm">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <h2 class="text-lg font-bold text-gray-900 m-0">Tin nhắn chưa đọc</h2>
-                                <p class="mt-1 text-sm text-gray-500">Khách thuê đang chờ phản hồi.</p>
+                <!-- ── QUẢN LÝ CHI TIẾT NHÀ ── -->
+                <section class="ss-card fade-in delay-2" id="house-management">
+                    <div class="ss-card-header">
+                        <div class="ss-card-title-wrap">
+                            <div class="ss-card-title">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                                Quản lý chi tiết nhà
                             </div>
-                            <span class="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600"
-                                id="unreadMessageCount">0</span>
+                            <div class="ss-card-sub">Theo dõi trạng thái, lọc và quản lý từng phòng thực tế</div>
                         </div>
+                        <div style="display:flex;align-items:center;gap:0.6rem;">
+                            <span class="count-badge" id="houseCountLabel">0 nhà</span>
+                            <a href="/postRooms" class="ss-btn-dark">+ Thêm nhà</a>
+                        </div>
+                    </div>
 
-                        <div class="mt-5 space-y-4" id="unreadMessageList">
-                            <div
-                                class="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-5 text-sm text-gray-500">
-                                Đang tải tin nhắn...
+                    <!-- Filters -->
+                    <div class="ss-filters">
+                        <div class="ss-input-wrap">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            <input id="houseSearchInput" type="text" placeholder="Tìm theo tên hoặc địa chỉ..." />
+                        </div>
+                        <select id="houseStatusFilter" class="ss-select">
+                            <option value="all">Tất cả trạng thái</option>
+                            <option value="AVAILABLE">Còn trống</option>
+                            <option value="RENTED">Đã cho thuê</option>
+                            <option value="ACTIVE">Đang hoạt động</option>
+                            <option value="DRAFT">Nháp</option>
+                            <option value="INACTIVE">Tạm ẩn</option>
+                        </select>
+                        <select id="houseSortSelect" class="ss-select">
+                            <option value="newest">Mới nhất</option>
+                            <option value="priceAsc">Giá thấp → cao</option>
+                            <option value="priceDesc">Giá cao → thấp</option>
+                        </select>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="ss-table-wrap">
+                        <table class="ss-table">
+                            <thead>
+                            <tr>
+                                <th>Phòng / Nhà</th>
+                                <th>Giá thuê</th>
+                                <th>Diện tích</th>
+                                <th>Trạng thái</th>
+                                <th>Hành động</th>
+                            </tr>
+                            </thead>
+                            <tbody id="house-management-body">
+                            <tr>
+                                <td colspan="5">
+                                    <div class="ss-loading"><div class="ss-spinner"></div> Đang tải dữ liệu...</div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+            </div><!-- /LEFT -->
+
+            <!-- RIGHT COLUMN -->
+            <div class="ss-right">
+                <!-- Messages Card -->
+                <div class="ss-card fade-in delay-3">
+                    <div class="ss-card-header">
+                        <div class="ss-card-title-wrap">
+                            <div class="ss-card-title">
+                                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                Tin nhắn chưa đọc
                             </div>
+                            <div class="ss-card-sub">Khách thuê đang chờ phản hồi</div>
                         </div>
+                        <span style="background:#fee2e2;color:#dc2626;border-radius:100px;padding:0.15rem 0.6rem;font-size:0.7rem;font-weight:800;" id="unreadMessageCount">0</span>
+                    </div>
+                    <div id="unreadMessageList">
+                        <div class="ss-loading"><div class="ss-spinner"></div></div>
+                    </div>
+                    <a href="/chatMessage" class="ss-btn-blue" style="margin-top:0.75rem;width:100%;justify-content:center;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        Mở hộp thư
+                    </a>
+                </div>
 
-                        <a href="/chatMessage"
-                            class="mt-5 inline-flex items-center justify-center gap-2 rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 no-underline">
-                            <div class="i-mdi-chat-processing-outline text-lg text-white"></div>
-                            Mở hộp thư
+                <!-- Quick Actions -->
+                <div class="ss-card fade-in delay-4">
+                    <div class="ss-card-title" style="margin-bottom:1rem;">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                        Thao tác nhanh
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:0.6rem;">
+                        <a href="/postRooms" style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;background:var(--blue-50);border:1.5px solid var(--blue-100);border-radius:0.75rem;text-decoration:none;transition:all 0.15s;font-size:0.82rem;font-weight:700;color:var(--blue-800);" onmouseover="this.style.background='var(--blue-100)'" onmouseout="this.style.background='var(--blue-50)'">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            Đăng nhà mới
+                        </a>
+                        <a href="/landlord/contracts" style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:0.75rem;text-decoration:none;transition:all 0.15s;font-size:0.82rem;font-weight:700;color:var(--gray-700);" onmouseover="this.style.background='var(--gray-100)'" onmouseout="this.style.background='var(--gray-50)'">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            Xem hợp đồng
+                        </a>
+                        <a href="/chatMessage" style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:0.75rem;text-decoration:none;transition:all 0.15s;font-size:0.82rem;font-weight:700;color:var(--gray-700);" onmouseover="this.style.background='var(--gray-100)'" onmouseout="this.style.background='var(--gray-50)'">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                            Nhắn tin khách thuê
                         </a>
                     </div>
-                </aside>
-            </div>
+                </div>
+            </div><!-- /RIGHT -->
+        </div><!-- /ss-grid -->
 
-        </main>
+    </main>
+</div>
+
+<!-- ═══════════ ROOM DETAIL MODAL ═══════════ -->
+<div class="modal-overlay" id="room-detail-modal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <div class="modal-title" id="modal-room-title">Chi tiết phòng</div>
+            <button class="modal-close" onclick="closeRoomModal()">✕</button>
+        </div>
+        <div id="modal-room-body">
+            <div class="ss-loading"><div class="ss-spinner"></div> Đang tải chi tiết...</div>
+        </div>
     </div>
+</div>
 
-    <script th:src="@{/js/script.js}" src="../static/js/script.js"></script>
-    <script th:src="@{/js/landlordPosts.js}" src="../static/js/landlordPosts.js"></script>
+<!-- ═══════════ SCRIPTS ═══════════ -->
+<script th:src="@{/js/script.js}" src="../static/js/script.js"></script>
+
+<script>
+    /* ═══ ROOM MANAGEMENT — uses /api/room-management/room-summary ═══ */
+    let cachedRooms = [];
+
+    const roomFilterEls = {
+        search: document.getElementById('houseSearchInput'),
+        status: document.getElementById('houseStatusFilter'),
+        sort:   document.getElementById('houseSortSelect'),
+        count:  document.getElementById('houseCountLabel'),
+        tbody:  document.getElementById('house-management-body')
+    };
+
+    // Map status values from real API (RENTED, AVAILABLE, etc.)
+    function getStatusBadge(status) {
+        const s = String(status || '').toUpperCase();
+        const map = {
+            AVAILABLE: { cls: 'badge-active',   label: 'Còn trống'   },
+            RENTED:    { cls: 'badge-rented',   label: 'Đã cho thuê' },
+            OCCUPIED:  { cls: 'badge-rented',   label: 'Đã cho thuê' },
+            ACTIVE:    { cls: 'badge-active',   label: 'Đang hoạt động' },
+            DRAFT:     { cls: 'badge-draft',    label: 'Nháp'         },
+            INACTIVE:  { cls: 'badge-inactive', label: 'Tạm ẩn'       },
+        };
+        return map[s] || { cls: 'badge-unknown', label: s || 'Không rõ' };
+    }
+
+    function fmtMoney(v) {
+        if (v == null) return '—';
+        return Number(v).toLocaleString('vi-VN') + ' VNĐ';
+    }
+
+    function fmtArea(v) { return v ? `${v} m²` : '—'; }
+
+    function esc(str) {
+        return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // Helper to get a room's display name from real API fields
+    function getRoomDisplayName(r) {
+        return r.roomNumber || r.roomName || r.title || r.name || 'Phòng chưa đặt tên';
+    }
+
+    async function loadRoomsSummary() {
+        const token = localStorage.getItem('smartstay_token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        try {
+            const res = await fetch('/api/room-management/room-summary', { headers, credentials: 'include' });
+            if (!res.ok) throw new Error('API error');
+            const data = await res.json();
+            cachedRooms = Array.isArray(data) ? data : (data.rooms || data.data || []);
+
+            // ─── Update hero stats from this API ───
+            const total    = cachedRooms.length;
+            const rented   = cachedRooms.filter(r => String(r.status||'').toUpperCase() === 'RENTED' || String(r.status||'').toUpperCase() === 'OCCUPIED').length;
+            const available = cachedRooms.filter(r => String(r.status||'').toUpperCase() === 'AVAILABLE').length;
+            const pEl = document.getElementById('postsCount');
+            const aEl = document.getElementById('activePostsCount');
+            const rEl = document.getElementById('rentedPostsCount');
+            if (pEl) pEl.textContent = total;
+            if (aEl) aEl.textContent = available;
+            if (rEl) rEl.textContent = rented;
+            const cntBadge = document.getElementById('houseCountLabel');
+            if (cntBadge) cntBadge.textContent = `${total} phòng`;
+
+            applyRoomFilters();
+        } catch (e) {
+            console.error('loadRoomsSummary error:', e);
+            if (roomFilterEls.tbody) {
+                roomFilterEls.tbody.innerHTML = `<tr><td colspan="5"><div style="padding:1.5rem;color:#dc2626;font-size:0.82rem;">Không thể tải dữ liệu phòng. Vui lòng thử lại.</div></td></tr>`;
+            }
+        }
+    }
+
+    // Allow hero stat cards to filter table
+    function filterRoomsByStatus(status) {
+        if (roomFilterEls.status) roomFilterEls.status.value = status;
+        applyRoomFilters();
+        document.getElementById('house-management')?.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function getFilteredRooms() {
+        let list = cachedRooms.slice();
+        const q = (roomFilterEls.search?.value || '').toLowerCase().trim();
+        if (q) {
+            list = list.filter(r => {
+                const name = String(r.roomNumber || r.roomName || r.title || r.name || '').toLowerCase();
+                const addr = String(r.address || r.shortAddress || '').toLowerCase();
+                const type = String(r.roomType || '').toLowerCase();
+                return name.includes(q) || addr.includes(q) || type.includes(q);
+            });
+        }
+        const sf = roomFilterEls.status?.value || 'all';
+        if (sf !== 'all') list = list.filter(r => String(r.status || '').toUpperCase() === sf);
+
+        const sv = roomFilterEls.sort?.value || 'newest';
+        if (sv === 'priceAsc')   list.sort((a,b) => Number(a.rentPrice||a.monthlyRent||0) - Number(b.rentPrice||b.monthlyRent||0));
+        else if (sv === 'priceDesc') list.sort((a,b) => Number(b.rentPrice||b.monthlyRent||0) - Number(a.rentPrice||a.monthlyRent||0));
+        else list.sort((a,b) => new Date(b.createdAt||0) - new Date(a.createdAt||0));
+        return list;
+    }
+
+    function renderRoomsTable(rooms) {
+        if (!roomFilterEls.tbody) return;
+        if (!rooms.length) {
+            roomFilterEls.tbody.innerHTML = `<tr><td colspan="5"><div class="ss-empty"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><p>Không tìm thấy phòng nào phù hợp.</p></div></td></tr>`;
+            return;
+        }
+        roomFilterEls.tbody.innerHTML = rooms.map(r => {
+            const badge = getStatusBadge(r.status);
+            const name  = esc(getRoomDisplayName(r));
+            const type  = esc((r.roomType || '').replace(/_/g,' '));
+            const price = fmtMoney(r.rentPrice ?? r.monthlyRent);
+            const area  = fmtArea(r.areaM2 || r.area);
+            const rid   = r.id || r.roomId || '';
+            const postId = r.postId || r.id || '';
+
+            // Show tenant name if rented
+            const tenantInfo = r.userName
+                ? `<div style="font-size:0.7rem;color:#2563eb;margin-top:2px;">👤 ${esc(r.userName)}</div>`
+                : '';
+
+            return `<tr style="cursor:pointer;" onclick="openRoomDetail(${rid})" title="Xem chi tiết phòng">
+          <td>
+            <div class="room-room-name">${name}</div>
+            ${type ? `<div class="room-room-sub">${type}</div>` : ''}
+            ${tenantInfo}
+          </td>
+          <td class="ss-table-price">${price}</td>
+          <td style="color:#64748b;font-weight:600;">${area}</td>
+          <td>
+            <span class="badge ${badge.cls}">
+              <span class="badge-dot"></span>${badge.label}
+            </span>
+          </td>
+          <td onclick="event.stopPropagation()">
+            <div style="display:flex;gap:0.4rem;">
+              <button class="tbl-btn-copy" onclick="openRoomDetail(${rid})">Chi tiết</button>
+              ${postId ? `<a href="/rooms/${postId}" class="tbl-btn-view">Xem</a>` : ''}
+            </div>
+          </td>
+        </tr>`;
+        }).join('');
+    }
+
+    function applyRoomFilters() {
+        const filtered = getFilteredRooms();
+        renderRoomsTable(filtered);
+        if (roomFilterEls.count) roomFilterEls.count.textContent = `${filtered.length} phòng`;
+    }
+
+    /* ─── Room Detail Modal — GET /api/room-management/room-detail-management (body: roomId) ─── */
+    async function openRoomDetail(roomId) {
+        if (!roomId) return;
+        const modal = document.getElementById('room-detail-modal');
+        const body  = document.getElementById('modal-room-body');
+        const title = document.getElementById('modal-room-title');
+        modal.classList.add('open');
+        body.innerHTML = `<div class="ss-loading"><div class="ss-spinner"></div> Đang tải chi tiết phòng...</div>`;
+
+        // First try from cache for instant display
+        const cached = cachedRooms.find(r => (r.id || r.roomId) == roomId);
+        if (cached) title.textContent = `Phòng ${getRoomDisplayName(cached)}`;
+
+        const token = localStorage.getItem('smartstay_token');
+        const headers = {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        };
+        try {
+            const res = await fetch('/api/room-management/room-detail-management', {
+                method: 'GET',
+                headers,
+                credentials: 'include',
+                body: JSON.stringify(roomId)
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const raw = await res.json();
+            const room = raw.data || raw.body || raw;
+
+            title.textContent = `Phòng ${esc(room.roomNumber || room.roomName || room.title || '')}`;
+
+            // Build detail rows
+            const statusBadge = getStatusBadge(room.status);
+            const badgeHtml = `<span class="badge ${statusBadge.cls}" style="font-size:0.75rem;"><span class="badge-dot"></span>${statusBadge.label}</span>`;
+
+            body.innerHTML = `
+          <div style="display:grid;gap:0.2rem;">
+            ${modalRow('Số phòng', esc(room.roomNumber || '—'))}
+            ${modalRow('Loại phòng', esc((room.roomType||'—').replace(/_/g,' ')))}
+            ${modalRow('Giá thuê/tháng', fmtMoney(room.rentPrice ?? room.monthlyRent))}
+            ${modalRow('Diện tích', fmtArea(room.areaM2 || room.area))}
+            ${modalRowHtml('Trạng thái', badgeHtml)}
+            ${room.userName ? modalRow('Khách đang thuê', esc(room.userName)) : ''}
+            ${room.userEmail ? modalRow('Email khách thuê', esc(room.userEmail)) : ''}
+            ${room.address ? modalRow('Địa chỉ', esc(room.address)) : ''}
+            ${room.description ? modalRow('Mô tả', esc(room.description)) : ''}
+            ${room.createdAt ? modalRow('Ngày tạo', new Date(room.createdAt).toLocaleDateString('vi-VN')) : ''}
+          </div>
+          ${!room.userName ? `
+          <div style="margin-top:1.1rem;padding:0.85rem 1rem;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:0.75rem;font-size:0.8rem;color:#16a34a;font-weight:700;display:flex;align-items:center;gap:0.5rem;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Phòng hiện đang trống — sẵn sàng cho thuê
+          </div>` : ''}`;
+        } catch (e) {
+            // Fallback: hiển thị dữ liệu từ cache nếu API lỗi
+            if (cached) {
+                const statusBadge = getStatusBadge(cached.status);
+                body.innerHTML = `
+            <div style="margin-bottom:0.75rem;padding:0.5rem 0.75rem;background:#fef3c7;border-radius:0.5rem;font-size:0.75rem;color:#92400e;">⚠️ Hiển thị dữ liệu tóm tắt (không tải được chi tiết đầy đủ)</div>
+            <div style="display:grid;gap:0.2rem;">
+              ${modalRow('Số phòng', esc(cached.roomNumber || '—'))}
+              ${modalRow('Loại phòng', esc((cached.roomType||'—').replace(/_/g,' ')))}
+              ${modalRow('Giá thuê/tháng', fmtMoney(cached.rentPrice ?? cached.monthlyRent))}
+              ${modalRowHtml('Trạng thái', `<span class="badge ${statusBadge.cls}"><span class="badge-dot"></span>${statusBadge.label}</span>`)}
+              ${cached.userName ? modalRow('Khách đang thuê', esc(cached.userName)) : ''}
+              ${cached.userEmail ? modalRow('Email', esc(cached.userEmail)) : ''}
+            </div>`;
+            } else {
+                body.innerHTML = `<div style="color:#dc2626;font-size:0.82rem;padding:1rem;">Không thể tải chi tiết phòng.</div>`;
+            }
+            console.error('openRoomDetail error:', e);
+        }
+    }
+
+    function modalRow(key, val) {
+        return `<div class="modal-row"><span class="modal-key">${key}</span><span class="modal-val">${val}</span></div>`;
+    }
+    function modalRowHtml(key, html) {
+        return `<div class="modal-row"><span class="modal-key">${key}</span><div>${html}</div></div>`;
+    }
+
+    function closeRoomModal() {
+        document.getElementById('room-detail-modal').classList.remove('open');
+    }
+    document.getElementById('room-detail-modal').addEventListener('click', function(e) {
+        if (e.target === this) closeRoomModal();
+    });
+
+    /* Filter events */
+    ['houseSearchInput','houseStatusFilter','houseSortSelect'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', applyRoomFilters);
+    });
+
+    /* Init room management */
+    document.addEventListener('DOMContentLoaded', loadRoomsSummary);
+</script>
+
+<!-- Keep original landlordPosts.js -->
+<script th:src="@{/js/landlordPosts.js}" src="../static/js/landlordPosts.js"></script>
 </body>
-
 </html>

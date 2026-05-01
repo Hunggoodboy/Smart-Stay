@@ -38,10 +38,6 @@ public class AuthController {
         return ResponseEntity.ok(authService.getCurrentUser());
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser() {
-        return ResponseEntity.ok(authService.getCurrentUser());
-    }
 
     @GetMapping("/myid")
     public ResponseEntity<?> getCurrentUserId() {

@@ -31,13 +31,6 @@ public class Customer extends User {
 
     // ==================== RELATIONSHIPS ====================
 
-    /**
-     * 1 Customer ký nhiều hợp đồng thuê phòng
-     */
-    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private List<Contracts> contracts;
 
     /**
      * 1 Customer tham gia nhiều phòng chat

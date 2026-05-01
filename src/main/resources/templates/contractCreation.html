@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Ký Hợp Đồng Thuê Nhà | Smart Stay</title>
+    <link rel="stylesheet" href="/css/uno.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #f8fafc; }
+        .input-blank {
+            border: none;
+            border-bottom: 1px dashed #64748b;
+            background: transparent;
+            outline: none;
+            font-family: inherit;
+            font-size: inherit;
+            color: #0f172a;
+            font-weight: 600;
+            text-align: center;
+            padding: 0 4px;
+        }
+        .input-blank:focus {
+            border-bottom: 2px solid #3b82f6;
+            background-color: #f1f5f9;
+        }
+        .a4-paper {
+            max-width: 210mm;
+            min-height: 297mm;
+            margin: 2rem auto 120px auto;
+            background: white;
+            padding: 25mm 20mm;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 19px;
+            line-height: 1.6;
+            color: #000;
+        }
+        .signature-style {
+            font-family: 'Dancing Script', cursive;
+            font-size: 32px;
+            color: #1e40af;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .action-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid #e2e8f0;
+            padding: 1.25rem;
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            z-index: 1000;
+            box-shadow: 0 -10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body>
+
+<form id="contractForm">
+    <input type="hidden" id="landLordId">
+    <input type="hidden" id="customerId">
+    <input type="hidden" id="roomId">
+
+    <div class="a4-paper">
+        <div class="text-center font-bold mb-10">
+            <p class="m-0 text-xl uppercase tracking-widest">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>
+            <p class="m-0 text-lg underline underline-offset-8">Độc lập - Tự do - Hạnh phúc</p>
+            <p class="m-0 text-base font-normal italic mt-6">
+                Hà Nội, ngày <input type="text" id="signDay" class="input-blank w-10">
+                tháng <input type="text" id="signMonth" class="input-blank w-10">
+                năm <input type="text" id="signYear" class="input-blank w-16">
+            </p>
+        </div>
+
+        <h1 class="text-3xl font-bold text-center uppercase mb-8">HỢP ĐỒNG THUÊ NHÀ</h1>
+
+        <div class="italic mb-8 space-y-1 text-sm">
+            <p class="m-0">- Căn cứ Bộ luật Dân sự số 91/2015/QH13 ngày 24/11/2015;</p>
+            <p class="m-0">- Căn cứ vào Luật Thương mại số 36/2005/QH11 ngày 14 tháng 06 năm 2005;</p>
+            <p class="m-0">- Căn cứ vào nhu cầu và sự thỏa thuận của các bên tham gia Hợp đồng;</p>
+        </div>
+
+        <p class="font-bold mb-6 text-center text-xl">Hôm nay, các Bên gồm:</p>
+
+        <div class="mb-6">
+            <p class="font-bold uppercase m-0 underline">BÊN CHO THUÊ (BÊN A):</p>
+            <p class="m-0">Ông/Bà: <span id="displayLandLordName" class="font-bold">...</span></p>
+            <p class="m-0">CMND/CCCD số: <span id="displayLandLordIdentity">...</span></p>
+            <p class="m-0">Địa chỉ: <span id="displayLandLordAddress">...</span></p>
+        </div>
+
+        <div class="mb-8">
+            <p class="font-bold uppercase m-0 underline">BÊN THUÊ (BÊN B):</p>
+            <p class="m-0">Ông/Bà: <span id="displayCustomerName" class="font-bold">...</span></p>
+            <p class="m-0">CMND/CCCD số: <span id="displayCustomerIdentity">...</span></p>
+            <p class="m-0">Địa chỉ: <span id="displayCustomerAddress">...</span></p>
+        </div>
+
+        <div class="space-y-6 text-justify">
+            <p class="m-0 font-bold underline">Điều 1. Thông tin tài sản:</p>
+            <p class="m-0">Địa chỉ: <input type="text" id="roomAddress" class="input-blank w-[70%]"></p>
+            <p class="m-0">Diện tích: <input type="number" id="roomArea" class="input-blank w-16"> m2.</p>
+
+            <p class="m-0 font-bold underline">Điều 2. Thời gian và Tài chính:</p>
+            <p class="m-0">Bắt đầu từ: <input type="date" id="startDate" class="input-blank"></p>
+            <p class="m-0">Tiền thuê: <input type="number" id="monthlyRent" class="input-blank w-32 text-blue-700 font-bold"> VNĐ/tháng.</p>
+            <p class="m-0">Tiền cọc: <input type="number" id="depositAmount" class="input-blank w-32 text-red-600 font-bold"> VNĐ.</p>
+
+            <div class="grid grid-cols-2 gap-y-3 mt-2 bg-gray-50 p-4 rounded-xl border border-dashed border-gray-300">
+                <p class="m-0">Điện: <input type="number" id="electricityRate" class="input-blank w-24"> VNĐ/kWh</p>
+                <p class="m-0">Nước: <input type="number" id="waterRate" class="input-blank w-24"> VNĐ/m3</p>
+                <p class="m-0">Internet: <input type="number" id="internetFee" class="input-blank w-24"> VNĐ/tháng</p>
+                <p class="m-0">Vệ sinh: <input type="number" id="cleaningFee" class="input-blank w-24"> VNĐ/tháng</p>
+                <p class="m-0">Phí gửi xe: <input type="number" id="parkingFee" class="input-blank w-24"> VNĐ/xe</p>
+                <p class="m-0">Số người ở: <input type="number" id="numOccupants" class="input-blank w-12" value="1"> người</p>
+                <p class="m-0">Đóng tiền ngày: <input type="number" id="billingDate" class="input-blank w-12" value="5"> hàng tháng</p>
+                <p class="m-0">Chu kỳ: <input type="number" id="paymentCycle" class="input-blank w-12" value="1"> tháng</p>
+            </div>
+            <p class="m-0 font-bold italic mt-4 text-center">Nội dung hợp đồng tuân thủ các quy định tại Điều 7, 8, 9, 10.</p>
+        </div>
+
+        <div class="mt-20 flex justify-between px-10">
+            <div class="text-center w-1/2">
+                <p class="font-bold uppercase m-0">BÊN CHO THUÊ (Bên A)</p>
+                <p class="italic text-sm m-0">(Đã ký điện tử)</p>
+                <div id="landLordSignature" class="signature-style"></div>
+                <p class="font-bold" id="signLandLordName">...</p>
+            </div>
+            <div class="text-center w-1/2">
+                <p class="font-bold uppercase m-0">BÊN THUÊ (Bên B)</p>
+                <p class="italic text-sm m-0">(Chờ xác nhận)</p>
+                <div class="h-20 flex items-center justify-center">
+                    <span class="text-gray-300 italic">Chưa ký</span>
+                </div>
+                <p class="font-bold" id="signCustomerName">...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="action-bar">
+        <button type="button" onclick="history.back()" class="px-8 py-3 bg-white border border-gray-300 rounded-xl font-bold hover:bg-gray-50 transition">Quay lại</button>
+        <button type="submit" class="px-12 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg transform active:scale-95 transition flex items-center gap-2">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg>
+            Ký & Tạo Hợp Đồng
+        </button>
+    </div>
+</form>
+
+<script src="/js/contract.js"></script>
+</body>
+</html>

@@ -63,7 +63,7 @@ public class RoomPostService {
 
     public List<RoomPostSummaryResponse> getAllRoomPosts() {
         List<RoomPosts> roomPosts = roomPostRepository.findAll();
-        return roomPosts.stream().map(post -> {
+            return roomPosts.stream().map(post -> {
             return RoomPostSummaryResponse.builder()
                     .id(post.getId())
                     .title(post.getTitle())
@@ -107,8 +107,25 @@ public class RoomPostService {
                 .map(image -> image.getImageUrl())
                 .toList());
         response.setFullAddress(room.getAddress());
-        response.setLandlord(
-                new LandlordInfo(user.getId(), user.getFullName(), user.getPhoneNumber(), user.getAvatarUrl()));
+        boolean isOwner = false;
+
+        try {
+            // Thử lấy ID người dùng hiện tại
+            Long currentUserId = authService.getCurrentUserIdOrNull();
+            System.out.println("Current user id: " + currentUserId);
+            System.out.println("Room landlord id: " + room.getLandlord().getId());
+            // Nếu lấy được và trùng với ID chủ bài đăng
+            if (currentUserId != null && room.getLandlord().getId().equals(currentUserId)) {
+                isOwner = true;
+            }
+        } catch (Exception e) {
+            // Bắt lỗi "Người dùng chưa đăng nhập" hoặc token hết hạn
+            // Không làm gì cả, cứ để isOwner = false để họ xem với tư cách Khách
+        }
+        System.out.println(authService.getCurrentUserIdOrNull());
+        response.setOwner(isOwner);
+        System.out.println(isOwner);
+        response.setLandlord(new LandlordInfo(user.getId(), user.getFullName(), user.getPhoneNumber(), user.getAvatarUrl()));
         return response;
     }
 

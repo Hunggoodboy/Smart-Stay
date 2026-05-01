@@ -162,8 +162,11 @@
                     </div>
                 </div>
 
-                <button id="btnAction" class="btn-primary" onclick="sendRequest()">Gửi yêu cầu thuê phòng</button>
-                <p style="text-align: center; font-size: 12px; color: #6b7280; margin-top: 12px;">Bạn sẽ không bị trừ tiền khi nhấn nút này.</p>
+                <!-- Trong booking-card[cite: 10] -->
+                <button id="btnAction" class="btn-primary">Gửi yêu cầu thuê phòng</button>
+                <button id="btnManage" class="btn-primary" style="margin-top: 12px; background: #1f2937; display: none;" onclick="goToManagement()">
+                    🛠️ Tạo quản lý phòng
+                </button>
             </div>
         </div>
     </div>
@@ -181,10 +184,20 @@
     // 2. Gọi API lấy dữ liệu
     async function fetchRoomDetail() {
         if (!roomId) { showError(); return; }
+        // Lấy token từ LocalStorage
+        const token = localStorage.getItem('smartstay_token');
+        const fetchOptions = {
+            method: 'GET',
+            headers: {}
+        };
 
+        // NẾU CÓ TOKEN (ĐÃ ĐĂNG NHẬP) -> GẮN VÀO HEADER
+        if (token) {
+            fetchOptions.headers['Authorization'] = `Bearer ${token}`;
+        }
         try {
             // Gọi API bằng đường dẫn tương đối chuẩn REST
-            const res = await fetch(`/room-detail/${roomId}`);
+            const res = await fetch(`/room-detail/${roomId}`, fetchOptions);
             if (!res.ok) throw new Error('Not found');
             const data = await res.json();
             renderUI(data);
@@ -279,15 +292,23 @@
             `).join('');
 
         // ==================== Xử lý nút Hành động (Trạng thái thuê) ====================
-        const btn = document.getElementById('btnAction');
-        if (room.myRequestStatus === 'PENDING') {
-            btn.textContent = 'Đang chờ duyệt...';
-            btn.classList.add('btn-disabled');
-            btn.disabled = true;
-        } else if (room.myRequestStatus === 'APPROVED' || room.myRequestStatus === 'CONTRACTED') {
-            btn.textContent = 'Đã thuê / Đã duyệt';
-            btn.style.background = '#10b981'; // Xanh lá
-            btn.disabled = true;
+        const btnAction = document.getElementById('btnAction');
+        const btnManage = document.getElementById('btnManage');
+
+        if (room.owner == true) {
+            // Nếu là chủ nhà: Hiện nút Quản lý, ẩn nút Gửi yêu cầu[cite: 8, 10]
+            btnAction.style.display = 'none';
+            btnManage.style.display = 'block';
+        } else {
+            // Nếu là khách: Hiện nút Gửi yêu cầu, ẩn nút Quản lý[cite: 10]
+            btnAction.style.display = 'block';
+            btnManage.style.display = 'none';
+
+            // Xử lý các trạng thái chờ duyệt cũ nếu có[cite: 10]
+            if (room.myRequestStatus === 'PENDING') {
+                btnAction.textContent = 'Đang chờ duyệt...';
+                btnAction.disabled = true;
+            }
         }
     }
 
@@ -300,46 +321,89 @@
     async function sendRequest() {
         const btn = document.getElementById('btnAction');
         const token = localStorage.getItem('smartstay_token');
-        // Đổi trạng thái UI báo hiệu đang xử lý
+
+        // 1. Kiểm tra xem token có tồn tại không trước khi gửi
+        if (!token) {
+            alert("Bạn cần đăng nhập bằng tài khoản Khách thuê để thực hiện chức năng này!");
+            window.location.href = '/login';
+            return;
+        }
+
         btn.textContent = 'Đang gửi...';
         btn.disabled = true;
 
         try {
-            // Dữ liệu gửi đi: Chỉ cần ID của bài đăng phòng là đủ
-            const payload = {
-                roomPostId: parseInt(roomId) // Biến roomId đã được lấy tự động ở đầu file
-            };
-
+            const payload = { roomPostId: parseInt(roomId) };
             const response = await fetch('/api/customer/requests', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}` // Gửi kèm token
                 },
                 body: JSON.stringify(payload)
             });
 
             if (!response.ok) {
+                // Xử lý riêng lỗi 401 (Hết hạn token)
                 if (response.status === 401) {
                     alert("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại!");
                     window.location.href = '/login';
                     return;
                 }
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Gửi yêu cầu thất bại');
+
+                // Xử lý riêng lỗi 403 (Sai quyền)
+                if (response.status === 403) {
+                    throw new Error("Bạn không có quyền gửi yêu cầu! (Có thể bạn đang đăng nhập bằng tài khoản Chủ trọ thay vì Khách thuê).");
+                }
+
+                // 2. Cách đọc lỗi an toàn (Không dùng ngay .json() để tránh crash)
+                const textData = await response.text();
+                let errorMessage = 'Gửi yêu cầu thất bại';
+                try {
+                    if (textData) {
+                        const errorJson = JSON.parse(textData);
+                        errorMessage = errorJson.message || errorMessage;
+                    }
+                } catch (e) {
+                    console.error("Lỗi từ server không phải JSON:", textData);
+                }
+                throw new Error(errorMessage);
             }
 
+            // Thành công 200 OK
             const data = await response.json();
             alert("Gửi yêu cầu thuê phòng thành công!");
 
+            btn.textContent = 'Đã gửi yêu cầu';
+            btn.style.background = '#10b981'; // Đổi màu nút sang xanh lá báo thành công
+
         } catch (error) {
             alert("Lỗi: " + error.message);
-        } finally {
-            btn.textContent = 'Gửi yêu cầu';
+            // Nhả nút ra để khách có thể bấm lại nếu lỗi
+            btn.textContent = 'Gửi yêu cầu thuê phòng';
             btn.disabled = false;
         }
     }
+    // Hàm lưu dữ liệu vào session và chuyển trang
+    function goToManagement() {
+        // Lấy dữ liệu phòng hiện tại đang hiển thị trên UI
+        const roomData = {
+            roomNumber: document.getElementById('rTitle').textContent,
+            address: document.getElementById('rAddress').textContent,
+            roomType: document.getElementById('rType').textContent,
+            areaM2: parseFloat(document.getElementById('rArea').textContent),
+            maxOccupants: parseInt(document.getElementById('rOcc').textContent.replace(/[^0-9]/g, '')),
+            rentPrice: parseFloat(document.getElementById('rRent').textContent.replace(/[^0-9]/g, '')),
+            // Lấy các phí từ phần services nếu cần (ví dụ đơn giản bên dưới)
+            electricityPricePerKwh: 3800,
+            waterPricePerM3: 18000
+        };
 
+        // Lưu vào session để trang bên kia lấy ra
+        sessionStorage.setItem('temp_room_data', JSON.stringify(roomData));
+        // Chuyển sang trang tạo mới
+        window.location.href = '/createRoomManage';
+    }
     // Khởi chạy khi load xong DOM
     fetchRoomDetail();
 </script>

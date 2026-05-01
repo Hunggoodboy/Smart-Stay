@@ -16,15 +16,20 @@ import java.util.List;
 @AllArgsConstructor
 @RequestMapping("/api")
 public class RentalRequestController {
-    private final RentalRequestService rentalRequestsService;
+    private final RentalRequestService   rentalRequestsService;
 
     @GetMapping("/landlord/requests")
     public ResponseEntity<List<RentalRequestResponse> > getRentalRequests() {
         return ResponseEntity.ok(rentalRequestsService.findRentalRequestByLandLordId());
     }
 
-    @PostMapping("/api/customer/requests")
+    @PostMapping("/customer/requests")
     public ResponseEntity<?> createRentalRequest(@RequestBody RentalRequestDTO rentalRequestDTO){
         return ResponseEntity.ok(rentalRequestsService.createNewRentalRequest(rentalRequestDTO));
+    }
+
+    @PostMapping("/landlord/changeRequestStatus/{requestId}")
+    public ResponseEntity<?> changeRequestStatus(@PathVariable Long requestId, @RequestParam String status) {
+        return ResponseEntity.ok(rentalRequestsService.changeRequestStatus(requestId, status));
     }
 }
