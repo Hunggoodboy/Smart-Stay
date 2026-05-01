@@ -21,20 +21,26 @@ public class RoomPostController {
     private final RoomPostService roomPostService;
 
     @PostMapping("/api/post-room")
-    public ResponseEntity<ApiResponse> createNewPostRoom(@RequestPart("request") CreateRoomPostRequest  createRoomPostRequest,
-                                                         @RequestPart(value = "mainImage", required = false) MultipartFile mainImg,
-                                                         @RequestPart(value = "gallery", required = false) List<MultipartFile> images) throws IOException {
+    public ResponseEntity<ApiResponse> createNewPostRoom(
+            @RequestPart("request") CreateRoomPostRequest createRoomPostRequest,
+            @RequestPart(value = "mainImage", required = false) MultipartFile mainImg,
+            @RequestPart(value = "gallery", required = false) List<MultipartFile> images) throws IOException {
         return ResponseEntity.ok(roomPostService.createNewRoomPost(createRoomPostRequest, mainImg, images));
     }
 
     @GetMapping("/room-posted")
-    private ResponseEntity<List<RoomPostSummaryResponse> >  getRoomPosted(){
+    private ResponseEntity<List<RoomPostSummaryResponse>> getRoomPosted() {
         return ResponseEntity.ok(roomPostService.getAllRoomPosts());
     }
 
     @GetMapping("/room-detail/{id}")
-    private ResponseEntity<RoomPostDetailResponse> getRoomPostById(@PathVariable Long id){
+    private ResponseEntity<RoomPostDetailResponse> getRoomPostById(@PathVariable Long id) {
         return ResponseEntity.ok(roomPostService.getRoomPostDetail(id));
+    }
+
+    @GetMapping("/api/landlord/posts")
+    public ResponseEntity<List<RoomPostSummaryResponse>> getPostsForLandlord() {
+        return ResponseEntity.ok(roomPostService.getPostsForCurrentLandlord());
     }
 
 }

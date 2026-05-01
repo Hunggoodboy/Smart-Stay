@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.time.LocalDateTime;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 @Service
 @RequiredArgsConstructor
@@ -30,18 +32,20 @@ public class RoomPostService {
     private final AuthService authService;
     private final FileService fileService;
     private final LandLordRepository landLordRepository;
+
     @Transactional
-    public ApiResponse createNewRoomPost(CreateRoomPostRequest createRoomPostRequest, MultipartFile mainImg, List<MultipartFile> imageUrls) throws IOException {
+    public ApiResponse createNewRoomPost(CreateRoomPostRequest createRoomPostRequest, MultipartFile mainImg,
+            List<MultipartFile> imageUrls) throws IOException {
         RoomPosts roomPosts = new RoomPosts();
         BeanUtils.copyProperties(createRoomPostRequest, roomPosts);
         LandLord landLord = authService.getCurrentLandLord();
-        if(landLord.getVerified() == false){
+        if (landLord.getVerified() == false) {
             throw new InvalidParameterException("Bạn cần chờ admin xác thực tài khoản chủ nhà trước khi đăng bài");
         }
         roomPosts.setLandlord(landLord);
         roomPosts.setStatus(RoomPosts.Status.ACTIVE);
         roomPosts.setCreatedAt(LocalDateTime.now());
-        if(mainImg != null && !mainImg.isEmpty()) {
+        if (mainImg != null && !mainImg.isEmpty()) {
             String url = fileService.saveImg(mainImg);
             roomPosts.setMainImageUrl(url);
         }
@@ -59,7 +63,7 @@ public class RoomPostService {
 
     public List<RoomPostSummaryResponse> getAllRoomPosts() {
         List<RoomPosts> roomPosts = roomPostRepository.findAll();
-            return roomPosts.stream().map(post -> {
+        return roomPosts.stream().map(post -> {
             return RoomPostSummaryResponse.builder()
                     .id(post.getId())
                     .title(post.getTitle())
@@ -71,8 +75,25 @@ public class RoomPostService {
                     .landlordName(post.getLandlord().getFullName())
                     .publishedAt(post.getCreatedAt())
                     .build();
-                }
-        ).toList();
+        }).toList();
+    }
+
+    public List<RoomPostSummaryResponse> getPostsForCurrentLandlord() {
+        Long landlordId = authService.getCurrentUserId();
+        Page<RoomPosts> page = roomPostRepository.findByLandlordIdOrderByCreatedAtDesc(landlordId,
+                PageRequest.of(0, 100));
+        return page.stream().map(post -> RoomPostSummaryResponse.builder()
+                .id(post.getId())
+                .title(post.getTitle())
+                .monthlyRent(post.getMonthlyRent())
+                .areaM2(post.getAreaM2())
+                .roomType(post.getRoomType())
+                .status(post.getStatus())
+                .thumbnailUrl(post.getMainImageUrl())
+                .landlordName(post.getLandlord().getFullName())
+                .publishedAt(post.getCreatedAt())
+                .build())
+                .toList();
     }
 
     public RoomPostDetailResponse getRoomPostDetail(Long id) {
@@ -86,7 +107,8 @@ public class RoomPostService {
                 .map(image -> image.getImageUrl())
                 .toList());
         response.setFullAddress(room.getAddress());
-        response.setLandlord(new LandlordInfo(user.getId(), user.getFullName(), user.getPhoneNumber(), user.getAvatarUrl()));
+        response.setLandlord(
+                new LandlordInfo(user.getId(), user.getFullName(), user.getPhoneNumber(), user.getAvatarUrl()));
         return response;
     }
 
