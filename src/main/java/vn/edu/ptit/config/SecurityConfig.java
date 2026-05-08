@@ -32,13 +32,13 @@ public class SecurityConfig {
         return daoAuthenticationProvider;
     }
 
-    @Bean
-    public DefaultSecurityFilterChain SecurityFilterChain(HttpSecurity http) throws Exception {
-        http
+        @Bean
+        public DefaultSecurityFilterChain SecurityFilterChain(HttpSecurity http) throws Exception {
+                http
                 .authenticationProvider(authenticationProvider())
                 .sessionManagement(s->
                         s.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-                .authorizeHttpRequests(auth -> auth
+                                .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/static/**","/auth","/login", "/register", "/css/**","/webjars/**","/", "/rooms/**","/room-detail/**", "/js/**","/room-posted", "/images/**", "/api/user/login", "/api/user/register", "/payment").permitAll()
                         .requestMatchers("/api/utility-bills", "/chatMessage", "/api/post-room", "/payment" , "/postRooms", "myHome", "/api/rental-requests").authenticated()
                         .requestMatchers("/api/setBill").hasRole("LANDLORD")
@@ -64,9 +64,9 @@ public class SecurityConfig {
                             response.getWriter().write("{\"error\": \"Unauthorized\"}");
                         })
                 )
-                .csrf(csrf -> csrf.disable());
-        return http.build();
-    }
+                                .csrf(csrf -> csrf.disable());
+                return http.build();
+        }
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return web -> web.ignoring()
@@ -78,13 +78,20 @@ public class SecurityConfig {
                         "/favicon.ico"
                 );
     }
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
-    }
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+
+        @Bean
+        public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService,
+                        PasswordEncoder passwordEncoder) throws Exception {
+                DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
+                daoAuthenticationProvider.setUserDetailsService(userDetailsService);
+                daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
+                return daoAuthenticationProvider;
+        }
+
+        @Bean
+        public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+                        throws Exception {
+                return authenticationConfiguration.getAuthenticationManager();
+        }
 
 }
