@@ -70,4 +70,14 @@ public class WebController {
     public String landlordView() {
         return "landlord_index";
     }
+
+    @GetMapping("/landlord/posts")
+    public String landlordPosts() {
+        return "landlord_posts";
+    }
+
+    @GetMapping("/landlord/houses")
+    public String landlordHouses() {
+        return "landlord_house_management";
+    }
 }

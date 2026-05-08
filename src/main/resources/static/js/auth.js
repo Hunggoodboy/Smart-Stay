@@ -185,6 +185,9 @@ if (formLogin) {
             if (data && data.user) {
                 localStorage.setItem('smartstay_user', JSON.stringify(data.user));
                 localStorage.setItem('smartstay_token', data.accessToken);
+                if (data.accessToken) {
+                    document.cookie = `smartstay_token=${encodeURIComponent(data.accessToken)}; path=/; samesite=lax`;
+                }
             }
             showMessage(loginMessage, data && data.message ? data.message : 'Đăng nhập thành công.', true);
             window.location.href = '/';

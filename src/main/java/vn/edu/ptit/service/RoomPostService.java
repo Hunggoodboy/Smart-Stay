@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
@@ -71,6 +73,7 @@ public class RoomPostService {
                     .areaM2(post.getAreaM2())
                     .roomType(post.getRoomType())
                     .status(post.getStatus())
+                    .shortAddress(buildShortAddress(post))
                     .thumbnailUrl(post.getMainImageUrl())
                     .landlordName(post.getLandlord().getFullName())
                     .publishedAt(post.getCreatedAt())
@@ -89,6 +92,7 @@ public class RoomPostService {
                 .areaM2(post.getAreaM2())
                 .roomType(post.getRoomType())
                 .status(post.getStatus())
+                .shortAddress(buildShortAddress(post))
                 .thumbnailUrl(post.getMainImageUrl())
                 .landlordName(post.getLandlord().getFullName())
                 .publishedAt(post.getCreatedAt())
@@ -106,10 +110,28 @@ public class RoomPostService {
         response.setImages(images.stream()
                 .map(image -> image.getImageUrl())
                 .toList());
-        response.setFullAddress(room.getAddress());
+        response.setFullAddress(buildFullAddress(room));
         response.setLandlord(
                 new LandlordInfo(user.getId(), user.getFullName(), user.getPhoneNumber(), user.getAvatarUrl()));
         return response;
+    }
+
+    private String buildFullAddress(RoomPosts post) {
+        return Stream.of(post.getAddress(), post.getWard(), post.getDistrict(), post.getCity())
+                .filter(value -> value != null && !value.isBlank())
+                .collect(Collectors.joining(", "));
+    }
+
+    private String buildShortAddress(RoomPosts post) {
+        String shortAddress = Stream.of(post.getDistrict(), post.getCity())
+                .filter(value -> value != null && !value.isBlank())
+                .collect(Collectors.joining(", "));
+        if (!shortAddress.isBlank()) {
+            return shortAddress;
+        }
+        return Stream.of(post.getAddress(), post.getWard(), post.getCity())
+                .filter(value -> value != null && !value.isBlank())
+                .collect(Collectors.joining(", "));
     }
 
 }

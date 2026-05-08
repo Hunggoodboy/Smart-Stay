@@ -2,6 +2,7 @@ package vn.edu.ptit.Filter;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
@@ -17,7 +18,6 @@ import vn.edu.ptit.service.JWT.jwtService;
 import java.io.IOException;
 import java.util.Collections;
 
-
 @Component
 @AllArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
@@ -25,15 +25,24 @@ public class JwtFilter extends OncePerRequestFilter {
     private final jwtService jwtService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        String token = null;
+
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+        }
+
+        if (token == null) {
+            token = getTokenFromCookie(request, "smartstay_token");
+        }
+
+        if (token == null) {
             filterChain.doFilter(request, response);
             return;
         }
         try {
-            // Cắt bear
-            String token = authHeader.substring(7);
             UserResponse userResponse = jwtService.getUserResponseFromToken(token);
             if (userResponse != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 SimpleGrantedAuthority authority = new SimpleGrantedAuthority(userResponse.getRole());
@@ -46,11 +55,22 @@ public class JwtFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
+        } catch (Exception e) {
+            System.out.println("JWT Invalid: " + e.getMessage());
         }
-        catch (Exception e) {
-                System.out.println("JWT Invalid: " + e.getMessage());
-            }
         filterChain.doFilter(request, response);
+    }
+
+    private String getTokenFromCookie(HttpServletRequest request, String cookieName) {
+        if (request.getCookies() == null) {
+            return null;
+        }
+        for (Cookie cookie : request.getCookies()) {
+            if (cookieName.equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+        return null;
     }
 
 }

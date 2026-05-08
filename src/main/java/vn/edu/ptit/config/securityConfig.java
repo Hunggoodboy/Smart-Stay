@@ -23,62 +23,64 @@ import vn.edu.ptit.repository.UserRepository;
 @Configuration
 @AllArgsConstructor
 public class securityConfig {
-    private final JwtFilter jwtFilter;
+        private final JwtFilter jwtFilter;
 
-    private static final String[] PUBLIC_URLS = {
-            "/", "/login", "/register", "/rooms/**",
-            "/css/**", "/js/**", "/images/**",
-            "/room-posted", "/room-detail/**",
-            "/api/user/login", "/api/user/register",
-            "/postRooms", "/MyRentalRequest", "/myHome", "/payment", "/chatMessage", "/adminVerify", "/registerLandLord"
-    };
+        private static final String[] PUBLIC_URLS = {
+                        "/", "/login", "/register", "/rooms/**",
+                        "/css/**", "/js/**", "/images/**",
+                        "/room-posted", "/room-detail/**",
+                        "/api/user/login", "/api/user/register",
+                        "/postRooms", "/MyRentalRequest", "/myHome", "/payment", "/chatMessage", "/adminVerify",
+                        "/registerLandLord"
+        };
 
-    private static final String[] LANDLORD_API_URLS = {
-            "/api/post-room/**", "/api/billing/**",
-            "/api/setBill/**", "/api/landlord/**",
-    };
+        private static final String[] LANDLORD_API_URLS = {
+                        "/api/post-room/**", "/api/billing/**",
+                        "/api/setBill/**", "/api/landlord/**",
+        };
 
-    private static final String[] AUTHENTICATED_API_URLS = {
-            "/api/user/me", "/api/user/myid", "/api/user/tenant",
-            "/api/notifications/**", "/api/utility-bills/**",
-            "/api/chat/**", "/api/customer/**", "/api/landlord/requestToLandLord"
-    };
+        private static final String[] AUTHENTICATED_API_URLS = {
+                        "/api/user/me", "/api/user/myid", "/api/user/tenant",
+                        "/api/notifications/**", "/api/utility-bills/**",
+                        "/api/chat/**", "/api/customer/**", "/api/landlord/requestToLandLord"
+        };
 
+        @Bean
+        public DefaultSecurityFilterChain SecurityFilterChain(HttpSecurity http) throws Exception {
+                http
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                .addFilterBefore(jwtFilter,
+                                                org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers(PUBLIC_URLS).permitAll()
+                                                .requestMatchers("/landlord/**").hasAuthority("LANDLORD")
+                                                .requestMatchers(LANDLORD_API_URLS).hasAuthority("LANDLORD")
+                                                .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
+                                                .requestMatchers(AUTHENTICATED_API_URLS).authenticated()
+                                                .anyRequest().authenticated())
+                                .csrf(csrf -> csrf.disable());
+                return http.build();
+        }
 
-    @Bean
-    public DefaultSecurityFilterChain SecurityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .addFilterBefore(jwtFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(PUBLIC_URLS).permitAll()
-                        .requestMatchers(LANDLORD_API_URLS).hasAuthority("LANDLORD")
-                        .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
-                        .requestMatchers(AUTHENTICATED_API_URLS).authenticated()
-                        .anyRequest().authenticated()
-                )
-                .csrf(csrf -> csrf.disable());
-        return http.build();
-    }
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder();
+        }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-    @Bean
-    public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService,
-                                                         PasswordEncoder passwordEncoder) throws Exception {
-        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
-        daoAuthenticationProvider.setUserDetailsService(userDetailsService);
-        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
-        return daoAuthenticationProvider;
-    }
+        @Bean
+        public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService,
+                        PasswordEncoder passwordEncoder) throws Exception {
+                DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
+                daoAuthenticationProvider.setUserDetailsService(userDetailsService);
+                daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
+                return daoAuthenticationProvider;
+        }
 
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
-    }
+        @Bean
+        public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+                        throws Exception {
+                return authenticationConfiguration.getAuthenticationManager();
+        }
 
 }

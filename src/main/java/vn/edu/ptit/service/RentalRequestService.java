@@ -15,7 +15,6 @@ import vn.edu.ptit.repository.RoomPostRepository;
 import vn.edu.ptit.service.Authentication.AuthService;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,6 +24,7 @@ public class RentalRequestService {
     private final RentalRequestRepository rentalRequestRepository;
     private final RoomPostRepository roomPostRepository;
     private final AuthService authService;
+
     public ApiResponse createNewRentalRequest(RentalRequestDTO request) {
         RentalRequests rentalRequests = new RentalRequests();
         BeanUtils.copyProperties(request, rentalRequests);
@@ -43,7 +43,8 @@ public class RentalRequestService {
 
     public List<RentalRequestResponse> findRentalRequestByLandLordId() {
         LandLord landLord = authService.getCurrentLandLord();
-        List<Object[]> rentalRequestsList = rentalRequestRepository.findAllWithRoomPostAndCustomerByLandLordIdOrderByCreatedAt(landLord.getId());
+        List<Object[]> rentalRequestsList = rentalRequestRepository
+                .findAllWithRoomPostAndCustomerByLandLordIdOrderByCreatedAt(landLord.getId());
         return rentalRequestsList.stream().map(row -> {
             RentalRequests rentalRequests = (RentalRequests) row[0];
             String mainImageUrl = (String) row[1];
@@ -69,8 +70,47 @@ public class RentalRequestService {
                             .build())
                     // contractId sẽ được set sau khi tạo hợp đồng
                     .build();
-        }
-        ).collect(Collectors.toList());
+        }).collect(Collectors.toList());
     }
-    
+
+    public ApiResponse updateRequestStatus(Long requestId, RentalRequests.Status newStatus) {
+        if (newStatus == null) {
+            return ApiResponse.builder()
+                    .success(false)
+                    .message("Trạng thái không hợp lệ")
+                    .build();
+        }
+
+        if (newStatus != RentalRequests.Status.APPROVED && newStatus != RentalRequests.Status.REJECTED) {
+            return ApiResponse.builder()
+                    .success(false)
+                    .message("Chỉ cho phép chuyển sang APPROVED hoặc REJECTED")
+                    .build();
+        }
+
+        LandLord landLord = authService.getCurrentLandLord();
+        RentalRequests request = rentalRequestRepository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu"));
+
+        if (!request.getLandlord().getId().equals(landLord.getId())) {
+            throw new RuntimeException("Bạn không có quyền xử lý yêu cầu này");
+        }
+
+        if (request.getStatus() != RentalRequests.Status.PENDING) {
+            return ApiResponse.builder()
+                    .success(false)
+                    .message("Yêu cầu đã được xử lý trước đó")
+                    .build();
+        }
+
+        request.setStatus(newStatus);
+        request.setReviewedAt(LocalDateTime.now());
+        rentalRequestRepository.save(request);
+
+        return ApiResponse.builder()
+                .success(true)
+                .message("Cập nhật trạng thái thành công")
+                .build();
+    }
+
 }
