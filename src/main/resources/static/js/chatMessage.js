@@ -1,5 +1,5 @@
 const token = localStorage.getItem('smartstay_token');
-const receiverId = localStorage.getItem('chat_receiver_id'); // Lấy tự động ID người nhận
+let currentReceiverId = localStorage.getItem('chat_receiver_id'); // Lấy tự động ID người nhận nếu có sẵn
 let senderId = null;
 
 const stompClient = new StompJs.Client({
@@ -13,11 +13,6 @@ async function initChat() {
         window.location.href = '/login';
         return;
     }
-    if (!receiverId) {
-        alert('Không tìm thấy thông tin đối tác trò chuyện!');
-        window.history.back();
-        return;
-    }
 
     try {
         // Lấy ID của chính mình
@@ -26,15 +21,131 @@ async function initChat() {
         });
         senderId = await res.json();
 
-        // Cập nhật UI cơ bản
-        document.getElementById('headerName').innerText = `Đối tác #${receiverId}`;
-        document.getElementById('headerAvatar').innerText = "C";
+        // Fetch danh sách summary
+        await fetchSummaries();
 
         // Bắt đầu kết nối WebSocket
         stompClient.activate();
+
+        // Nếu có sẵn receiverId (từ trang khác chuyển sang), mở luôn
+        if (currentReceiverId) {
+            // Cần lấy tên của receiverId từ list nếu có, nếu không thì để mặc định
+            openChat(currentReceiverId, "Đối tác #" + currentReceiverId);
+        }
     } catch (error) {
         alert("Lỗi xác thực người dùng");
     }
+}
+
+// ==================== FETCH SUMMARIES ====================
+async function fetchSummaries() {
+    try {
+        const response = await fetch('/api/chat/summary', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const listContainer = document.getElementById('conversationList');
+        
+        if (response.status === 404) {
+            listContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: #94a3b8; font-size: 14px;">Chưa có tin nhắn nào.</div>';
+            return;
+        }
+
+        if (!response.ok) throw new Error('Failed to fetch summary');
+
+        const summaries = await response.json();
+        renderSummaries(summaries);
+        
+        // Cập nhật tên nếu đã có receiverId
+        if (currentReceiverId) {
+            const summary = summaries.find(s => s.partnerId == currentReceiverId);
+            if (summary) {
+                document.getElementById('headerName').innerText = summary.partnerName || ("Đối tác #" + currentReceiverId);
+                document.getElementById('headerAvatar').innerText = (summary.partnerName ? summary.partnerName.charAt(0).toUpperCase() : "?");
+            }
+        }
+    } catch (error) {
+        console.error("Lỗi lấy danh sách tin nhắn:", error);
+        document.getElementById('conversationList').innerHTML = '<div style="padding: 20px; text-align: center; color: #ef4444; font-size: 14px;">Không thể tải danh sách.</div>';
+    }
+}
+
+function renderSummaries(summaries) {
+    const listContainer = document.getElementById('conversationList');
+    listContainer.innerHTML = '';
+    
+    if (summaries.length === 0) {
+        listContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: #94a3b8; font-size: 14px;">Chưa có tin nhắn nào.</div>';
+        return;
+    }
+    
+    summaries.forEach(item => {
+        // item: partnerId, partnerName, message, timestamp
+        const timeString = item.timestamp ? new Date(item.timestamp).toLocaleTimeString('vi-VN', {hour: '2-digit', minute: '2-digit'}) : '';
+        const name = item.partnerName || `Người dùng #${item.partnerId}`;
+        const initial = name.charAt(0).toUpperCase();
+        const isActive = (item.partnerId == currentReceiverId) ? 'active' : '';
+        
+        const html = `
+            <div class="conversation-item ${isActive}" onclick="openChat('${item.partnerId}', '${name.replace(/'/g, "\\'")}')" id="conv-${item.partnerId}">
+                <div class="conv-avatar">${initial}</div>
+                <div class="conv-info">
+                    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                        <div class="conv-name">${name}</div>
+                        <div class="conv-time">${timeString}</div>
+                    </div>
+                    <div class="conv-msg">${item.message || 'Chưa có tin nhắn'}</div>
+                </div>
+            </div>
+        `;
+        listContainer.insertAdjacentHTML('beforeend', html);
+    });
+}
+
+function openChat(partnerId, partnerName) {
+    currentReceiverId = partnerId;
+    localStorage.setItem('chat_receiver_id', partnerId); // Lưu lại
+    
+    // Cập nhật UI active
+    document.querySelectorAll('.conversation-item').forEach(el => el.classList.remove('active'));
+    const activeItem = document.getElementById(`conv-${partnerId}`);
+    if (activeItem) activeItem.classList.add('active');
+    
+    // Ẩn Empty state, hiện Chat Area
+    document.getElementById('emptyChat').style.display = 'none';
+    const chatArea = document.getElementById('chatArea');
+    chatArea.style.display = 'flex';
+    
+    // Mobile toggle
+    document.getElementById('chatContainer').classList.add('show-chat');
+    
+    // Cập nhật Header Chat
+    document.getElementById('headerName').innerText = partnerName;
+    document.getElementById('headerAvatar').innerText = partnerName ? partnerName.charAt(0).toUpperCase() : "?";
+    
+    // Xóa tin nhắn cũ, hiện loading
+    const area = document.getElementById('messagesArea');
+    area.innerHTML = '<div style="text-align: center; color: #94a3b8; font-size: 13px; margin-top: 40px;">Đang tải lịch sử trò chuyện...</div>';
+    
+    // Nếu WebSocket đã connect, gửi yêu cầu lịch sử ngay
+    if (stompClient.connected) {
+        requestHistory();
+    }
+}
+
+function closeChatMobile() {
+    document.getElementById('chatContainer').classList.remove('show-chat');
+}
+
+function requestHistory() {
+    if (!currentReceiverId || !senderId) return;
+    stompClient.publish({
+        destination: '/app/chat.history',
+        body: JSON.stringify({
+            senderId: parseInt(senderId),
+            receiverId: parseInt(currentReceiverId)
+        })
+    });
 }
 
 // ==================== WEBSOCKET EVENTS ====================
@@ -44,7 +155,14 @@ stompClient.onConnect = (frame) => {
     // Đăng ký nhận tin nhắn mới
     stompClient.subscribe('/topic/private/' + senderId, (message) => {
         const msg = JSON.parse(message.body);
-        renderMessage(msg);
+        
+        // Nếu tin nhắn thuộc về cuộc hội thoại đang mở, render nó
+        if (msg.senderId == currentReceiverId || msg.receiverId == currentReceiverId) {
+            renderMessage(msg);
+        }
+        
+        // Cập nhật lại danh sách summary (để đưa tin nhắn này lên đầu / cập nhật text)
+        fetchSummaries();
     });
 
     // Đăng ký nhận lịch sử
@@ -58,24 +176,15 @@ stompClient.onConnect = (frame) => {
         } else {
             messages.forEach(msg => renderMessage(msg));
         }
+        
+        // Cuộn xuống cuối
+        setTimeout(() => { area.scrollTop = area.scrollHeight; }, 100);
     });
-    setTimeout(() => {
-        stompClient.publish({
-            destination: '/app/chat.history',
-            body: JSON.stringify({
-                senderId: parseInt(senderId),
-                receiverId: parseInt(receiverId)
-            })
-        });
-    }, 500);
-    // GỌI LỊCH SỬ NGAY KHI KẾT NỐI XONG
-    stompClient.publish({
-        destination: '/app/chat.history',
-        body: JSON.stringify({
-            senderId: parseInt(senderId),
-            receiverId: parseInt(receiverId)
-        })
-    });
+    
+    // Nếu có receiverId được chọn sẵn, gọi lịch sử
+    if (currentReceiverId) {
+        setTimeout(requestHistory, 500);
+    }
 };
 
 stompClient.onDisconnect = () => updateStatus(false);
@@ -86,11 +195,11 @@ function sendMessage() {
     const input = document.getElementById('messageInput');
     const content = input.value.trim();
 
-    if (!content || !stompClient.connected) return;
+    if (!content || !stompClient.connected || !currentReceiverId) return;
 
     const request = {
         senderId: parseInt(senderId),
-        receiverId: parseInt(receiverId),
+        receiverId: parseInt(currentReceiverId),
         content: content,
         messageType: 'TEXT',
         chatType: 'PRIVATE'
@@ -131,11 +240,11 @@ function updateStatus(isOnline) {
     const dot = document.getElementById('statusDot');
     const text = document.getElementById('statusText');
     if (isOnline) {
-        dot.classList.add('online');
-        text.innerText = 'Đang hoạt động';
+        if(dot) dot.classList.add('online');
+        if(text) text.innerText = 'Đang hoạt động';
     } else {
-        dot.classList.remove('online');
-        text.innerText = 'Mất kết nối';
+        if(dot) dot.classList.remove('online');
+        if(text) text.innerText = 'Mất kết nối';
     }
 }
 

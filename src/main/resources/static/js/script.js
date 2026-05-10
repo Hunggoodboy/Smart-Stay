@@ -287,14 +287,17 @@ function renderUserMenu(isLoggedIn, data) {
 
     // Đã đăng nhập — cập nhật thông tin trong button
     if (data) {
-        const displayName = data.displayName || data.fullName || 'Khách thuê';
-        const roomLabel = data.roomLabel || 'Phòng 204';
-        const roleLabel = data.roleLabel || 'Khách thuê';
+        const displayName = data.fullName || data.displayName || data.username || 'Người dùng';
+        let roleLabel = 'Khách thuê';
+        if (data.role === 'ADMIN') roleLabel = 'Quản trị viên';
+        else if (data.role === 'LANDLORD') roleLabel = 'Chủ nhà';
+        
         const avatarUrl = data.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=eff6ff&color=1d4ed8`;
 
         if (el.userAvatar) el.userAvatar.src = avatarUrl;
-        if (el.userRoomLabel) el.userRoomLabel.textContent = roomLabel;
-        if (el.userRoleLabel) el.userRoleLabel.textContent = roleLabel;
+        if (el.userRoleLabel) el.userRoleLabel.textContent = displayName;
+        if (el.dropdownUserName) el.dropdownUserName.textContent = displayName;
+        if (el.dropdownUserRole) el.dropdownUserRole.textContent = roleLabel;
     }
 }
 

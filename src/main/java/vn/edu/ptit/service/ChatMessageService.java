@@ -6,6 +6,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import vn.edu.ptit.dto.Request.ChatMessageRequest;
 import vn.edu.ptit.dto.Response.ChatMessagesResponse;
+import vn.edu.ptit.dto.Response.ChatMessagesSummaryResponse;
 import vn.edu.ptit.dto.Response.ConversationResponse;
 import vn.edu.ptit.entity.ChatMessages;
 import vn.edu.ptit.entity.User;
@@ -121,5 +122,9 @@ public class ChatMessageService {
                 "/topic/history/" +  sender.getId(),
                 response
         );
+    }
+    public List<ChatMessagesSummaryResponse> getSummaryMessages() {
+        Long userId = authService.getCurrentUserId();
+        return chatMessagesRepository.findInboxSummary(userId);
     }
 }

@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import vn.edu.ptit.dto.Response.ChatMessagesSummaryResponse;
 import vn.edu.ptit.entity.ChatMessages;
 
 import java.util.List;
@@ -23,8 +24,17 @@ public interface ChatMessagesRepository extends JpaRepository<ChatMessages, Long
     )
     ORDER BY m.sentAt DESC
 """)
+
     List<ChatMessages> findLatestMessagePerConversation(@Param("userId") Long userId);
 
-    // 2. Đếm tin chưa đọc từ một người gửi cụ thể
     @Query("SELECT COUNT(m) FROM ChatMessages m WHERE m.sender.id = :senderId AND m.receiver.id = :receiverId AND m.isRead = false")
-    int countUnread(@Param("senderId") Long senderId, @Param("receiverId") Long receiverId);}
+    int countUnread(@Param("senderId") Long senderId, @Param("receiverId") Long receiverId);
+
+    @Query("select new vn.edu.ptit.dto.Response.ChatMessagesSummaryResponse(case when m.receiver.id = :userId then m.sender.id else m.receiver.id end ," +
+            " case when m.receiver.id = :userId then m.sender.fullName else m.receiver.fullName end , m.content, m.createdAt)" +
+            "  From ChatMessages m where m.id in " +
+            " (Select max(m2.id) from ChatMessages m2 where m2.sender.id = :userId or m2.receiver.id = :userId group by" +
+            " case when m2.receiver.id = :userId then m2.sender.id else m2.receiver.id END ) "+
+            " order by m.createdAt desc")
+    List<ChatMessagesSummaryResponse> findInboxSummary(@Param("userId") Long userId);
+}

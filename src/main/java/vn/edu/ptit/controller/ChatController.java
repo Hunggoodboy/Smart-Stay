@@ -7,7 +7,9 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import vn.edu.ptit.dto.Request.ChatMessageRequest;
+import vn.edu.ptit.dto.Response.ChatMessagesSummaryResponse;
 import vn.edu.ptit.dto.Response.ConversationResponse;
+import vn.edu.ptit.entity.ChatMessages;
 import vn.edu.ptit.entity.User;
 import vn.edu.ptit.repository.UserRepository;
 import vn.edu.ptit.service.Authentication.AuthService;
@@ -20,8 +22,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ChatController {
     private final ChatMessageService chatMessageService;
-    private final UserRepository userRepository;
-    private final AuthService authService;
+
 
     @MessageMapping("/chat.private")
     public void sendPrivateMessage(@Payload ChatMessageRequest chatMessageRequest) {
@@ -42,5 +43,14 @@ public class ChatController {
     @GetMapping("/api/chat/conversations")
     public ResponseEntity<List<ConversationResponse>> getConversations() {
         return ResponseEntity.ok(chatMessageService.getConversations());
+    }
+
+    @GetMapping("/api/chat/summary")
+    public ResponseEntity<?> getChatSummary(){
+        List<ChatMessagesSummaryResponse> result = chatMessageService.getSummaryMessages();
+        if (result.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(result);
     }
 }
