@@ -7,8 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import vn.edu.ptit.dto.MonthlyBillRequest;
-import vn.edu.ptit.dto.MonthlyBillResponse;
+import vn.edu.ptit.dto.Request.MonthlyBillRequest;
+import vn.edu.ptit.dto.Response.MonthlyBillResponse;
 import vn.edu.ptit.service.BillingService;
 
 @RestController
@@ -37,5 +37,10 @@ public class BillingController {
         } catch (RuntimeException ex) {
             return ResponseEntity.badRequest().body(Map.of("message", ex.getMessage()));
         }
+    }
+
+    @GetMapping("/suggestion")
+    public ResponseEntity<?> getSuggestion(@RequestParam Long roomId) {
+        return ResponseEntity.ok(billingService.createSuggestionBillingResponse(roomId));
     }
 }

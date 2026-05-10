@@ -97,6 +97,7 @@ public class Contracts implements Serializable {
      */
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id")
+    @ToString.Exclude
     private Rooms room;
 
     /**

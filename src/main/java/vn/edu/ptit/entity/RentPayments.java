@@ -121,5 +121,5 @@ public class RentPayments implements Serializable {
     @JoinColumn(name = "customer_id", nullable = false)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private Customer customer;
+    private User customer;
 }

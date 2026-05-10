@@ -1,7 +1,7 @@
 package vn.edu.ptit.dto.Response;
 
-
 import lombok.Data;
+import vn.edu.ptit.entity.Rooms;
 import vn.edu.ptit.entity.UtilityBills;
 
 import java.time.LocalDate;
@@ -10,12 +10,12 @@ import java.time.LocalDateTime;
 //Response gửi cho người thuê
 @Data
 public class UtilityBillsResponse {
-    private Long billingMonth;
+    private String billingMonth;
     private Double electricityOldIndex;
     private Double electricityNewIndex;
     private Double electricityConsumed;
     private Double electricityPricePerKwh;
-    private Double electricityAmount; //Tien dien thang nay
+    private Double electricityAmount; // Tien dien thang nay
     private Double waterOldIndex = 0.0;
     private Double waterNewIndex = 0.0;
     private Double waterConsumed;
@@ -31,10 +31,12 @@ public class UtilityBillsResponse {
     private LocalDate dueDate; // Hạn đóng tiền
     private LocalDateTime createdAt;
     private UtilityBills.Status status;
+    private String roomName;
+    private String roomAddress;
 
     public UtilityBillsResponse fromEntity(UtilityBills entity) {
         UtilityBillsResponse detailResponse = new UtilityBillsResponse();
-        detailResponse.setBillingMonth(Long.valueOf(entity.getBillingMonth()));
+        detailResponse.setBillingMonth(entity.getBillingMonth());
         detailResponse.setElectricityOldIndex(entity.getElectricityOldIndex());
         detailResponse.setElectricityNewIndex(entity.getElectricityNewIndex());
         detailResponse.setElectricityConsumed(entity.getElectricityConsumed());
@@ -50,11 +52,48 @@ public class UtilityBillsResponse {
         detailResponse.setCleaningFee(entity.getCleaningFee());
         detailResponse.setOtherFee(entity.getOtherFee());
         detailResponse.setOtherFeeNote(entity.getOtherFeeNote());
-        detailResponse.setTotalAmount(entity.getTotalAmount());
+
+        Double rent = 0.0;
+        if (entity.getContract() != null && entity.getContract().getMonthlyRent() != null) {
+            rent = entity.getContract().getMonthlyRent();
+        } else if (entity.getRoom() != null && entity.getRoom().getRentPrice() != null) {
+            rent = entity.getRoom().getRentPrice();
+        }
+        detailResponse.setRentPrice(rent);
+
+        Double utilTotal = entity.getTotalAmount() != null ? entity.getTotalAmount() : 0.0;
+        detailResponse.setTotalAmount(utilTotal + rent);
+
         detailResponse.setCreatedAt(entity.getCreatedAt());
         detailResponse.setDueDate(entity.getDueDate());
         detailResponse.setStatus(entity.getStatus());
-        detailResponse.setTotalAmount(entity.getTotalAmount());
+
+        if (entity.getRoom() != null) {
+            detailResponse.setRoomName(entity.getRoom().getRoomNumber());
+
+            Rooms room = entity.getRoom();
+            StringBuilder addressBuilder = new StringBuilder();
+            if (room.getAddress() != null && !room.getAddress().isEmpty()) {
+                addressBuilder.append(room.getAddress());
+            }
+            if (room.getWard() != null && !room.getWard().isEmpty()) {
+                if (addressBuilder.length() > 0)
+                    addressBuilder.append(", ");
+                addressBuilder.append(room.getWard());
+            }
+            if (room.getDistrict() != null && !room.getDistrict().isEmpty()) {
+                if (addressBuilder.length() > 0)
+                    addressBuilder.append(", ");
+                addressBuilder.append(room.getDistrict());
+            }
+            if (room.getCity() != null && !room.getCity().isEmpty()) {
+                if (addressBuilder.length() > 0)
+                    addressBuilder.append(", ");
+                addressBuilder.append(room.getCity());
+            }
+            detailResponse.setRoomAddress(addressBuilder.toString());
+        }
+
         return detailResponse;
     }
 

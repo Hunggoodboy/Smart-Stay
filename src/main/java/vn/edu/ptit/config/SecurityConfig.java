@@ -1,8 +1,6 @@
 package vn.edu.ptit.config;
 
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,80 +9,76 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.DefaultSecurityFilterChain;
+import vn.edu.ptit.Filter.JwtFilter;
 
 @EnableWebSecurity
 @Configuration
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class SecurityConfig {
-    private final UserDetailsService userDetailsService;
+    private final JwtFilter jwtFilter;
 
-    @Bean
-    public AuthenticationProvider authenticationProvider(){
-        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
-        daoAuthenticationProvider.setUserDetailsService(userDetailsService);
-        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
-        return daoAuthenticationProvider;
-    }
+    private static final String[] PUBLIC_URLS = {
+            "/", "/login", "/register", "/rooms/**",
+            "/css/**", "/js/**", "/images/**",
+            "/api/auth/**"
+            ,"/room-posted", "/room-detail/**",
+            "/api/user/login", "/api/user/register",
+            "/postRooms", "/MyRentalRequest", "/myHome", "/payment", "/chatMessage", "/adminVerify", "/registerLandLord", "/error", "/gs-guide-websocket/**"
+                ,"/contract/create", "/myContracts", "/contractDetail/**" , "/createRoomManage", "/landlord-view/**" , "/room-detail-management/**"
+    };
+
+    private static final String[] LANDLORD_API_URLS = {
+            "/api/post-room/**", "/api/billing/**",
+            "/api/setBill/**", "/api/landlord/**", "/api/room-management/**"
+    };
+
+    private static final String[] AUTHENTICATED_API_URLS = {
+            "/api/user/me", "/api/user/myid", "/api/user/tenant",
+            "/api/notifications/**", "/api/utility-bills/**",
+            "/api/chat/**", "/api/customer/**", "/api/landlord/requestToLandLord"
+            ,"/api/contract/**", "/get-my-contracts", "/api/vector/**" , "/api/post-list-room", "/api/chat-ai/**"
+    };
+
 
     @Bean
     public DefaultSecurityFilterChain SecurityFilterChain(HttpSecurity http) throws Exception {
         http
-                .authenticationProvider(authenticationProvider())
-                .sessionManagement(s->
-                        s.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/static/**","/auth","/login", "/register", "/css/**","/webjars/**","/", "/rooms/**","/room-detail/**", "/js/**","/room-posted", "/images/**", "/api/user/login", "/api/user/register", "/payment").permitAll()
-                        .requestMatchers("/api/utility-bills", "/chatMessage", "/api/post-room", "/payment" , "/postRooms", "myHome", "/api/rental-requests").authenticated()
-                        .requestMatchers("/api/setBill").hasRole("LANDLORD")
-                        .anyRequest().authenticated()
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .formLogin(form -> form
-                        .loginPage("/login")
-                        .loginProcessingUrl("/login")
-                        .defaultSuccessUrl("/", true)
-                        .failureUrl("/login?error=true")
-                        .permitAll())
-                .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login")
-                        .invalidateHttpSession(true)
-                        .clearAuthentication(true)
-                        .permitAll())
-                .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint((request, response, e) -> {
-                            // Trả 401 JSON thay vì redirect về /login
-                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                            response.setContentType("application/json");
-                            response.getWriter().write("{\"error\": \"Unauthorized\"}");
-                        })
+                .addFilterBefore(jwtFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(PUBLIC_URLS).permitAll()
+                        .requestMatchers(LANDLORD_API_URLS).hasAuthority("LANDLORD")
+                        .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
+                        .requestMatchers(AUTHENTICATED_API_URLS).authenticated()
+                        .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.disable());
         return http.build();
     }
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return web -> web.ignoring()
-                .requestMatchers(
-                        "/css/**",
-                        "/js/**",
-                        "/images/**",
-                        "/fonts/**",
-                        "/favicon.ico"
-                );
-    }
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
-    }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+    @Bean
+    public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService,
+                                                         PasswordEncoder passwordEncoder) throws Exception {
+        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
+        daoAuthenticationProvider.setUserDetailsService(userDetailsService);
+        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
+        return daoAuthenticationProvider;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 
 }

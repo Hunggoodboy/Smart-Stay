@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Stay | Chi tiết phòng</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" th:href="@{/css/uno.css}" href="../static/css/uno.css" />
+
+    <style>
+        :root {
+            --blue-50:  #eff6ff; --blue-100: #dbeafe; --blue-200: #bfdbfe; --blue-400: #60a5fa; --blue-500: #3b82f6; --blue-600: #2563eb; --blue-700: #1d4ed8; --blue-800: #1e40af; --blue-900: #1e3a8a;
+            --navy:     #0f172a; --ocean:    #0ea5e9; --sky-100:  #e0f2fe; --white:    #ffffff;
+            --gray-50:  #f8fafc; --gray-100: #f1f5f9; --gray-200: #e2e8f0; --gray-300: #cbd5e1; --gray-400: #94a3b8; --gray-500: #64748b; --gray-700: #334155; --gray-800: #1e293b;
+            --success:  #16a34a; --success-bg: #f0fdf4; --success-bd: #bbf7d0;
+            --amber:    #b45309; --amber-bg: #fffbeb; --amber-bd: #fde68a;
+            --red:      #dc2626; --red-bg:   #fee2e2; --red-bd:   #fecaca;
+            --radius-card: 1.25rem;
+            --shadow-card: 0 2px 16px rgba(30,64,175,0.08), 0 1px 4px rgba(30,64,175,0.06);
+            --shadow-hero: 0 20px 60px rgba(14,165,233,0.18), 0 4px 16px rgba(30,64,175,0.14);
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Nunito', sans-serif; background: #f0f6ff; color: var(--gray-800); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+        /* HEADER */
+        .ss-header { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); border-bottom: 1.5px solid var(--blue-100); box-shadow: 0 2px 12px rgba(37,99,235,0.07); }
+        .ss-header-inner { max-width: 1280px; margin: 0 auto; padding: 0 1.5rem; height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+        .ss-brand { display: flex; align-items: center; gap: 0.65rem; text-decoration: none; }
+        .ss-brand-icon { width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, var(--navy) 0%, var(--blue-700) 100%); display: grid; place-items: center; color: #fff; font-weight: 900; font-size: 1rem; letter-spacing: -0.5px; font-family: 'Playfair Display', serif; }
+        .ss-brand-text { display: flex; flex-direction: column; }
+        .ss-brand-name { font-weight: 800; font-size: 1rem; color: var(--navy); line-height: 1.1; }
+        .ss-brand-sub { font-size: 0.7rem; color: var(--gray-400); font-weight: 600; }
+        .ss-nav { display: flex; align-items: center; gap: 0.25rem; }
+        .ss-nav a { padding: 0.45rem 0.9rem; border-radius: 8px; font-size: 0.82rem; font-weight: 700; color: var(--gray-500); text-decoration: none; transition: all 0.18s; white-space: nowrap; }
+        .ss-nav a:hover { background: var(--blue-50); color: var(--blue-700); }
+        .ss-nav a.active { background: var(--blue-600); color: #fff; }
+        .ss-header-right { display: flex; align-items: center; gap: 0.75rem; }
+        .ss-avatar-btn { display: flex; align-items: center; gap: 0.5rem; background: none; border: none; cursor: pointer; padding: 0.3rem 0.6rem 0.3rem 0.3rem; border-radius: 10px; transition: background 0.15s; }
+        .ss-avatar-btn:hover { background: var(--gray-100); }
+        .ss-avatar-img { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--blue-200); }
+        .ss-user-name { font-size: 0.8rem; font-weight: 700; color: var(--gray-700); }
+        .ss-user-role { font-size: 0.7rem; color: var(--gray-400); }
+
+        /* BREADCRUMB & LAYOUT */
+        .breadcrumb { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; font-weight: 700; color: rgba(186,230,253,0.8); margin-bottom: 1rem; }
+        .breadcrumb a { color: rgba(186,230,253,0.8); text-decoration: none; transition: color 0.14s; }
+        .breadcrumb a:hover { color: #fff; }
+        .breadcrumb-sep { font-size: 0.7rem; opacity: 0.5; }
+        .breadcrumb-cur { color: #fff; }
+        .ss-body { padding-top: 64px; }
+        .ss-main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+        /* HERO DETAIL */
+        .detail-hero { background: linear-gradient(130deg, var(--navy) 0%, var(--blue-700) 50%, var(--ocean) 100%); border-radius: 1.5rem; padding: 2rem 2.5rem; color: #fff; position: relative; overflow: hidden; box-shadow: var(--shadow-hero); margin-bottom: 1.75rem; }
+        .detail-hero::before { content: ''; position: absolute; top: -50px; right: -50px; width: 240px; height: 240px; border-radius: 50%; background: rgba(255,255,255,0.05); }
+        .detail-hero::after { content: ''; position: absolute; bottom: -35px; left: 35%; width: 160px; height: 160px; border-radius: 50%; background: rgba(14,165,233,0.15); }
+        .detail-hero-inner { position: relative; z-index: 1; }
+        .detail-hero-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; }
+        .detail-room-number { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 800; line-height: 1.15; margin-bottom: 0.3rem; }
+        .detail-room-type { display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); border-radius: 100px; padding: 0.25rem 0.85rem; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(186,230,253,0.95); margin-bottom: 0.75rem; }
+        .detail-address { font-size: 0.85rem; color: rgba(186,230,253,0.8); margin-top: 0.3rem; }
+        .detail-price { text-align: right; }
+        .detail-price-num { font-size: 1.8rem; font-weight: 900; line-height: 1.1; }
+        .detail-price-sub { font-size: 0.72rem; color: rgba(186,230,253,0.7); margin-top: 0.2rem; }
+        .detail-hero-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-top: 1.5rem; }
+        .detail-stat { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.14); border-radius: 1rem; padding: 0.85rem 1rem; }
+        .detail-stat-label { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(186,230,253,0.7); margin-bottom: 0.3rem; }
+        .detail-stat-value { font-size: 1rem; font-weight: 800; color: #fff; }
+
+        /* BADGES */
+        .badge { display: inline-flex; align-items: center; gap: 0.35rem; border-radius: 100px; padding: 0.22rem 0.7rem; font-size: 0.68rem; font-weight: 800; border: 1.5px solid transparent; }
+        .badge-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+        .badge-active { background: #f0fdf4; color: #16a34a; border-color: #bbf7d0; }
+        .badge-active .badge-dot { background: #22c55e; }
+        .badge-rented { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+        .badge-rented .badge-dot { background: #f59e0b; }
+        .badge-maintenance { background: #fee2e2; color: #dc2626; border-color: #fecaca; }
+        .badge-maintenance .badge-dot { background: #ef4444; }
+        .badge-draft { background: var(--gray-100); color: var(--gray-500); border-color: var(--gray-200); }
+        .badge-draft .badge-dot { background: var(--gray-400); }
+
+        /* TAB NAV */
+        .tab-nav { display: flex; gap: 0; margin-bottom: 1.5rem; background: var(--white); border-radius: 1rem; border: 1.5px solid var(--blue-100); box-shadow: var(--shadow-card); overflow: hidden; }
+        .tab-item { flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.9rem 1rem; cursor: pointer; font-size: 0.82rem; font-weight: 700; color: var(--gray-500); border-right: 1px solid var(--blue-100); transition: all 0.18s; text-align: center; background: transparent; user-select: none; }
+        .tab-item:last-child { border-right: none; }
+        .tab-item:hover { background: var(--blue-50); color: var(--blue-700); }
+        .tab-item.active { background: var(--navy); color: #fff; }
+        .tab-item .tab-icon { font-size: 1rem; }
+        .tab-panel { display: none; animation: fadeIn 0.25s ease; }
+        .tab-panel.active { display: block; }
+        @keyframes fadeIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: translateY(0); } }
+
+        /* CARDS & INFO */
+        .ss-card { background: var(--white); border: 1.5px solid var(--blue-100); border-radius: var(--radius-card); padding: 1.5rem; box-shadow: var(--shadow-card); margin-bottom: 1.25rem; }
+        .ss-card:last-child { margin-bottom: 0; }
+        .ss-card-title { font-size: 1rem; font-weight: 800; color: var(--navy); display: flex; align-items: center; gap: 0.45rem; margin-bottom: 1.25rem; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+        .info-row { display: flex; justify-content: space-between; align-items: center; padding: 0.7rem 0; border-bottom: 1px solid var(--gray-100); font-size: 0.82rem; }
+        .info-row:last-child { border-bottom: none; }
+        .info-key { color: var(--gray-500); font-weight: 600; }
+        .info-val { font-weight: 700; color: var(--navy); text-align: right; }
+        .info-col { padding: 0 1rem; }
+        .info-col:first-child { padding-left: 0; border-right: 1px solid var(--blue-50); }
+        .info-col:last-child { padding-right: 0; }
+        .tenant-card { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; border-radius: 1rem; background: var(--blue-50); border: 1.5px solid var(--blue-100); }
+        .tenant-avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--navy), var(--blue-600)); display: grid; place-items: center; color: #fff; font-weight: 900; font-size: 1.1rem; flex-shrink: 0; }
+        .tenant-name { font-weight: 800; font-size: 0.95rem; color: var(--navy); margin-bottom: 0.2rem; }
+        .tenant-email { font-size: 0.78rem; color: var(--blue-600); font-weight: 600; }
+        .tenant-actions { margin-left: auto; display: flex; gap: 0.5rem; }
+
+        /* FORM ELEMENTS */
+        .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+        .form-field { display: flex; flex-direction: column; gap: 0.4rem; }
+        .form-label { font-size: 0.78rem; font-weight: 800; color: var(--gray-700); }
+        .form-label .req { color: var(--red); margin-left: 2px; }
+        .form-input, .form-select, .form-textarea { padding: 0.65rem 0.9rem; border: 1.5px solid var(--blue-100); border-radius: 10px; font-family: 'Nunito', sans-serif; font-size: 0.85rem; color: var(--gray-800); background: var(--white); outline: none; transition: border-color 0.15s, box-shadow 0.15s; width: 100%; }
+        .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--blue-400); box-shadow: 0 0 0 3px rgba(96,165,250,0.15); }
+        .form-textarea { resize: vertical; min-height: 100px; }
+
+        /* NOTIFICATIONS */
+        .notif-types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin-bottom: 1rem; }
+        .notif-type-btn { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; padding: 0.75rem 0.5rem; border-radius: 10px; border: 1.5px solid var(--blue-100); background: var(--white); cursor: pointer; transition: all 0.15s; text-align: center; }
+        .notif-type-btn:hover { border-color: var(--blue-400); background: var(--blue-50); }
+        .notif-type-btn.selected { border-color: var(--blue-600); background: var(--blue-50); }
+        .notif-type-btn.selected .nt-label { color: var(--blue-700); }
+        .nt-icon { font-size: 1.4rem; }
+        .nt-label { font-size: 0.71rem; font-weight: 800; color: var(--gray-500); }
+
+        /* CHAT */
+        .chat-messages { height: 340px; overflow-y: auto; padding: 1.1rem; display: flex; flex-direction: column; gap: 0.85rem; background: var(--gray-50); }
+        .msg-bubble-wrap { display: flex; gap: 0.65rem; align-items: flex-end; }
+        .msg-bubble-wrap.mine { flex-direction: row-reverse; }
+        .msg-av { width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; display: grid; place-items: center; font-size: 0.7rem; font-weight: 900; }
+        .msg-av.landlord { background: linear-gradient(135deg, var(--navy), var(--blue-600)); color: #fff; }
+        .msg-av.tenant { background: var(--blue-100); color: var(--blue-700); }
+        .msg-bubble { max-width: 70%; padding: 0.6rem 0.9rem; border-radius: 1rem; font-size: 0.82rem; line-height: 1.5; }
+        .msg-bubble.mine { background: var(--navy); color: #fff; border-bottom-right-radius: 4px; }
+        .msg-bubble.theirs { background: var(--white); color: var(--gray-800); border: 1px solid var(--blue-100); border-bottom-left-radius: 4px; }
+        .msg-meta { font-size: 0.65rem; color: var(--gray-400); margin-top: 2px; }
+        .msg-bubble-wrap.mine .msg-meta { text-align: right; }
+        .chat-input-bar { display: flex; gap: 0.6rem; padding: 0.9rem 1rem; background: var(--white); border-top: 1px solid var(--blue-100); align-items: flex-end; }
+        .chat-input { flex: 1; border: 1.5px solid var(--blue-100); border-radius: 10px; padding: 0.6rem 0.85rem; font-family: 'Nunito', sans-serif; font-size: 0.82rem; outline: none; resize: none; max-height: 80px; min-height: 38px; transition: border-color 0.15s; background: var(--gray-50); color: var(--gray-800); }
+
+        /* BUTTONS */
+        .ss-btn-dark { background: var(--navy); color: #fff; border: none; border-radius: 100px; padding: 0.6rem 1.3rem; font-size: 0.82rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; text-decoration: none; transition: background 0.15s, transform 0.13s; white-space: nowrap; }
+        .ss-btn-dark:hover { background: var(--blue-800); transform: translateY(-1px); }
+        .ss-btn-blue { background: var(--blue-600); color: #fff; border: none; border-radius: 100px; padding: 0.6rem 1.3rem; font-size: 0.82rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; text-decoration: none; transition: background 0.15s; white-space: nowrap; }
+        .ss-btn-blue:hover { background: var(--blue-700); }
+        .ss-btn-ghost { background: transparent; color: var(--gray-600); border: 1.5px solid var(--gray-200); border-radius: 100px; padding: 0.6rem 1.3rem; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; text-decoration: none; transition: all 0.15s; white-space: nowrap; }
+        .ss-btn-ghost:hover { background: var(--gray-100); border-color: var(--gray-300); }
+        .ss-btn-success { background: #16a34a; color: #fff; border: none; border-radius: 100px; padding: 0.6rem 1.3rem; font-size: 0.82rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; transition: background 0.15s; white-space: nowrap; }
+        .ss-btn-sm { padding: 0.42rem 0.9rem; font-size: 0.75rem; }
+
+        /* INVOICE */
+        .invoice-preview { background: var(--navy); border-radius: 1rem; padding: 1.5rem; color: #fff; margin-top: 1.25rem; }
+        .invoice-preview-title { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: #94a3b8; margin-bottom: 1rem; }
+        .invoice-line { display: flex; justify-content: space-between; font-size: 0.82rem; padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .invoice-line .il { color: #94a3b8; }
+        .invoice-line .iv { font-weight: 700; }
+        .invoice-total { display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 0.85rem; margin-top: 0.5rem; font-size: 1.1rem; font-weight: 900; }
+        .invoice-total span:last-child { color: #fbbf24; }
+
+        /* LOADING & TOAST */
+        .ss-loading { display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 2rem; color: var(--gray-400); font-size: 0.85rem; }
+        .ss-spinner { width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid var(--blue-100); border-top-color: var(--blue-500); animation: spin 0.75s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .ss-toast { position: fixed; bottom: 2rem; right: 2rem; z-index: 500; background: var(--navy); color: #fff; padding: 0.85rem 1.4rem; border-radius: 100px; font-size: 0.82rem; font-weight: 700; box-shadow: 0 8px 32px rgba(15,23,42,0.25); transform: translateY(80px); opacity: 0; transition: all 0.35s cubic-bezier(.34,1.56,.64,1); pointer-events: none; }
+        .ss-toast.show { transform: translateY(0); opacity: 1; }
+        .ss-toast.success { background: #16a34a; }
+        .ss-toast.error { background: var(--red); }
+    </style>
+</head>
+<body>
+
+<header class="ss-header">
+    <div class="ss-header-inner">
+        <a class="ss-brand" href="/landlord">
+            <div class="ss-brand-icon">S</div>
+            <div class="ss-brand-text">
+                <span class="ss-brand-name">Smart Stay</span>
+                <span class="ss-brand-sub">Bảng điều khiển chủ nhà</span>
+            </div>
+        </a>
+        <nav class="ss-nav">
+            <a href="/landlord">Tổng quan</a>
+            <a href="/landlord/posts">Quản lý bài đăng</a>
+            <a href="/landlord#house-management" class="active">Quản lý chi tiết nhà</a>
+            <a href="/myContracts">Hợp đồng</a>
+        </nav>
+        <div class="ss-header-right">
+            <button class="ss-avatar-btn">
+                <img src="https://ui-avatars.com/api/?name=Ch%E1%BB%A7%20nh%C3%A0&background=dbeafe&color=1d4ed8" id="user-avatar" class="ss-avatar-img" />
+                <div style="text-align:left;">
+                    <div id="user-name-label" class="ss-user-name">Chủ nhà</div>
+                    <div class="ss-user-role">Landlord</div>
+                </div>
+            </button>
+        </div>
+    </div>
+</header>
+
+<div class="ss-body">
+    <main class="ss-main">
+
+        <div id="page-loading" style="padding:4rem 0;text-align:center;">
+            <div class="ss-loading" style="justify-content:center;"><div class="ss-spinner"></div> Đang tải thông tin phòng...</div>
+        </div>
+
+        <div id="page-content" style="display:none;">
+
+            <section class="detail-hero">
+                <div class="detail-hero-inner">
+                    <div class="breadcrumb">
+                        <a href="/landlord">Tổng quan</a><span class="breadcrumb-sep">›</span>
+                        <a href="/landlord#house-management">Quản lý nhà</a><span class="breadcrumb-sep">›</span>
+                        <span class="breadcrumb-cur" id="hero-room-num">Chi tiết phòng</span>
+                    </div>
+                    <div class="detail-hero-top">
+                        <div>
+                            <div id="hero-room-type" class="detail-room-type">
+                                <span id="hero-room-type-dot" style="width:7px;height:7px;border-radius:50%;background:#86efac;"></span>
+                                <span id="hero-room-type-text">—</span>
+                            </div>
+                            <div class="detail-room-number" id="hero-room-number">—</div>
+                            <div class="detail-address" id="hero-address">—</div>
+                        </div>
+                        <div class="detail-price">
+                            <div class="detail-price-num" id="hero-price">—</div>
+                            <div class="detail-price-sub">VNĐ / tháng</div>
+                            <div style="margin-top:0.5rem;" id="hero-status-badge"></div>
+                        </div>
+                    </div>
+                    <div class="detail-hero-stats">
+                        <div class="detail-stat"><div class="detail-stat-label">Trạng thái</div><div class="detail-stat-value" id="stat-status">—</div></div>
+                        <div class="detail-stat"><div class="detail-stat-label">Khách thuê</div><div class="detail-stat-value" id="stat-tenant">Chưa có</div></div>
+                        <div class="detail-stat"><div class="detail-stat-label">Quận / Huyện</div><div class="detail-stat-value" id="stat-district">—</div></div>
+                        <div class="detail-stat"><div class="detail-stat-label">Thành phố</div><div class="detail-stat-value" id="stat-city">—</div></div>
+                    </div>
+                </div>
+            </section>
+
+            <nav class="tab-nav">
+                <div class="tab-item active" onclick="switchTab('info')" id="tab-info"><span class="tab-icon">🏠</span><span class="tab-label">Thông tin phòng</span></div>
+                <div class="tab-item" onclick="switchTab('notify')" id="tab-notify"><span class="tab-icon">🔔</span><span class="tab-label">Tạo thông báo</span></div>
+                <div class="tab-item" onclick="switchTab('chat')" id="tab-chat"><span class="tab-icon">💬</span><span class="tab-label">Nhắn tin</span></div>
+                <div class="tab-item" onclick="switchTab('invoice')" id="tab-invoice"><span class="tab-icon">🧾</span><span class="tab-label">Lập hoá đơn</span></div>
+            </nav>
+
+            <div class="tab-panel active" id="panel-info">
+                <div class="ss-card" id="tenant-section">
+                    <div class="ss-card-title">Khách thuê hiện tại</div>
+                    <div id="tenant-card-wrap">
+                        <div style="padding:0.75rem 1rem;background:var(--success-bg);border:1.5px solid var(--success-bd);border-radius:0.75rem;font-size:0.8rem;color:var(--success);font-weight:700;">Phòng hiện đang trống — sẵn sàng cho thuê</div>
+                    </div>
+                </div>
+                <div class="ss-card">
+                    <div class="ss-card-title">Chi tiết phòng</div>
+                    <div class="info-grid">
+                        <div class="info-col">
+                            <div class="info-row"><span class="info-key">Số phòng</span><span class="info-val" id="d-room-num">—</span></div>
+                            <div class="info-row"><span class="info-key">Loại phòng</span><span class="info-val" id="d-room-type">—</span></div>
+                            <div class="info-row"><span class="info-key">Giá thuê / tháng</span><span class="info-val" id="d-price" style="color:var(--blue-700)">—</span></div>
+                            <div class="info-row"><span class="info-key">Trạng thái</span><span class="info-val" id="d-status">—</span></div>
+                        </div>
+                        <div class="info-col">
+                            <div class="info-row"><span class="info-key">Địa chỉ</span><span class="info-val" id="d-address">—</span></div>
+                            <div class="info-row"><span class="info-key">Phường / Xã</span><span class="info-val" id="d-ward">—</span></div>
+                            <div class="info-row"><span class="info-key">Quận / Huyện</span><span class="info-val" id="d-district">—</span></div>
+                            <div class="info-row"><span class="info-key">Thành phố</span><span class="info-val" id="d-city">—</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-panel" id="panel-notify">
+                <div class="ss-card">
+                    <div class="ss-card-title">Tạo thông báo mới</div>
+                    <div style="margin-bottom:1rem;">
+                        <div class="form-label" style="margin-bottom:0.5rem;">Loại thông báo</div>
+                        <div class="notif-types">
+                            <div class="notif-type-btn selected" onclick="selectNotifType(this,'BAO_TRI')" data-type="BAO_TRI"><span class="nt-icon">🔧</span><span class="nt-label">Bảo trì</span></div>
+                            <div class="notif-type-btn" onclick="selectNotifType(this,'QUY_DINH')" data-type="QUY_DINH"><span class="nt-icon">📋</span><span class="nt-label">Quy định</span></div>
+                            <div class="notif-type-btn" onclick="selectNotifType(this,'TAI_CHINH')" data-type="TAI_CHINH"><span class="nt-icon">💰</span><span class="nt-label">Tài chính</span></div>
+                            <div class="notif-type-btn" onclick="selectNotifType(this,'KHAN_CAP')" data-type="KHAN_CAP"><span class="nt-icon">⚠️</span><span class="nt-label">Khẩn cấp</span></div>
+                            <div class="notif-type-btn" onclick="selectNotifType(this,'SU_KIEN')" data-type="SU_KIEN"><span class="nt-icon">📅</span><span class="nt-label">Sự kiện</span></div>
+                            <div class="notif-type-btn" onclick="selectNotifType(this,'KHAC')" data-type="KHAC"><span class="nt-icon">📣</span><span class="nt-label">Khác</span></div>
+                        </div>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:1rem;">
+                        <div class="form-field">
+                            <label class="form-label">Tiêu đề <span class="req">*</span></label>
+                            <input class="form-input" id="notif-title" placeholder="VD: Thông báo bảo trì hệ thống nước..." />
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">Nội dung thông báo <span class="req">*</span></label>
+                            <textarea class="form-textarea" id="notif-content" rows="5" placeholder="Nhập nội dung thông báo gửi đến khách thuê phòng này..."></textarea>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:0.75rem;margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--blue-50);">
+                        <button class="ss-btn-blue" onclick="submitNotification()">Gửi thông báo</button>
+                        <button class="ss-btn-ghost" onclick="clearNotifForm()">Xóa nội dung</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-panel" id="panel-chat">
+                <div class="ss-card" style="padding:0;overflow:hidden;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1.5px solid var(--blue-100);">
+                        <div style="display:flex;align-items:center;gap:0.75rem;">
+                            <div class="tenant-avatar" style="width:38px;height:38px;font-size:0.9rem;" id="chat-av">?</div>
+                            <div>
+                                <div style="font-weight:800;font-size:0.9rem;color:var(--navy);" id="chat-tenant-name">Chưa có khách thuê</div>
+                                <div style="font-size:0.72rem;color:var(--gray-400);" id="chat-tenant-email">—</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-messages" id="chat-messages"></div>
+                    <div id="chat-no-tenant" style="display:none;padding:1.5rem;text-align:center;background:var(--amber-bg);border-top:1px solid var(--amber-bd);">
+                        <div style="font-size:0.82rem;color:var(--amber);font-weight:700;">⚠️ Phòng chưa có khách thuê — không thể gửi tin nhắn</div>
+                    </div>
+                    <div class="chat-input-bar" id="chat-input-bar">
+                        <textarea class="chat-input" id="chat-msg-input" rows="1" placeholder="Nhập tin nhắn cho khách..." onkeydown="handleChatKey(event)"></textarea>
+                        <button class="ss-btn-dark" onclick="sendChatMessage()" style="padding:0.55rem 1rem;border-radius:10px;">Gửi</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-panel" id="panel-invoice">
+                <div class="ss-card">
+                    <div class="ss-card-title">🧾 Lập hoá đơn dịch vụ hàng tháng</div>
+
+                    <div class="form-grid-3" style="margin-bottom:1.25rem;">
+                        <div class="form-field">
+                            <label class="form-label">Kỳ tháng <span class="req">*</span></label>
+                            <input class="form-input" type="month" id="inv-month" />
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">Hạn thanh toán</label>
+                            <input class="form-input" type="date" id="inv-due-date" />
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">Phòng</label>
+                            <input class="form-input" id="inv-room" readonly style="background:var(--gray-50);" />
+                        </div>
+                    </div>
+
+                    <div style="border:1.5px solid var(--blue-100);border-radius:1rem;overflow:hidden;margin-bottom:1rem;">
+                        <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:0.75rem;padding:0.6rem 0.85rem;background:linear-gradient(90deg,var(--blue-50),#f0f9ff);font-size:0.68rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:var(--blue-700);">
+                            <div>Dịch vụ</div><div>Số cũ (Tùy chọn)</div><div>Số mới <span class="req">*</span></div>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:0.75rem;padding:0.85rem;align-items:center;border-bottom:1px solid var(--blue-50);">
+                            <div>
+                                <div style="font-size:0.82rem;font-weight:700;color:var(--gray-700);">⚡ Điện</div>
+                                <div style="font-size:0.7rem;color:var(--gray-400);font-weight:600;">
+                                    Giá: <input type="number" id="elec-rate" style="width:60px;border:1px solid var(--blue-100);border-radius:4px;font-size:0.7rem;padding:2px 4px;outline:none;" /> đ/kWh
+                                </div>
+                            </div>
+                            <input class="form-input" type="number" id="elec-start" placeholder="Tự lấy từ tháng trước" />
+                            <input class="form-input" type="number" id="elec-end" placeholder="Nhập số mới" />
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:0.75rem;padding:0.85rem;align-items:center;background:var(--gray-50);">
+                            <div>
+                                <div style="font-size:0.82rem;font-weight:700;color:var(--gray-700);">💧 Nước</div>
+                                <div style="font-size:0.7rem;color:var(--gray-400);font-weight:600;">
+                                    Giá: <input type="number" id="water-rate" style="width:60px;border:1px solid var(--blue-100);border-radius:4px;font-size:0.7rem;padding:2px 4px;outline:none;" /> đ/m³
+                                </div>
+                            </div>
+                            <input class="form-input" type="number" id="water-start" placeholder="Tự lấy từ tháng trước" />
+                            <input class="form-input" type="number" id="water-end" placeholder="Nhập số mới" />
+                        </div>
+                    </div>
+
+                    <div class="form-grid-3" style="margin-bottom:1rem;">
+                        <div class="form-field">
+                            <label class="form-label">Phí Internet (đ)</label>
+                            <input class="form-input" type="number" id="inv-internet" value="0" />
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">Phí Gửi xe (đ)</label>
+                            <input class="form-input" type="number" id="inv-parking" value="0" />
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">Phí Vệ sinh (đ)</label>
+                            <input class="form-input" type="number" id="inv-cleaning" value="0" />
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2" style="margin-bottom:1rem;">
+                        <div class="form-field">
+                            <label class="form-label">Phí khác (đ) <span style="font-weight:400;color:var(--gray-400);font-size:0.7rem;">(Tùy chọn)</span></label>
+                            <input class="form-input" type="number" id="inv-other-fee" value="0" />
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">Lý do phí khác</label>
+                            <input class="form-input" type="text" id="inv-other-note" placeholder="VD: Sửa cửa, thay bóng đèn..." />
+                        </div>
+                    </div>
+
+                    <div class="form-field" style="margin-bottom:1rem;">
+                        <label class="form-label">Ghi chú chung cho hóa đơn</label>
+                        <textarea class="form-textarea" id="inv-note" rows="2" placeholder="Ghi chú thêm..."></textarea>
+                    </div>
+
+                    <div style="display:flex;gap:0.75rem;margin-top:1.25rem;">
+                        <button class="ss-btn-dark" onclick="previewInvoice()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            Tính toán & Xem trước
+                        </button>
+                    </div>
+
+                    <div class="invoice-preview" id="invoice-preview-container" style="display:none;">
+                        <div class="invoice-preview-title">XEM TRƯỚC HÓA ĐƠN THÁNG <span id="prev-month">—</span></div>
+                        <div class="invoice-line"><span class="il">Tiền phòng</span><span class="iv" id="prev-rent">0 đ</span></div>
+                        <div class="invoice-line"><span class="il">Tiền điện (<span id="prev-elec-num">0</span> số)</span><span class="iv" id="prev-elec">0 đ</span></div>
+                        <div class="invoice-line"><span class="il">Tiền nước (<span id="prev-water-num">0</span> khối)</span><span class="iv" id="prev-water">0 đ</span></div>
+                        <div class="invoice-line"><span class="il">Phí dịch vụ (Net, Xe, VS)</span><span class="iv" id="prev-service">0 đ</span></div>
+                        <div class="invoice-line" id="prev-other-row"><span class="il">Phí khác</span><span class="iv" id="prev-other">0 đ</span></div>
+                        <div class="invoice-total">
+                            <span>TỔNG CỘNG</span>
+                            <span id="prev-total">0 đ</span>
+                        </div>
+
+                        <div style="display:flex;gap:0.75rem;margin-top:1.5rem;flex-wrap:wrap;">
+                            <button class="ss-btn-success" onclick="submitInvoice()">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                                Tạo & Gửi hóa đơn
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<div class="ss-toast" id="ss-toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+<script th:src="@{/js/script.js}" src="../static/js/script.js"></script>
+
+<script>
+    /* UTILS */
+    function fmtMoney(v) { return (v == null || v === '') ? '0 đ' : Number(v).toLocaleString('vi-VN') + ' đ'; }
+    function esc(str) { return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function getInitials(name) { if (!name) return '?'; const p = name.trim().split(' '); return (p[0][0] + (p[p.length-1]?.[0] || '')).toUpperCase(); }
+    function showToast(msg, type) {
+        const t = document.getElementById('ss-toast'); t.textContent = msg; t.className = 'ss-toast ' + (type || ''); t.classList.add('show');
+        clearTimeout(window._toastTimer); window._toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+    }
+    function getToken() { return localStorage.getItem('smartstay_token'); }
+    function authHeaders() { const t = getToken(); return { 'Content-Type': 'application/json', ...(t ? { 'Authorization': `Bearer ${t}` } : {}) }; }
+
+    let currentRoom = null;
+    let selectedNotifType = 'BAO_TRI';
+    let chatMessages = [];
+    let stompClient = null;
+    let currentUser = null;
+
+    /* ══════ API LOAD ROOM ══════ */
+    async function loadRoomDetail() {
+        const roomId = window.location.pathname.split('/').pop();
+        if (!roomId) return;
+
+        try {
+            const res = await fetch(`/api/room-management/room-detail-management?roomId=${roomId}`, {
+                method: 'GET', headers: authHeaders()
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const raw = await res.json();
+            currentRoom = raw.data || raw.body || raw;
+        } catch (e) {
+            console.warn('API error', e);
+        }
+        populatePage(currentRoom);
+    }
+
+    function populatePage(r) {
+        if(!r) return;
+        document.getElementById('hero-room-num').textContent = 'Phòng ' + (r.roomNumber || r.id);
+        document.getElementById('hero-room-number').textContent = 'Phòng ' + esc(r.roomNumber);
+        document.getElementById('hero-room-type-text').textContent = (r.roomType || '').replace(/_/g,' ');
+        document.getElementById('hero-price').textContent = r.rentPrice ? Number(r.rentPrice).toLocaleString('vi-VN') : '—';
+        document.getElementById('stat-tenant').textContent = r.userName || 'Chưa có';
+        document.getElementById('d-room-num').textContent = r.roomNumber || '—';
+
+        if (r.userName) {
+            document.getElementById('tenant-card-wrap').innerHTML = `<div class="tenant-card"><div class="tenant-avatar">${getInitials(r.userName)}</div><div><div class="tenant-name">${esc(r.userName)}</div><div class="tenant-email">${esc(r.userEmail||'')}</div></div></div>`;
+        }
+        setupChat(r);
+
+        // Chuẩn bị cho tab Hóa đơn
+        document.getElementById('inv-room').value = r.roomNumber || '';
+        const now = new Date();
+        document.getElementById('inv-month').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+
+        if (r.status === 'RENTED' || r.status === 'OCCUPIED' || r.userName) {
+            loadBillingSuggestion(r.id);
+        }
+
+        document.getElementById('page-loading').style.display = 'none';
+        document.getElementById('page-content').style.display = 'block';
+    }
+
+    /* ══════ NOTIFICATION LOGIC ══════ */
+    function selectNotifType(el, type) {
+        document.querySelectorAll('.notif-type-btn').forEach(b => b.classList.remove('selected'));
+        el.classList.add('selected');
+        selectedNotifType = type;
+    }
+
+    function clearNotifForm() {
+        document.getElementById('notif-title').value = '';
+        document.getElementById('notif-content').value = '';
+    }
+
+    function submitNotification() {
+        const title = document.getElementById('notif-title').value.trim();
+        const content = document.getElementById('notif-content').value.trim();
+        if (!title || !content) { showToast('Vui lòng điền đủ tiêu đề và nội dung', 'error'); return; }
+
+        const payload = {
+            roomId: currentRoom.id,
+            title: title,
+            content: content,
+            notificationType: selectedNotifType,
+            CustomerId: currentRoom.tenantId || null
+        };
+
+        fetch('/api/notifications/create', {
+            method: 'POST', headers: authHeaders(),
+            body: JSON.stringify(payload)
+        }).then(r => {
+            if (r.ok) { showToast('✅ Gửi thông báo thành công', 'success'); clearNotifForm(); }
+            else showToast('Lỗi khi gửi thông báo', 'error');
+        }).catch(() => showToast('Lỗi kết nối máy chủ', 'error'));
+    }
+
+    /* ══════ CHAT WEBSOCKET LOGIC ══════ */
+    function setupChat(room) {
+        const noTenant = document.getElementById('chat-no-tenant');
+        const inputBar = document.getElementById('chat-input-bar');
+        if (!room.userName) {
+            noTenant.style.display = 'block';
+            inputBar.style.display = 'none';
+        } else {
+            noTenant.style.display = 'none';
+            inputBar.style.display = 'flex';
+        }
+        document.getElementById('chat-av').textContent = room.userName ? getInitials(room.userName) : '?';
+        document.getElementById('chat-tenant-name').textContent = room.userName || 'Chưa có khách';
+        document.getElementById('chat-tenant-email').textContent = room.userEmail || '—';
+
+        if (room.userName && currentUser) {
+            connectWebSocket();
+        }
+    }
+
+    function connectWebSocket() {
+        if (stompClient?.active) return;
+
+        stompClient = new StompJs.Client({
+            webSocketFactory: () => new SockJS('/gs-guide-websocket'),
+            debug: function (str) { }
+        });
+
+        stompClient.onConnect = (frame) => {
+            stompClient.subscribe('/topic/private/' + currentUser.id, (message) => {
+                const msg = JSON.parse(message.body);
+                if (msg.senderId === currentRoom.tenantId || msg.senderId === currentUser.id) {
+                    chatMessages.push(msg);
+                    renderChat();
+                }
+            });
+
+            stompClient.subscribe('/topic/history/' + currentUser.id, (message) => {
+                chatMessages = JSON.parse(message.body);
+                renderChat();
+            });
+
+            setTimeout(() => {
+                stompClient.publish({
+                    destination: '/app/chat.history',
+                    body: JSON.stringify({
+                        senderId: parseInt(currentUser.id),
+                        receiverId: parseInt(currentRoom.tenantId)
+                    })
+                });
+            }, 500);
+        };
+
+        stompClient.activate();
+    }
+
+    function renderChat() {
+        const container = document.getElementById('chat-messages');
+        if (!chatMessages || chatMessages.length === 0) {
+            container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--gray-400);font-size:0.82rem;">Hãy gửi lời chào đầu tiên! 👋</div>';
+            return;
+        }
+        container.innerHTML = chatMessages.map((m) => {
+            const isMine = m.senderId === currentUser.id;
+            const timeObj = new Date(m.sentAt);
+            const timeStr = !isNaN(timeObj) ? `${String(timeObj.getHours()).padStart(2,'0')}:${String(timeObj.getMinutes()).padStart(2,'0')}` : '—';
+            return `<div class="msg-bubble-wrap ${isMine ? 'mine' : ''}">
+                <div>
+                    <div class="msg-bubble ${isMine ? 'mine' : 'theirs'}">${esc(m.content)}</div>
+                    <div class="msg-meta">${timeStr}</div>
+                </div>
+            </div>`;
+        }).join('');
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function handleChatKey(e) {
+        if (e.isComposing || e.keyCode === 229) return;
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendChatMessage();
+        }
+    }
+
+    function sendChatMessage() {
+        const input = document.getElementById('chat-msg-input');
+        const text = input.value.trim();
+        if (!text || !stompClient?.active) return;
+
+        const request = {
+            senderId: parseInt(currentUser.id),
+            receiverId: parseInt(currentRoom.tenantId),
+            content: text,
+            messageType: 'TEXT',
+            chatType: 'PRIVATE'
+        };
+
+        stompClient.publish({
+            destination: '/app/chat.private',
+            body: JSON.stringify(request)
+        });
+
+        input.value = '';
+    }
+
+    /* ══════ BILLING LOGIC ══════ */
+    // Gọi API để lấy các giá trị mặc định của phòng
+    async function loadBillingSuggestion(roomId) {
+        try {
+            const res = await fetch(`/api/billing/suggestion?roomId=${roomId}`, { headers: authHeaders() });
+            if(res.ok) {
+                const sugg = await res.json();
+                document.getElementById('elec-rate').value = sugg.electricityPricePerKwh || 0;
+                document.getElementById('water-rate').value = sugg.waterPricePerM3 || 0;
+                document.getElementById('inv-internet').value = sugg.internetFee || 0;
+                document.getElementById('inv-parking').value = sugg.parkingFee || 0;
+                document.getElementById('inv-cleaning').value = sugg.cleaningFee || 0;
+            }
+        } catch(e) {
+            console.error("Lỗi lấy dữ liệu gợi ý hóa đơn", e);
+        }
+    }
+
+    // Gom dữ liệu từ Form để tạo Request gửi lên Backend
+    function getInvoicePayload() {
+        const getFloat = (id) => {
+            const val = document.getElementById(id).value;
+            return val !== '' ? parseFloat(val) : null;
+        };
+
+        return {
+            roomId: currentRoom.id,
+            contractId: currentRoom.contractId || null, // Vẫn giữ lấy contractId
+            billingMonth: document.getElementById('inv-month').value,
+
+            electricityOldIndex: getFloat('elec-start'),
+            electricityNewIndex: getFloat('elec-end') || 0,
+            electricityPricePerKwh: getFloat('elec-rate') || 0,
+
+            waterOldIndex: getFloat('water-start'),
+            waterNewIndex: getFloat('water-end') || 0,
+            waterPricePerM3: getFloat('water-rate') || 0,
+
+            internetFee: getFloat('inv-internet') || 0,
+            parkingFee: getFloat('inv-parking') || 0,
+            cleaningFee: getFloat('inv-cleaning') || 0,
+
+            otherFee: getFloat('inv-other-fee') || 0,
+            otherFeeNote: document.getElementById('inv-other-note').value || "",
+            dueDate: document.getElementById('inv-due-date').value || null,
+            notes: document.getElementById('inv-note').value || ""
+        };
+    }
+
+    // Xem trước Hóa đơn (Gọi /preview API)
+    async function previewInvoice() {
+        const payload = getInvoicePayload();
+
+        if(!payload.billingMonth) { showToast("Vui lòng chọn kỳ tháng", "error"); return; }
+        if(isNaN(payload.electricityNewIndex) || isNaN(payload.waterNewIndex)) {
+            showToast("Vui lòng nhập đầy đủ chỉ số Điện/Nước MỚI", "error"); return;
+        }
+
+        try {
+            const res = await fetch('/api/billing/preview', {
+                method: 'POST', headers: authHeaders(), body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if(!res.ok) throw new Error(data.message || "Lỗi khi tính toán hóa đơn");
+
+            // Hiển thị dữ liệu do Backend trả về
+            document.getElementById('prev-month').textContent = data.billingMonth;
+            document.getElementById('prev-rent').textContent = fmtMoney(data.rentAmount);
+            document.getElementById('prev-elec-num').textContent = data.electricityConsumed;
+            document.getElementById('prev-elec').textContent = fmtMoney(data.electricityAmount);
+            document.getElementById('prev-water-num').textContent = data.waterConsumed;
+            document.getElementById('prev-water').textContent = fmtMoney(data.waterAmount);
+            document.getElementById('prev-service').textContent = fmtMoney(data.serviceAmount);
+
+            if(data.otherFee > 0) {
+                document.getElementById('prev-other-row').style.display = 'flex';
+                document.getElementById('prev-other').textContent = fmtMoney(data.otherFee);
+            }
+            else {
+                document.getElementById('prev-other-row').style.display = 'none';
+            }
+
+            document.getElementById('prev-total').textContent = fmtMoney(data.totalAmount);
+            document.getElementById('invoice-preview-container').style.display = 'block';
+
+        } catch(e) {
+            showToast(e.message, "error");
+        }
+    }
+
+    // Nút xác nhận lưu vào Database
+    async function submitInvoice() {
+        const payload = getInvoicePayload();
+        try {
+            const res = await fetch('/api/billing/monthly', {
+                method: 'POST', headers: authHeaders(), body: JSON.stringify(payload)
+            });
+
+            if(res.ok) {
+                showToast("✅ Đã tạo hóa đơn thành công!", "success");
+                document.getElementById('invoice-preview-container').style.display = 'none';
+                document.getElementById('elec-start').value = '';
+                document.getElementById('elec-end').value = '';
+                document.getElementById('water-start').value = '';
+                document.getElementById('water-end').value = '';
+            } else {
+                const data = await res.json();
+                throw new Error(data.message || "Lỗi khi lưu hóa đơn");
+            }
+        } catch(e) {
+            showToast(e.message, "error");
+        }
+    }
+
+
+    /* ══════ TABS SWITCH ══════ */
+    function switchTab(name) {
+        ['info','notify','chat','invoice'].forEach(id => {
+            document.getElementById('tab-' + id)?.classList.remove('active');
+            document.getElementById('panel-' + id)?.classList.remove('active');
+        });
+        document.getElementById('tab-' + name)?.classList.add('active');
+        document.getElementById('panel-' + name)?.classList.add('active');
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const token = getToken();
+        if (token) {
+            try {
+                const resId = await fetch('/api/user/myid', { headers: authHeaders() });
+                if (resId.ok) {
+                    const myId = await resId.json();
+                    currentUser = { id: myId };
+                }
+
+                const resUser = await fetch('/api/user/tenant', { headers: authHeaders() });
+                if (resUser.ok) {
+                    const u = await resUser.json();
+                    if (u.fullName || u.name) {
+                        document.getElementById('user-name-label').textContent = u.fullName || u.name;
+                    }
+                }
+            } catch (error) {
+                console.error("Lỗi khi tải thông tin chủ nhà:", error);
+            }
+        }
+        loadRoomDetail();
+    });
+</script>
+
+</body>
+</html>

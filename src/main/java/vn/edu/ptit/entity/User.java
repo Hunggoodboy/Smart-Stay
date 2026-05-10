@@ -109,4 +109,9 @@ public class User implements Serializable {
     @EqualsAndHashCode.Exclude
     private List<Contracts> customerContracts;
 
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<RentPayments> rentPayments;
+
 }

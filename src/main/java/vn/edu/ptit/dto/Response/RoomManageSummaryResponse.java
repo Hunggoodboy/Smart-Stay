@@ -20,6 +20,17 @@ public class RoomManageSummaryResponse {
     private String status;
 
     // Thông tin người mua/người thuê (nếu phòng đang ở trạng thái RENTED)
+    private Long tenantId;
     private String userName;
     private String userEmail;
+
+    //Địa chỉ
+    private String address;
+    private String ward;
+    private String district;
+    private String city;
+
+    //Contract
+    private Long contractId;
+
 }

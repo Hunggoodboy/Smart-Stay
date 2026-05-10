@@ -204,16 +204,11 @@ function applyDashboardData(data) {
         return;
     }
 
-    const displayName = data.displayName || data.fullName || 'Khach thue';
-    const roomLabel = data.roomLabel || 'Phong 204';
-    const roleLabel = data.roleLabel || 'Khach thue';
+    const displayName = data.displayName || data.fullName || 'Khách thuê';
+    const roleLabel = data.roleLabel || 'Khách thuê';
 
-    setText(el.userRoomLabel, displayName);
     setText(el.userRoleLabel, roleLabel);
-    setText(el.welcomeMessage, `Xin chao, ${displayName}!`);
-    setText(el.roomLocation, roomLabel);
-    setText(el.userRoomLabel, roomLabel);
-    setText(el.userRoleLabel, roleLabel);
+    setText(el.welcomeMessage, `Xin chào, ${displayName}! 👋`);
     setText(el.dropdownUserName, displayName);
     setText(el.dropdownUserRole, roleLabel);
 
@@ -229,25 +224,7 @@ function applyDashboardData(data) {
         el.notificationDot.classList.toggle('hidden', unread <= 0);
     }
 
-    const paymentStatus = data.paymentStatus || data.status;
-    const paymentStatusLabel = data.paymentStatusLabel || getStatusLabel(paymentStatus);
-    const dueDate = data.dueDate;
-    const totalCost = data.totalCost ?? data.totalAmount;
-
-    setText(el.billingMonth, `Hoa don ${data.billingMonth || ''}`.trim());
-    setText(el.statusPreview, paymentStatusLabel || 'Chua co hoa don');
-    setText(el.dueDatePreview, `Can thanh toan truoc ${formatDate(dueDate)}`);
-    setText(el.totalAmountPreview, formatCurrency(totalCost));
-    setText(el.electricityAmount, formatCurrency(data.electricityAmount));
-    setText(el.waterAmount, formatCurrency(data.waterAmount));
-    setText(el.serviceAmount, formatCurrency(data.serviceAmount));
-    setText(el.status, paymentStatusLabel);
-    setText(el.createdAt, formatDate(data.createdAt));
-    setText(el.dueDate, formatDate(dueDate));
-    setText(el.totalAmount, formatCurrency(totalCost));
-    setText(el.electricityConsumed, data.electricityConsumed ?? data.electricUsage ?? 100);
-    setText(el.waterConsumed, data.waterConsumed ?? data.water_consumed ?? data.waterUsage ?? data.water_usage ?? 4);
-    applyStatusStyle(paymentStatus);
+    // Không cập nhật roomLocation, billingMonth, statusPreview, amount... ở đây nữa vì đã được xử lý bằng đoạn script fetch hóa đơn trong index.html
 
     if (el.notificationList && Array.isArray(data.notifications) && data.notifications.length > 0) {
         el.notificationList.innerHTML = data.notifications
@@ -323,6 +300,7 @@ function renderUserMenu(isLoggedIn, data) {
 
 async function loadDashboard() {
     try {
+        const token = localStorage.getItem('smartstay_token');
         const [userResponse, billsResponse] = await Promise.all([
             fetch('/api/user/tenant', {
                 method: 'GET',
@@ -462,7 +440,13 @@ function renderNotifSidebar(notifications) {
 
 async function loadNotifications() {
     try {
-        const res = await fetch('/api/notifications', { credentials: 'include' });
+        const token = localStorage.getItem('smartstay_token');
+        const res = await fetch('/api/notifications', { 
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            credentials: 'include' 
+        });
         if (!res.ok) return;
         const notifications = await res.json();
         if (!Array.isArray(notifications)) return;
@@ -705,7 +689,11 @@ function closeChat() {
 async function initChatWidget() {
     setChatStatus('Đang kết nối...');
     try {
-        const res = await fetch('/api/user/myid', { credentials: 'include' });
+        const token = localStorage.getItem('smartstay_token');
+        const res = await fetch('/api/user/myid', { 
+            headers: { 'Authorization': `Bearer ${token}` },
+            credentials: 'include' 
+        });
         if (!res.ok) { setChatStatus('Lỗi xác thực'); return; }
         chatCurrentUserId = await res.json();
     } catch (e) {
@@ -719,10 +707,10 @@ async function initChatWidget() {
             setChatStatus('Trực tuyến');
             document.getElementById('chat-status-text').style.color = 'rgba(134,239,172,0.9)';
 
-            chatStomp.subscribe('/user/queue/private', (msg) => {
+            chatStomp.subscribe(`/topic/private/${chatCurrentUserId}`, (msg) => {
                 renderChatMessage(JSON.parse(msg.body));
             });
-            chatStomp.subscribe('/user/queue/history', (msg) => {
+            chatStomp.subscribe(`/topic/history/${chatCurrentUserId}`, (msg) => {
                 clearChatMessages();
                 JSON.parse(msg.body).forEach(renderChatMessage);
             });
@@ -731,7 +719,11 @@ async function initChatWidget() {
             // → tự fetch landlordId từ backend
             if (!window._chatPartnerId) {
                 try {
-                    const res = await fetch('/api/user/landlord-id', { credentials: 'include' });
+                    const token = localStorage.getItem('smartstay_token');
+                    const res = await fetch('/api/user/landlord-id', { 
+                        headers: { 'Authorization': `Bearer ${token}` },
+                        credentials: 'include' 
+                    });
                     if (res.ok) {
                         window._chatPartnerId = await res.json();
                         // Cập nhật tên chủ nhà lên header chat

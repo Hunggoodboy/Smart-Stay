@@ -191,10 +191,9 @@
         <div
                 class="bg-[linear-gradient(to_right,_#1e3a8a,_#3b82f6)] rounded-2xl p-6 md:p-8 text-white shadow-md flex justify-between items-center">
             <div>
-                <h1 id="welcome-message" class="text-2xl md:text-3xl font-bold m-0 mb-1">Xin chào, Thắng! 👋</h1>
+                <h1 id="welcome-message" class="text-2xl md:text-3xl font-bold m-0 mb-1">Đang tải dữ liệu... 👋</h1>
                 <p id="room-location" class="text-blue-100 text-sm md:text-base m-0 flex items-center gap-1.5">
-                <div class="i-mdi-map-marker-outline text-lg"></div>
-                Phòng 204 • Chung cư Mini Hoa Hồng, Cầu Giấy
+                <span class="i-mdi-map-marker-outline text-lg"></span> Đang tải địa chỉ...
                 </p>
             </div>
             <div
@@ -212,23 +211,22 @@
                     <div class="flex justify-between items-center mb-6 border-b border-gray-50 pb-4">
                         <h2 class="text-lg font-bold text-gray-800 m-0 flex items-center gap-2">
                             <div class="i-mdi-receipt-text-clock-outline text-blue-600 text-xl"></div>
-                            <span id="billingMonth">Hóa đơn Tháng 3/2026</span>
+                            <span id="billingMonth">Đang tải hóa đơn...</span>
                         </h2>
                         <span id="payment-status-chip"
-                              class="bg-red-50 text-red-600 px-3 py-1.5 rounded-full text-xs font-semibold border border-red-100 flex items-center gap-1.5">
+                              class="bg-gray-50 text-gray-600 px-3 py-1.5 rounded-full text-xs font-semibold border border-gray-100 flex items-center gap-1.5">
                                 <span id="payment-status-dot"
-                                      class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
-                                <span id="statusPreview">Chưa thanh toán</span>
+                                      class="w-1.5 h-1.5 rounded-full bg-gray-500"></span>
+                                <span id="statusPreview">Đang tải...</span>
                             </span>
                     </div>
 
                     <div class="flex flex-col md:flex-row gap-6 items-center md:items-start justify-between">
                         <div>
-                            <p id="dueDatePreview" class="text-sm text-gray-500 font-medium m-0 mb-1">Cần thanh toán
-                                trước 05/04/2026
+                            <p id="dueDatePreview" class="text-sm text-gray-500 font-medium m-0 mb-1">Đang tải...
                             </p>
                             <p class="text-4xl font-extrabold text-gray-900 m-0 tracking-tight"><span
-                                    id="totalAmountPreview">4.250.000</span> <span
+                                    id="totalAmountPreview">0</span> <span
                                     class="text-xl text-gray-400 font-bold">VNĐ</span></p>
                         </div>
                         <button id="pay-now-button"
@@ -248,7 +246,7 @@
                         </div>
                         <div>
                             <p class="text-xs text-gray-500 font-medium m-0 mb-0.5">Điện tiêu thụ</p>
-                            <p class="text-lg font-bold text-gray-800 m-0"><span id="electricityConsumed">100</span>
+                            <p class="text-lg font-bold text-gray-800 m-0"><span id="electricityConsumed">0</span>
                                 <span class="text-xs text-gray-500 font-normal">kWh</span>
                             </p>
                         </div>
@@ -262,7 +260,7 @@
                         </div>
                         <div>
                             <p class="text-xs text-gray-500 font-medium m-0 mb-0.5">Nước tiêu thụ</p>
-                            <p class="text-lg font-bold text-gray-800 m-0"><span id="waterConsumed">4</span> <span
+                            <p class="text-lg font-bold text-gray-800 m-0"><span id="waterConsumed">0</span> <span
                                     class="text-xs text-gray-500 font-normal">Khối</span></p>
                         </div>
                     </div>
@@ -330,7 +328,7 @@
 </div>
 
 <div id="chat-widget"
-     style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Be Vietnam Pro',sans-serif;">
+     style="position:fixed;bottom:24px;right:110px;z-index:9999;font-family:'Be Vietnam Pro',sans-serif;">
 
     <button id="chat-toggle-btn" onclick="toggleChat()"
             style="display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#1e3a8a,#3b82f6);color:#fff;border:none;border-radius:999px;padding:12px 20px;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 8px 24px rgba(37,99,235,0.4);transition:transform .2s,box-shadow .2s;"
@@ -554,7 +552,91 @@
 <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
 
 <script th:src="@{/js/script.js}" src="../static/js/script.js"></script>
+<script th:src="@{/js/chat-ai-widget.js}" src="../static/js/chat-ai-widget.js"></script>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const token = localStorage.getItem('smartstay_token');
+        fetch('/api/utility-bills/newest', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token ? `Bearer ${token}` : ''
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(resData => {
+                const data = resData.data ? resData.data : (resData.body ? resData.body : resData);
+                // Cập nhật thông tin hóa đơn
+                if (data.billingMonth) {
+                    document.getElementById('billingMonth').textContent = 'Hóa đơn Tháng ' + data.billingMonth;
+                }
+                
+                if (data.status) {
+                    const statusChip = document.getElementById('payment-status-chip');
+                    const statusDot = document.getElementById('payment-status-dot');
+                    const statusPreview = document.getElementById('statusPreview');
+                    const payNowButton = document.getElementById('pay-now-button');
+                    
+                    if (data.status === 'PAID' || data.status === 'DA_THANH_TOAN') {
+                        if (statusChip) statusChip.className = 'bg-green-50 text-green-600 px-3 py-1.5 rounded-full text-xs font-semibold border border-green-100 flex items-center gap-1.5';
+                        if (statusDot) statusDot.className = 'w-1.5 h-1.5 rounded-full bg-green-500';
+                        if (statusPreview) statusPreview.textContent = 'Đã thanh toán';
+                        if (payNowButton) payNowButton.style.display = 'none';
+                    } else {
+                        if (statusChip) statusChip.className = 'bg-red-50 text-red-600 px-3 py-1.5 rounded-full text-xs font-semibold border border-red-100 flex items-center gap-1.5';
+                        if (statusDot) statusDot.className = 'w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse';
+                        if (statusPreview) statusPreview.textContent = 'Chưa thanh toán';
+                        if (payNowButton) payNowButton.style.display = 'flex';
+                    }
+                }
+                
+                if (data.dueDate) {
+                    const parts = data.dueDate.split('-');
+                    if (parts.length === 3) {
+                        document.getElementById('dueDatePreview').textContent = `Cần thanh toán trước ${parts[2]}/${parts[1]}/${parts[0]}`;
+                    } else {
+                        document.getElementById('dueDatePreview').textContent = `Cần thanh toán trước ${data.dueDate}`;
+                    }
+                }
+                
+                if (data.totalAmount !== undefined && data.totalAmount !== null) {
+                    document.getElementById('totalAmountPreview').textContent = data.totalAmount.toLocaleString('vi-VN');
+                }
+                
+                if (data.electricityConsumed !== undefined && data.electricityConsumed !== null) {
+                    document.getElementById('electricityConsumed').textContent = data.electricityConsumed;
+                }
+                
+                if (data.waterConsumed !== undefined && data.waterConsumed !== null) {
+                    document.getElementById('waterConsumed').textContent = data.waterConsumed;
+                }
+                
+                // Cập nhật tên phòng nếu có trong response
+                if (data.roomName) {
+                    const roomLabel = document.getElementById('user-room-label');
+                    if (roomLabel) roomLabel.textContent = `Phòng ${data.roomName}`;
+                    
+                    const dropdownName = document.getElementById('dropdown-user-name');
+                    if (dropdownName) dropdownName.textContent = `Phòng ${data.roomName}`;
+                    
+                    const roomLoc = document.getElementById('room-location');
+                    if (roomLoc) {
+                        const addressText = data.roomAddress ? data.roomAddress : "Chưa cập nhật địa chỉ";
+                        roomLoc.innerHTML = `<span class="i-mdi-map-marker-outline text-lg"></span> Phòng ${data.roomName} • ${addressText}`;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Lỗi khi tải dữ liệu hóa đơn:', error);
+            });
+    });
+</script>
 </body>
 
 </html>

@@ -16,6 +16,7 @@ import vn.edu.ptit.entity.RoomPosts;
 import vn.edu.ptit.entity.User;
 import vn.edu.ptit.repository.LandLordRepository;
 import vn.edu.ptit.repository.RoomPostRepository;
+import vn.edu.ptit.service.AI.VectorService;
 import vn.edu.ptit.service.Authentication.AuthService;
 
 import java.io.IOException;
@@ -31,7 +32,7 @@ public class RoomPostService {
     private final RoomPostRepository roomPostRepository;
     private final AuthService authService;
     private final FileService fileService;
-    private final LandLordRepository landLordRepository;
+    private final VectorService vectorService;
 
     @Transactional
     public ApiResponse createNewRoomPost(CreateRoomPostRequest createRoomPostRequest, MultipartFile mainImg,
@@ -58,6 +59,7 @@ public class RoomPostService {
             }
         }
         roomPostRepository.save(roomPosts);
+        vectorService.addRoomPosts(roomPosts);
         return ApiResponse.builder().message("Thêm phòng thành công").success(true).build();
     }
 

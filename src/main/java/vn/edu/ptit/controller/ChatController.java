@@ -33,10 +33,8 @@ public class ChatController {
     public void getChatHistory(@Payload ChatMessageRequest chatMessageRequest) {
         Long senderId = chatMessageRequest.getSenderId();
         Long receiverId = chatMessageRequest.getReceiverId();
-        if (senderId == null) {
-            User sender = userRepository.findById(authService.getCurrentUserId())
-                    .orElseThrow(() -> new RuntimeException("Sender not found"));
-            senderId = sender.getId();
+        if (senderId == null || receiverId == null) {
+            System.out.println("❌ LỖI: Frontend chưa gửi đủ senderId hoặc receiverId");
         }
         System.out.println(receiverId);
         chatMessageService.loadMessageHistory(senderId, receiverId);

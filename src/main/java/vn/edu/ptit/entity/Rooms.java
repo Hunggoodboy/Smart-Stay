@@ -105,6 +105,7 @@ public class Rooms implements Serializable {
      */
 
     @OneToOne(fetch = FetchType.LAZY, mappedBy = "room")
+    @ToString.Exclude
     private Contracts contract;
 
     /**

@@ -141,6 +141,11 @@ function updateStatus(isOnline) {
 
 // Bắt sự kiện Enter để gửi tin nhắn
 document.getElementById('messageInput').addEventListener('keydown', (e) => {
+    // QUAN TRỌNG: Ngăn chặn việc gửi tin nhắn khi bộ gõ tiếng Việt đang tổ hợp chữ
+    if (e.isComposing || e.keyCode === 229) {
+        return;
+    }
+
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         sendMessage();

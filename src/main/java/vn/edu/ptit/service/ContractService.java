@@ -31,7 +31,7 @@ public class ContractService {
 
     public ContractSuggestionResponse getContractDraft(Long roomId, Long userId) {
         LandLord currentLandLord = authService.getCurrentLandLord();
-        Customer currentCustomer = customerRepository.findCustomerById(userId).orElseThrow(() -> new RuntimeException("Customer not found"));
+        Customer currentCustomer = customerRepository.findById(userId).orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng"));
         Rooms currentRoom = roomsRepository.findRoomsById(roomId).orElseThrow(() -> new RuntimeException("Room not found"));
         ContractSuggestionResponse contractSuggestionResponse = ContractSuggestionResponse.builder()
                 .landLordId(currentLandLord.getId())
@@ -40,7 +40,6 @@ public class ContractService {
                 .landLordAddress(currentLandLord.getAddress())
                 .customerId(currentCustomer.getId())
                 .customerName(currentCustomer.getFullName())
-                .customerIdentityNumber(currentCustomer.getIdCardNumber())
                 .customerAddress(currentCustomer.getAddress())
                 .roomId(currentRoom.getId())
                 .roomAddress(currentRoom.getAddress())

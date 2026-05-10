@@ -50,7 +50,10 @@ public class WebController {
     public String roomDetail(@PathVariable Long id) {
         return "roomDetail";
     }
-
+    @GetMapping("/room-detail-management/{id}")
+    public String roomDetailManagement(@PathVariable Long id) {
+        return "roomDetailManagement";
+    }
     @GetMapping("/MyRentalRequest")
     public String rentalRequest() {
         return "rentalRequests";

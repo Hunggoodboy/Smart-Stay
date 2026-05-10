@@ -14,13 +14,13 @@ import java.util.Optional;
 public interface UtilityBillsRepository extends JpaRepository<UtilityBills, Long> {
     UtilityBills findAllById(Long id);
 
-    List<UtilityBills> findByRoom_Id(Long roomId);
-
-    List<UtilityBills> findByStatus(String status);
 
     List<UtilityBills> findByRoom_IdOrderByCreatedAtDesc(Long roomId);
-//    @Query()
-//    List<UtilityBills> findByRoom_IdOrderByCreatedAtAsc(Long roomId);
+    @Query("select u from UtilityBills u join RentPayments rent on u.rentPayment.id = rent.id " +
+            " where rent.customer.id = :customerId order by rent.createdAt DESC " +
+            "FETCH FIRST 1 ROWS ONLY")
+    Optional<UtilityBills> findNewestByCustomerId(@Param("customerId") Long customerId);
+
     Optional<UtilityBills> findTopByRoom_IdAndBillingMonthOrderByCreatedAtDesc(Long roomId, String billingMonth);
     @Query("""
             SELECT u

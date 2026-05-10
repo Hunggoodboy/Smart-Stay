@@ -10,11 +10,15 @@ import vn.edu.ptit.dto.Request.LoginRequest;
 import vn.edu.ptit.dto.Request.RegisterRequest;
 import vn.edu.ptit.service.Authentication.AuthService;
 
+import vn.edu.ptit.repository.RoomsRepository;
+import vn.edu.ptit.entity.User;
+
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/user")
 public class AuthController {
     private final AuthService authService;
+    private final RoomsRepository roomsRepository;
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest, HttpServletResponse httpServletResponse, HttpServletRequest httpServletRequest) {
         AuthResponse authResponse = authService.register(registerRequest);
@@ -42,5 +46,15 @@ public class AuthController {
     @GetMapping("/myid")
     public ResponseEntity<?> getCurrentUserId() {
         return ResponseEntity.ok(authService.getCurrentUser().getId());
+    }
+
+    @GetMapping("/landlord-id")
+    public ResponseEntity<?> getLandLordId() {
+        Long tenantId = authService.getCurrentUser().getId();
+        User landlord = roomsRepository.findLandLordByCustomerId(tenantId).orElse(null);
+        if (landlord != null) {
+            return ResponseEntity.ok(landlord.getId());
+        }
+        return ResponseEntity.badRequest().body("Landlord not found");
     }
 }

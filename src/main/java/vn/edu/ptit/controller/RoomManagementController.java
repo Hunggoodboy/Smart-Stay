@@ -25,7 +25,7 @@ public class RoomManagementController {
     }
 
     @GetMapping("/room-detail-management")
-    public ResponseEntity<?>  getRoomsDetailManagement(@RequestBody Long roomId) {
+    public ResponseEntity<?>  getRoomsDetailManagement(@RequestParam Long roomId) {
         return ResponseEntity.ok(roomService.getRoomDetailManagement(roomId));
     }
 

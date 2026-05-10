@@ -8,6 +8,7 @@ import vn.edu.ptit.entity.ChatRoom;
 import vn.edu.ptit.entity.Contracts;
 import vn.edu.ptit.entity.LandLord;
 import vn.edu.ptit.entity.Rooms;
+import vn.edu.ptit.entity.User;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,7 +18,7 @@ public interface RoomsRepository extends JpaRepository<Rooms, Long> {
     Optional<Rooms> findRoomsById(Long id);
 
     @Query("Select c.landLord from Rooms r join Contracts c on r.id = c.room.id where c.customer.id = :customerId")
-    public Optional<LandLord> findLandLordByCustomerId(Long customerId);
+    public Optional<User> findLandLordByCustomerId(Long customerId);
 
     List<Rooms> findRoomsByLandLordId(Long id);
 }

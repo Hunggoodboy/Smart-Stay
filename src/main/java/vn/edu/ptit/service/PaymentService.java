@@ -20,6 +20,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
 @AllArgsConstructor
 public class PaymentService {
@@ -31,7 +33,15 @@ public class PaymentService {
     private final RentPaymentsRepository rentPaymentsRepository;
     private final CustomerRepository customerRepository;
 
-    public List<UtilityBillsResponse> getBillByCurrentUser(Authentication authentication) {
+    @Transactional(readOnly = true)
+    public UtilityBillsResponse getNewestBillsResponse() {
+        UtilityBills newBill = utilityBillsRepository.findNewestByCustomerId(authService.getCurrentUserId()).orElseThrow(() -> new RuntimeException("Hiện tại bạn chưa có hoá đơn"));
+
+        return new UtilityBillsResponse().fromEntity(newBill);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UtilityBillsResponse> getAllBillsByCurrentUser() {
         UserDTO userDTO = authService.getCurrentUser();
         List<UtilityBills> utilityBills = utilityBillsRepository.findAllByUserId(userDTO.getId());
         List<UtilityBillsResponse> utilityBillsResponses = utilityBills.stream()
@@ -79,7 +89,7 @@ public class PaymentService {
         // 1. Set các mối quan hệ (Foreign Keys)
         rentPayments.setContract(contract);
         rentPayments.setRoom(utilityBills.getRoom());
-        Customer customer = customerRepository.findCustomerById(contract.getCustomer().getId()).orElseThrow(() -> new RuntimeException("Không tìm thấy khách thuê"));
+        Customer customer = customerRepository.findById(contract.getCustomer().getId()).orElseThrow(() -> new RuntimeException("Không tìm thấy khách thuê"));
         rentPayments.setCustomer(customer); // Khách thuê lấy từ hợp đồng
         rentPayments.setUtilityBill(utilityBills);
 
@@ -88,7 +98,7 @@ public class PaymentService {
         rentPayments.setStatus(RentPayments.Status.UNPAID);
         rentPayments.setCreatedAt(LocalDateTime.now());
 
-        // Hạn nộp: Cài mặc định là 5 ngày sau khi xuất hóa đơn (hoặc tùy logic của bạn)
+        // Hạn nộp: Cài mặc định là 5 ngày sau khi xuất hóa đơn
         rentPayments.setDueDate(LocalDate.now().plusDays(5));
 
         Double rentAmount = contract.getMonthlyRent();

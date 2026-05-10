@@ -84,13 +84,22 @@ public class RoomService {
                 .userName(room.getCustomer() != null ? room.getCustomer().getFullName() : null)
                 .build()).toList();
     }
+
     public RoomManageSummaryResponse getRoomDetailManagement(Long id) {
+        System.out.println("Phòng này có id là" + id);
+        Contracts currentContract = contractsRepository.findContractsByRoomId(id).orElseThrow(() -> new RuntimeException("Phòng này chưa có hợp đồng"));
         return roomsRepository.findRoomsById(id).stream().map(room -> RoomManageSummaryResponse.builder()
                 .id(room.getId())
                 .roomNumber(room.getRoomNumber())
                 .roomType(room.getRoomType())
                 .rentPrice(room.getRentPrice())
                 .status(room.getStatus().name())
+                .address(room.getAddress())
+                .contractId(currentContract.getId())
+                .ward(room.getWard())
+                .district(room.getDistrict())
+                .city(room.getCity())
+                .tenantId(room.getCustomer() != null ? room.getCustomer().getId() : null)
                 .userEmail(room.getCustomer() != null ? room.getCustomer().getEmail() : null)
                 .userName(room.getCustomer() != null ? room.getCustomer().getFullName() : null)
                 .build()).findFirst().orElseThrow(() -> new RuntimeException("Không tìm thấy phòng với id: " + id));
