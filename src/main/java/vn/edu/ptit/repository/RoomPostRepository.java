@@ -85,4 +85,7 @@ public interface RoomPostRepository extends JpaRepository<RoomPosts, Long> {
               AND p.expiredAt < CURRENT_TIMESTAMP
             """)
     List<RoomPosts> findExpiredActivePosts();
+
+    @Query("Select r from RoomPosts r where r.landlord.id != :userId")
+    List<RoomPosts> findAllRoomsWithoutMine(@Param("userId") Long userId);
 }

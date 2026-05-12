@@ -19,9 +19,9 @@ public class ContractController {
     private final ContractService contractService;
     @GetMapping("/draft")
     public ResponseEntity<ContractSuggestionResponse> getContractDraft(
-            @RequestParam("roomId") Long roomId,
+            @RequestParam("roomPostId") Long roomPostId,
             @RequestParam("userId") Long userId){
-        return ResponseEntity.ok(contractService.getContractDraft(roomId, userId));
+        return ResponseEntity.ok(contractService.getContractDraft(roomPostId, userId));
     }
 
     @PostMapping("/create")
@@ -31,6 +31,12 @@ public class ContractController {
 
     @GetMapping("/get-my-contracts")
     public ResponseEntity<?> getMyContracts(){
-        return ResponseEntity.ok(contractService.getMyContracts());
+        return ResponseEntity.ok(contractService.getMyValidContracts());
+    }
+
+
+    @GetMapping("/expired")
+    public ResponseEntity<?> getContractExpired(){
+        return ResponseEntity.ok(contractService.getMyContractsExpired());
     }
 }

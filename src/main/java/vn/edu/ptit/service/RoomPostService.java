@@ -64,9 +64,15 @@ public class RoomPostService {
     }
 
     public List<RoomPostSummaryResponse> getAllRoomPosts() {
-        List<RoomPosts> roomPosts = roomPostRepository.findAll();
-            return roomPosts.stream().map(post -> {
-            return RoomPostSummaryResponse.builder()
+        Long userId = authService.getCurrentUserIdOrNull(); // An toàn: trả null nếu chưa đăng nhập
+        List<RoomPosts> roomPosts;
+        if (userId == null) {
+            roomPosts = roomPostRepository.findAll();
+        } else {
+            roomPosts = roomPostRepository.findAllRoomsWithoutMine(userId);
+        }
+        return roomPosts.stream().map(post ->
+            RoomPostSummaryResponse.builder()
                     .id(post.getId())
                     .title(post.getTitle())
                     .monthlyRent(post.getMonthlyRent())
@@ -76,8 +82,8 @@ public class RoomPostService {
                     .thumbnailUrl(post.getMainImageUrl())
                     .landlordName(post.getLandlord().getFullName())
                     .publishedAt(post.getCreatedAt())
-                    .build();
-        }).toList();
+                    .build()
+        ).toList();
     }
 
     public List<RoomPostSummaryResponse> getPostsForCurrentLandlord() {

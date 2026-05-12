@@ -69,6 +69,9 @@ public class RoomPosts implements Serializable {
     @Column(name = "city", nullable = false)
     private String city;
 
+    @Column(name = "deleted_at", nullable = true)
+    private LocalDateTime deletedAt = null;
+
 
     // ==================== GIÁ DỊCH VỤ (dùng để tạo Rooms khi cho thuê) ====================
 
@@ -131,12 +134,10 @@ public class RoomPosts implements Serializable {
     private LandLord landlord;
 
     /**
-     * Phòng được tạo ra sau khi bài đăng này chuyển sang RENTED.
-     * NULL cho đến khi hệ thống tạo Rooms từ bài đăng này.
-     * FK: room_posts.room_id → rooms.id
+     * Phòng quản lý được tạo sau khi bài đăng chuyển sang RENTED.
+     * Rooms giữ FK room_post_id → room_posts.id (mappedBy).
      */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id", nullable = true)
+    @OneToOne(mappedBy = "roomPost", fetch = FetchType.LAZY)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private Rooms room;

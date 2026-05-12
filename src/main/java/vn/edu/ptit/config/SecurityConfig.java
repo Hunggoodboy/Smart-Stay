@@ -41,7 +41,7 @@ public class SecurityConfig {
             "/api/user/me", "/api/user/myid", "/api/user/tenant",
             "/api/notifications/**", "/api/utility-bills/**",
             "/api/chat/**", "/api/customer/**", "/api/landlord/requestToLandLord"
-            ,"/api/contract/**", "/get-my-contracts", "/api/vector/**" , "/api/post-list-room", "/api/chat-ai/**"
+            ,"/api/contract/**", "/get-my-contracts", "/api/vector/**" , "/api/post-list-room", "/api/chat-ai/**", "/api/delete/request"
     };
 
 

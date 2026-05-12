@@ -86,7 +86,7 @@ async function loadLandlordPosts() {
         cachedPosts = Array.isArray(posts) ? posts : [];
 
         renderPostCards(cachedPosts);
-        applyManagementFilters();
+        // applyManagementFilters();
     } catch (err) {
         listEl.innerHTML = '<div class="rounded-2xl border border-red-100 bg-red-50 px-5 py-4 text-sm text-red-600">Lỗi khi tải bài đăng</div>';
         console.error(err);
@@ -211,87 +211,87 @@ window.copyPostLink = function(id, btn) {
     }, 1500);
 };
 
-function getFilteredPosts(posts) {
-    let result = Array.isArray(posts) ? posts.slice() : [];
-    const query = normalizeText(filterEls.search && filterEls.search.value);
-    if (query) {
-        result = result.filter(post => {
-            const title = normalizeText(post.title);
-            const address = normalizeText(getAddress(post));
-            return title.includes(query) || address.includes(query);
-        });
-    }
-    const statusFilter = filterEls.status ? filterEls.status.value : 'all';
-    if (statusFilter && statusFilter !== 'all') {
-        result = result.filter(post => String(post.status || '').toUpperCase() === statusFilter);
-    }
-    const sortValue = filterEls.sort ? filterEls.sort.value : 'newest';
-    if (sortValue === 'priceAsc') {
-        result.sort((a, b) => toNumber(a.monthlyRent) - toNumber(b.monthlyRent));
-    } else if (sortValue === 'priceDesc') {
-        result.sort((a, b) => toNumber(b.monthlyRent) - toNumber(a.monthlyRent));
-    } else {
-        result.sort((a, b) => getTimestamp(b.publishedAt || b.createdAt) - getTimestamp(a.publishedAt || a.createdAt));
-    }
-    return result;
-}
+// function getFilteredPosts(posts) {
+//     let result = Array.isArray(posts) ? posts.slice() : [];
+//     const query = normalizeText(filterEls.search && filterEls.search.value);
+//     if (query) {
+//         result = result.filter(post => {
+//             const title = normalizeText(post.title);
+//             const address = normalizeText(getAddress(post));
+//             return title.includes(query) || address.includes(query);
+//         });
+//     }
+//     const statusFilter = filterEls.status ? filterEls.status.value : 'all';
+//     if (statusFilter && statusFilter !== 'all') {
+//         result = result.filter(post => String(post.status || '').toUpperCase() === statusFilter);
+//     }
+//     const sortValue = filterEls.sort ? filterEls.sort.value : 'newest';
+//     if (sortValue === 'priceAsc') {
+//         result.sort((a, b) => toNumber(a.monthlyRent) - toNumber(b.monthlyRent));
+//     } else if (sortValue === 'priceDesc') {
+//         result.sort((a, b) => toNumber(b.monthlyRent) - toNumber(a.monthlyRent));
+//     } else {
+//         result.sort((a, b) => getTimestamp(b.publishedAt || b.createdAt) - getTimestamp(a.publishedAt || a.createdAt));
+//     }
+//     return result;
+// }
 
-function renderManagementTable(posts) {
-    if (!filterEls.tableBody) return;
-    if (!Array.isArray(posts) || posts.length === 0) {
-        filterEls.tableBody.innerHTML = `<tr><td class="px-5 py-6 text-sm text-gray-500" colspan="4">Không có nhà nào khớp bộ lọc.</td></tr>`;
-        return;
-    }
-    const rows = posts.map(post => {
-        const statusMeta = getStatusMeta(post.status);
-        const title = escapeHtml(post.title || 'Chưa có tiêu đề');
-        const address = escapeHtml(getAddress(post));
-        const price = formatMoney(post.monthlyRent);
-        const detailUrl = `/rooms/${post.id}`;
-        const copyUrl = `${window.location.origin}${detailUrl}`;
-        return `
-            <tr>
-                <td class="px-5 py-4">
-                    <div class="font-semibold text-gray-900">${title}</div>
-                    <div class="mt-1 text-xs text-gray-500">${address}</div>
-                </td>
-                <td class="px-5 py-4 font-semibold text-gray-700">${price}</td>
-                <td class="px-5 py-4">
-                    <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold border ${statusMeta.tableClass}">${statusMeta.label}</span>
-                </td>
-                <td class="px-5 py-4">
-                    <div class="flex flex-wrap gap-2">
-                        <a href="${detailUrl}" class="rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white no-underline hover:bg-slate-800">Xem</a>
-                        <button type="button" data-copy-url="${copyUrl}" class="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50">Sao chép link</button>
-                    </div>
-                </td>
-            </tr>`;
-    }).join('');
-    filterEls.tableBody.innerHTML = rows;
-    filterEls.tableBody.querySelectorAll('[data-copy-url]').forEach(button => {
-        button.addEventListener('click', function () {
-            const url = button.getAttribute('data-copy-url');
-            if (!url) return;
-            navigator.clipboard.writeText(url);
-            button.textContent = 'Đã sao chép';
-            setTimeout(() => button.textContent = 'Sao chép link', 1200);
-        });
-    });
-}
+// function renderManagementTable(posts) {
+//     if (!filterEls.tableBody) return;
+//     if (!Array.isArray(posts) || posts.length === 0) {
+//         filterEls.tableBody.innerHTML = `<tr><td class="px-5 py-6 text-sm text-gray-500" colspan="4">Không có nhà nào khớp bộ lọc.</td></tr>`;
+//         return;
+//     }
+//     const rows = posts.map(post => {
+//         const statusMeta = getStatusMeta(post.status);
+//         const title = escapeHtml(post.title || 'Chưa có tiêu đề');
+//         const address = escapeHtml(getAddress(post));
+//         const price = formatMoney(post.monthlyRent);
+//         const detailUrl = `/rooms/${post.id}`;
+//         const copyUrl = `${window.location.origin}${detailUrl}`;
+//         return `
+//             <tr>
+//                 <td class="px-5 py-4">
+//                     <div class="font-semibold text-gray-900">${title}</div>
+//                     <div class="mt-1 text-xs text-gray-500">${address}</div>
+//                 </td>
+//                 <td class="px-5 py-4 font-semibold text-gray-700">${price}</td>
+//                 <td class="px-5 py-4">
+//                     <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold border ${statusMeta.tableClass}">${statusMeta.label}</span>
+//                 </td>
+//                 <td class="px-5 py-4">
+//                     <div class="flex flex-wrap gap-2">
+//                         <a href="${detailUrl}" class="rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white no-underline hover:bg-slate-800">Xem</a>
+//                         <button type="button" data-copy-url="${copyUrl}" class="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50">Sao chép link</button>
+//                     </div>
+//                 </td>
+//             </tr>`;
+//     }).join('');
+//     filterEls.tableBody.innerHTML = rows;
+//     filterEls.tableBody.querySelectorAll('[data-copy-url]').forEach(button => {
+//         button.addEventListener('click', function () {
+//             const url = button.getAttribute('data-copy-url');
+//             if (!url) return;
+//             navigator.clipboard.writeText(url);
+//             button.textContent = 'Đã sao chép';
+//             setTimeout(() => button.textContent = 'Sao chép link', 1200);
+//         });
+//     });
+// }
 
-function applyManagementFilters() {
-    const filtered = getFilteredPosts(cachedPosts);
-    renderManagementTable(filtered);
-    setText(filterEls.count, `${filtered.length} nhà`);
-}
+// function applyManagementFilters() {
+//     const filtered = getFilteredPosts(cachedPosts);
+//     renderManagementTable(filtered);
+//     setText(filterEls.count, `${filtered.length} nhà`);
+// }
 
-function bindFilters() {
-    if (bindFilters.bound) return;
-    if (filterEls.search) filterEls.search.addEventListener('input', applyManagementFilters);
-    if (filterEls.status) filterEls.status.addEventListener('change', applyManagementFilters);
-    if (filterEls.sort) filterEls.sort.addEventListener('change', applyManagementFilters);
-    bindFilters.bound = true;
-}
+// function bindFilters() {
+//     if (bindFilters.bound) return;
+//     if (filterEls.search) filterEls.search.addEventListener('input', applyManagementFilters);
+//     if (filterEls.status) filterEls.status.addEventListener('change', applyManagementFilters);
+//     if (filterEls.sort) filterEls.sort.addEventListener('change', applyManagementFilters);
+//     bindFilters.bound = true;
+// }
 
 async function loadUnreadMessages() {
     const listEl = document.getElementById('unreadMessageList');
@@ -355,7 +355,6 @@ function formatMoney(val) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    bindFilters();
     loadLandlordPosts();
     loadUnreadMessages();
 });

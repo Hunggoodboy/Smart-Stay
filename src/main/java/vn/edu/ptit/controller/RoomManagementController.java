@@ -24,6 +24,11 @@ public class RoomManagementController {
         return ResponseEntity.ok(roomService.getRoomsManagementSummary());
     }
 
+    @GetMapping("/room-summary-deleted")
+    public ResponseEntity<?>  getRoomsSummaryDeleted() {
+        return ResponseEntity.ok(roomService.getRoomsManagementSummaryIsDeleted());
+    }
+
     @GetMapping("/room-detail-management")
     public ResponseEntity<?>  getRoomsDetailManagement(@RequestParam Long roomId) {
         return ResponseEntity.ok(roomService.getRoomDetailManagement(roomId));

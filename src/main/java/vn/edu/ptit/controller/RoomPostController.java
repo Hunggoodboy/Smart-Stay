@@ -50,6 +50,8 @@ public class RoomPostController {
         return ResponseEntity.ok("Đã tạo thành công " + successCount + "/" + requestList.size() + " bài đăng!");
     }
 
+
+
     @GetMapping("/room-posted")
     private ResponseEntity<List<RoomPostSummaryResponse>> getRoomPosted() {
         return ResponseEntity.ok(roomPostService.getAllRoomPosts());

@@ -5,81 +5,217 @@
     <title>Hợp đồng của tôi | Smart Stay</title>
     <link rel="stylesheet" href="/css/uno.css">
     <style>
-        .contract-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .contract-card:hover { transform: translateY(-4px); }
+        body { background: radial-gradient(circle at top right, #f0fdfa, #f8fafc 40%, #eff6ff 100%); }
+        .contract-card { 
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        .contract-card:hover { 
+            transform: translateY(-6px) scale(1.01); 
+            box-shadow: 0 20px 40px -10px rgba(14, 165, 233, 0.15);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        .contract-avatar {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen p-4 md:p-10">
-<div class="max-w-4xl mx-auto">
-    <header class="mb-10">
-        <h1 class="text-3xl font-black text-slate-900 tracking-tight">Hợp đồng của tôi</h1>
-        <p class="text-slate-500 font-medium">Quản lý và theo dõi các thỏa thuận thuê nhà của bạn</p>
+<body class="min-h-screen text-slate-800 p-4 md:p-10 relative overflow-x-hidden">
+    <!-- Decorative background elements -->
+    <div class="pointer-events-none fixed inset-0 overflow-hidden z-0">
+        <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-blue-300/30 blur-[100px] animate-pulse"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full bg-emerald-200/30 blur-[120px] animate-pulse" style="animation-delay: 2s;"></div>
+    </div>
+
+<div class="max-w-5xl mx-auto relative z-10">
+    <!-- Header with Tabs -->
+    <header class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+            <div class="flex items-center gap-4 mb-3">
+                <a href="/myHome" class="flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm border border-slate-100 text-slate-400 hover:text-blue-600 hover:shadow-md transition-all font-bold no-underline text-xl">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                </a>
+                <h1 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-700 tracking-tight m-0">Hợp đồng của tôi</h1>
+            </div>
+            <p class="text-slate-500 font-medium m-0 pl-14 text-sm md:text-base">Quản lý và theo dõi các thỏa thuận thuê nhà của bạn dễ dàng</p>
+        </div>
+        
+        <div class="flex bg-slate-200/60 p-1.5 rounded-2xl w-fit border border-white/50 shadow-inner backdrop-blur-md">
+            <button id="tab-valid" onclick="switchTab('valid')" class="px-7 py-2.5 rounded-xl font-bold text-sm transition-all bg-white shadow-md shadow-blue-100 text-blue-600 border-none cursor-pointer flex items-center gap-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                Hợp đồng còn hạn
+            </button>
+            <button id="tab-expired" onclick="switchTab('expired')" class="px-7 py-2.5 rounded-xl font-bold text-sm transition-all text-slate-500 hover:text-slate-700 hover:bg-slate-300/50 bg-transparent border-none cursor-pointer flex items-center gap-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                Hợp đồng hết hạn
+            </button>
+        </div>
     </header>
 
-    <div id="contractList" class="grid gap-5">
+    <div id="contractList" class="grid gap-6">
         <!-- Shimmer Loading -->
-        <div class="h-40 bg-white rounded-2xl border-l-4 border-blue-500 animate-pulse"></div>
+        <div class="h-44 bg-white/60 rounded-3xl border border-white backdrop-blur-lg shadow-sm flex animate-pulse overflow-hidden">
+            <div class="w-3 bg-blue-400"></div>
+            <div class="p-6 flex-1">
+                <div class="h-6 bg-slate-200 rounded-md w-1/4 mb-4"></div>
+                <div class="h-4 bg-slate-100 rounded-md w-1/2 mb-2"></div>
+                <div class="h-4 bg-slate-100 rounded-md w-1/3"></div>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", async () => {
-        const token = localStorage.getItem('smartstay_token');
-        try {
-            const response = await fetch('/api/contract/get-my-contracts', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const contracts = await response.json();
-            renderContracts(contracts);
-        } catch (error) {
-            document.getElementById("contractList").innerHTML = `
-                    <div class="p-6 bg-red-50 text-red-600 rounded-2xl border-2 border-red-100 font-bold text-center">
-                        ⚠️ Không thể kết nối dữ liệu. Vui lòng kiểm tra lại Server!
-                    </div>`;
-        }
+    let currentTab = 'valid';
+
+    document.addEventListener("DOMContentLoaded", () => {
+        loadContracts('valid');
     });
 
-    function renderContracts(contracts) {
+    async function loadContracts(type) {
+        const token = localStorage.getItem('smartstay_token');
+        const container = document.getElementById("contractList");
+        
+        container.innerHTML = `
+        <div class="h-44 bg-white/60 rounded-3xl border border-white backdrop-blur-lg shadow-sm flex animate-pulse overflow-hidden">
+            <div class="w-2.5 bg-${type === 'valid' ? 'blue' : 'slate'}-400"></div>
+            <div class="p-6 flex-1 flex items-center justify-center">
+                <div class="text-slate-400 font-bold flex items-center gap-2">
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    Đang tải dữ liệu...
+                </div>
+            </div>
+        </div>`;
+
+        let url = type === 'valid' ? '/api/contract/get-my-contracts' : '/api/contract/expired';
+
+        try {
+            const response = await fetch(url, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (!response.ok) {
+                throw new Error("Không thể tải danh sách hợp đồng");
+            }
+
+            const contracts = await response.json();
+            renderContracts(contracts, type);
+        } catch (error) {
+            container.innerHTML = `
+                    <div class="p-8 bg-red-50/80 backdrop-blur-md text-red-600 rounded-3xl border border-red-200 font-bold text-center shadow-lg shadow-red-100/50 flex flex-col items-center gap-3">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        Lỗi: Không thể kết nối dữ liệu. Vui lòng kiểm tra lại Server!
+                    </div>`;
+        }
+    }
+
+    function switchTab(type) {
+        if (currentTab === type) return;
+        currentTab = type;
+
+        const tabValid = document.getElementById('tab-valid');
+        const tabExpired = document.getElementById('tab-expired');
+
+        if (type === 'valid') {
+            tabValid.className = "px-7 py-2.5 rounded-xl font-bold text-sm transition-all bg-white shadow-md shadow-blue-100 text-blue-600 border-none cursor-pointer flex items-center gap-2";
+            tabExpired.className = "px-7 py-2.5 rounded-xl font-bold text-sm transition-all text-slate-500 hover:text-slate-700 hover:bg-slate-300/50 bg-transparent border-none cursor-pointer flex items-center gap-2";
+        } else {
+            tabExpired.className = "px-7 py-2.5 rounded-xl font-bold text-sm transition-all bg-white shadow-md shadow-slate-200 text-slate-800 border-none cursor-pointer flex items-center gap-2";
+            tabValid.className = "px-7 py-2.5 rounded-xl font-bold text-sm transition-all text-slate-500 hover:text-slate-700 hover:bg-slate-300/50 bg-transparent border-none cursor-pointer flex items-center gap-2";
+        }
+
+        loadContracts(type);
+    }
+
+    function renderContracts(contracts, type) {
         const container = document.getElementById("contractList");
         if (!contracts.length) {
-            container.innerHTML = `<div class="text-center py-20 text-slate-400 font-medium bg-white rounded-3xl border-2 border-dashed">Bạn chưa có hợp đồng nào.</div>`;
+            const emptyText = type === 'valid' ? 'Bạn chưa có hợp đồng nào đang còn hiệu lực.' : 'Bạn không có hợp đồng nào đã hết hạn.';
+            container.innerHTML = `
+            <div class="text-center py-24 text-slate-400 font-medium bg-white/40 backdrop-blur-xl rounded-[2rem] border-2 border-dashed border-slate-300 flex flex-col items-center gap-4">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                ${emptyText}
+            </div>`;
             return;
         }
 
-        container.innerHTML = contracts.map(c => `
+        const isExpired = type === 'expired';
+        const linkColor = isExpired ? 'text-slate-500 bg-slate-100 group-hover:bg-slate-200' : 'text-blue-600 bg-blue-50 group-hover:bg-blue-100 group-hover:shadow-blue-200';
+        const indicatorColor = isExpired ? 'bg-slate-400' : 'bg-gradient-to-b from-blue-400 to-indigo-600';
+
+        container.innerHTML = contracts.map(c => {
+            const displayStatus = isExpired ? 'ĐÃ HẾT HẠN' : (c.status === 'PENDING' ? 'CHỜ XÁC NHẬN' : 'ĐÃ KÝ KẾT');
+            const statusBg = isExpired ? 'bg-slate-100/80 text-slate-600 border-slate-200' : (c.status === 'PENDING' ? 'bg-amber-50 text-amber-600 border-amber-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200');
+            
+            // Get avatars
+            const avatarLandlord = `https://ui-avatars.com/api/?name=${encodeURIComponent(c.landLord?.fullName || 'A')}&background=e0f2fe&color=0284c7`;
+            const avatarTenant = `https://ui-avatars.com/api/?name=${encodeURIComponent(c.customer?.fullName || 'B')}&background=fef3c7&color=d97706`;
+
+            return `
                 <div onclick="location.href='/contractDetail/${c.id}'"
-                     class="contract-card bg-white p-6 rounded-2xl shadow-sm border-l-4 border-blue-500 flex flex-col md:flex-row justify-between items-center gap-6 cursor-pointer group">
+                     class="contract-card rounded-3xl border border-white/80 flex flex-col md:flex-row items-stretch cursor-pointer group shadow-sm overflow-hidden">
+                    
+                    <!-- Left Color Indicator -->
+                    <div class="w-2 md:w-3 ${indicatorColor} shrink-0"></div>
 
-                    <div class="flex-1 w-full space-y-4">
-                        <div class="flex items-center gap-3">
-                            <span class="text-[10px] font-black bg-blue-50 text-blue-600 px-2 py-1 rounded uppercase tracking-tighter">${c.contractCode}</span>
-                            <span class="text-[10px] font-black px-2 py-1 rounded ${c.status === 'PENDING' ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}">
-                                ${c.status === 'PENDING' ? 'CHỜ XÁC NHẬN' : 'ĐÃ KÝ KẾT'}
-                            </span>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Bên cho thuê (A)</p>
-                                <p class="text-slate-800 font-extrabold">${c.landLord?.fullName || 'N/A'}</p>
+                    <!-- Main Content -->
+                    <div class="flex-1 p-6 md:p-8 flex flex-col md:flex-row justify-between items-center gap-8">
+                        <div class="flex-1 w-full space-y-6">
+                            
+                            <!-- Header: Code & Status -->
+                            <div class="flex items-center gap-3">
+                                <div class="flex items-center gap-2 bg-slate-100/80 px-3 py-1.5 rounded-lg border border-slate-200">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-slate-500"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                    <span class="text-xs font-black text-slate-700 uppercase tracking-wide">Mã: ${c.contractCode || 'N/A'}</span>
+                                </div>
+                                <span class="text-xs font-black px-3 py-1.5 rounded-lg border uppercase tracking-wider ${statusBg}">
+                                    ${displayStatus}
+                                </span>
                             </div>
-                            <div>
-                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Bên thuê (B)</p>
-                                <p class="text-blue-600 font-extrabold">${c.customer?.fullName || 'N/A'}</p>
+
+                            <!-- Middle: People Info -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-white/50 p-4 rounded-2xl border border-white">
+                                <div class="flex items-center gap-3">
+                                    <img src="${avatarLandlord}" class="contract-avatar w-12 h-12 rounded-full border-2 border-white" alt="Landlord">
+                                    <div>
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 flex items-center gap-1">Bên cho thuê (A)</p>
+                                        <p class="text-slate-900 font-black text-[15px] leading-tight">${c.landLord?.fullName || 'N/A'}</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <img src="${avatarTenant}" class="contract-avatar w-12 h-12 rounded-full border-2 border-white" alt="Tenant">
+                                    <div>
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5 flex items-center gap-1">Bên thuê (B)</p>
+                                        <p class="${isExpired ? 'text-slate-900' : 'text-blue-700'} font-black text-[15px] leading-tight">${c.customer?.fullName || 'N/A'}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Bottom: Room & Price -->
+                            <div class="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm">
+                                <div class="flex items-center gap-2 text-slate-600 font-semibold bg-white px-3 py-2 rounded-xl shadow-sm border border-slate-100">
+                                    <div class="w-6 h-6 rounded-md bg-blue-50 text-blue-500 flex items-center justify-center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></div>
+                                    ${c.roomAddress || 'Phòng chưa gán'}
+                                </div>
+                                <div class="flex items-center gap-2 text-slate-600 font-semibold bg-white px-3 py-2 rounded-xl shadow-sm border border-slate-100">
+                                    <div class="w-6 h-6 rounded-md bg-emerald-50 text-emerald-500 flex items-center justify-center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></div>
+                                    <span class="font-black text-slate-800">${c.monthlyRent ? c.monthlyRent.toLocaleString() : '0'}</span> VNĐ/tháng
+                                </div>
                             </div>
                         </div>
 
-                        <div class="pt-2 border-t border-slate-50 flex items-center gap-4 text-xs font-bold text-slate-500">
-                            <span>🏠 ${c.roomAddress || 'Phòng chưa gán'}</span>
-                            <span>💵 ${c.monthlyRent.toLocaleString()} VNĐ/tháng</span>
+                        <!-- Right Action Button -->
+                        <div class="mt-4 md:mt-0 flex shrink-0">
+                            <div class="flex items-center gap-2 px-5 py-3 rounded-2xl font-bold transition-all shadow-sm ${linkColor}">
+                                Xem hợp đồng <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="group-hover:translate-x-1 transition-transform"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+                            </div>
                         </div>
-                    </div>
-
-                    <div class="flex items-center gap-2 text-blue-500 font-black group-hover:gap-4 transition-all">
-                        Xem chi tiết <span class="text-xl">→</span>
                     </div>
                 </div>
-            `).join('');
+            `;
+        }).join('');
     }
 </script>
 </body>

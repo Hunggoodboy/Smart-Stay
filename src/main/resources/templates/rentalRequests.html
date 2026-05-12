@@ -14,7 +14,7 @@
             --slate-800: #1e293b;
             --slate-500: #64748b;
         }
-        
+
         body {
             background: radial-gradient(circle at top left, #f0f9ff 0%, #e0f2fe 50%, #eff6ff 100%);
             min-height: 100vh;
@@ -39,7 +39,7 @@
             margin-bottom: 20px;
             position: relative;
         }
-        
+
         .page-title {
             font-family: 'Space Grotesk', sans-serif;
             font-size: 2.5rem;
@@ -63,7 +63,7 @@
             flex-direction: column;
             gap: 16px;
         }
-        
+
         .request-card:hover {
             transform: translateY(-8px) scale(1.02);
             box-shadow: 0 20px 40px rgba(37, 99, 235, 0.1);
@@ -99,7 +99,7 @@
             align-items: center;
             gap: 6px;
         }
-        
+
         .status-badge::before {
             content: '';
             display: inline-block;
@@ -108,20 +108,36 @@
             border-radius: 50%;
         }
 
-        .status-PENDING { 
+        .status-PENDING {
             background: #fffbeb; color: #d97706; border: 1px solid #fde68a;
         }
         .status-PENDING::before { background: #d97706; box-shadow: 0 0 8px #d97706; }
-        
-        .status-APPROVED { 
+
+        .status-APPROVED {
             background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0;
         }
         .status-APPROVED::before { background: #059669; box-shadow: 0 0 8px #059669; }
-        
-        .status-REJECTED { 
+
+        .status-REJECTED {
             background: #fef2f2; color: #dc2626; border: 1px solid #fecaca;
         }
         .status-REJECTED::before { background: #dc2626; box-shadow: 0 0 8px #dc2626; }
+
+        /* Badge hợp đồng trên card */
+        .contract-badge {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #eef2ff;
+            color: #6366f1;
+            border: 1px solid #c7d2fe;
+            border-radius: 20px;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
 
         /* Modal chi tiết */
         #detail-overlay {
@@ -136,7 +152,7 @@
             opacity: 0;
             transition: opacity 0.3s ease;
         }
-        
+
         #detail-overlay.show {
             opacity: 1;
         }
@@ -153,7 +169,7 @@
             max-height: 90vh;
             overflow-y: auto;
         }
-        
+
         #detail-overlay.show #detail-card {
             transform: translateY(0) scale(1);
         }
@@ -196,13 +212,21 @@
             box-shadow: 0 8px 16px rgba(59, 130, 246, 0.2);
         }
         .btn-chat:hover { transform: translateY(-2px); box-shadow: 0 12px 20px rgba(59, 130, 246, 0.3); }
-        
+
         .btn-contract {
             background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
             color: white;
             box-shadow: 0 8px 16px rgba(99, 102, 241, 0.2);
         }
         .btn-contract:hover { transform: translateY(-2px); box-shadow: 0 12px 20px rgba(99, 102, 241, 0.3); }
+
+        /* Nút tạo phòng quản lý (màu teal/cyan để phân biệt với hợp đồng) */
+        .btn-room-manage {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            color: white;
+            box-shadow: 0 8px 16px rgba(14, 165, 233, 0.2);
+        }
+        .btn-room-manage:hover { transform: translateY(-2px); box-shadow: 0 12px 20px rgba(14, 165, 233, 0.3); }
     </style>
 </head>
 <body class="p-6 md:p-10">

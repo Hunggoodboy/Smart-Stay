@@ -50,6 +50,9 @@ public class RentalRequests implements Serializable {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "deleted_at", nullable = true)
+    private LocalDateTime deletedAt;
+
 
     // ==================== RELATIONSHIPS ====================
 
@@ -83,8 +86,7 @@ public class RentalRequests implements Serializable {
     @EqualsAndHashCode.Exclude
     private LandLord landlord;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "contract_id", nullable = true)
+    @OneToOne(mappedBy = "rentalRequest", fetch = FetchType.LAZY)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private Contracts contract;

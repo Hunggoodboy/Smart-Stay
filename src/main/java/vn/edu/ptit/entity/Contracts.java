@@ -72,6 +72,12 @@ public class Contracts implements Serializable {
     @Column(name = "cleaning_fee", nullable = false)
     private Double cleaningFee = 0.0;
 
+    @Column(name = "is_expiration", nullable = false)
+    private Boolean isExpiration = true;
+
+    @Column(name = "deleted_at", nullable = true)
+    private LocalDateTime deletedAt = null;
+
     // ==================== RELATIONSHIPS ====================
 
     /**
@@ -92,11 +98,10 @@ public class Contracts implements Serializable {
     private User customer;
 
     /**
-     * Nhiều hợp đồng thuộc 1 Phòng
-     * FK: contracts.room_id → rooms.id
+     * Contracts tham chiếu ngược lại Room quản lý (nếu đã tạo)
+     * mappedBy vì Rooms.contract giữ FK contract_id
      */
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id")
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "contract")
     @ToString.Exclude
     private Rooms room;
 
@@ -115,4 +120,10 @@ public class Contracts implements Serializable {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private List<UtilityBills> utilityBills;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "rental_request_id")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private RentalRequests rentalRequest;
 }

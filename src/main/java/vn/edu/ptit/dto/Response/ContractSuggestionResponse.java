@@ -34,7 +34,7 @@ public class ContractSuggestionResponse {
     // ==========================================
     // 3. Thông tin Phòng và Tài chính cơ bản
     // ==========================================
-    private Long roomId;
+    private Long roomPostId;   // ID bài đăng gốc (thay thế roomId)
     private String roomAddress;
     private Double roomArea; // Đơn vị: m2
     private Double rentPrice;

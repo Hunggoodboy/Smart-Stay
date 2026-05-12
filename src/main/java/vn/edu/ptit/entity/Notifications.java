@@ -48,6 +48,9 @@ public class Notifications implements Serializable {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "deleted_at", nullable = true)
+    private LocalDateTime deletedAt;
+
     // ==================== RELATIONSHIPS ====================
     // Người gửi là chủ nhà
     @ManyToOne(fetch = FetchType.LAZY)

@@ -7,6 +7,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
     <style>
         body { background-color: #f8fafc; }
+
+        /* Ô nhập dạng gạch chân dùng chung */
         .input-blank {
             border: none;
             border-bottom: 1px dashed #64748b;
@@ -23,6 +25,24 @@
             border-bottom: 2px solid #3b82f6;
             background-color: #f1f5f9;
         }
+
+        /* Ô inline dành cho thông tin bên A / bên B (căn trái) */
+        .input-inline {
+            border: none;
+            border-bottom: 1px dashed #94a3b8;
+            background: transparent;
+            outline: none;
+            font-family: inherit;
+            font-size: inherit;
+            color: #0f172a;
+            padding: 0 4px;
+            width: 65%;
+        }
+        .input-inline:focus {
+            border-bottom: 2px solid #3b82f6;
+            background-color: #f1f5f9;
+        }
+
         .a4-paper {
             max-width: 210mm;
             min-height: 297mm;
@@ -66,7 +86,7 @@
 <form id="contractForm">
     <input type="hidden" id="landLordId">
     <input type="hidden" id="customerId">
-    <input type="hidden" id="roomId">
+    <input type="hidden" id="roomPostId">
 
     <div class="a4-paper">
         <div class="text-center font-bold mb-10">
@@ -89,33 +109,50 @@
 
         <p class="font-bold mb-6 text-center text-xl">Hôm nay, các Bên gồm:</p>
 
+        <!-- BÊN A: tất cả các trường đều là input có thể sửa -->
         <div class="mb-6">
             <p class="font-bold uppercase m-0 underline">BÊN CHO THUÊ (BÊN A):</p>
-            <p class="m-0">Ông/Bà: <span id="displayLandLordName" class="font-bold">...</span></p>
-            <p class="m-0">CMND/CCCD số: <span id="displayLandLordIdentity">...</span></p>
-            <p class="m-0">Địa chỉ: <span id="displayLandLordAddress">...</span></p>
+            <p class="m-0">Ông/Bà:
+                <input type="text" id="inputLandLordName" class="input-inline font-bold" placeholder="Họ và tên chủ nhà">
+            </p>
+            <p class="m-0">CMND/CCCD số:
+                <input type="text" id="inputLandLordIdentity" class="input-inline" placeholder="Số CMND/CCCD">
+            </p>
+            <p class="m-0">Địa chỉ:
+                <input type="text" id="inputLandLordAddress" class="input-inline" style="width:72%" placeholder="Địa chỉ thường trú">
+            </p>
         </div>
 
+        <!-- BÊN B: tất cả các trường đều là input có thể sửa -->
         <div class="mb-8">
             <p class="font-bold uppercase m-0 underline">BÊN THUÊ (BÊN B):</p>
-            <p class="m-0">Ông/Bà: <span id="displayCustomerName" class="font-bold">...</span></p>
-            <p class="m-0">CMND/CCCD số: <span id="displayCustomerIdentity">...</span></p>
-            <p class="m-0">Địa chỉ: <span id="displayCustomerAddress">...</span></p>
+            <p class="m-0">Ông/Bà:
+                <input type="text" id="inputCustomerName" class="input-inline font-bold" placeholder="Họ và tên người thuê">
+            </p>
+            <p class="m-0">CMND/CCCD số:
+                <input type="text" id="inputCustomerIdentity" class="input-inline" placeholder="Số CMND/CCCD">
+            </p>
+            <p class="m-0">Địa chỉ:
+                <input type="text" id="inputCustomerAddress" class="input-inline" style="width:72%" placeholder="Địa chỉ thường trú">
+            </p>
         </div>
 
+        <!-- Nội dung hợp đồng -->
         <div class="space-y-6 text-justify">
             <p class="m-0 font-bold underline">Điều 1. Thông tin tài sản:</p>
             <p class="m-0">Địa chỉ: <input type="text" id="roomAddress" class="input-blank w-[70%]"></p>
-            <p class="m-0">Diện tích: <input type="number" id="roomArea" class="input-blank w-16"> m2.</p>
+            <p class="m-0">Diện tích: <input type="number" id="roomArea" class="input-blank w-16"> m².</p>
 
             <p class="m-0 font-bold underline">Điều 2. Thời gian và Tài chính:</p>
-            <p class="m-0">Bắt đầu từ: <input type="date" id="startDate" class="input-blank"></p>
+            <p class="m-0">Bắt đầu từ: <input type="date" id="startDate" class="input-blank">
+                            đến hết ngày: <input type="date" id="endDate" class="input-blank"></p>
+
             <p class="m-0">Tiền thuê: <input type="number" id="monthlyRent" class="input-blank w-32 text-blue-700 font-bold"> VNĐ/tháng.</p>
             <p class="m-0">Tiền cọc: <input type="number" id="depositAmount" class="input-blank w-32 text-red-600 font-bold"> VNĐ.</p>
 
             <div class="grid grid-cols-2 gap-y-3 mt-2 bg-gray-50 p-4 rounded-xl border border-dashed border-gray-300">
                 <p class="m-0">Điện: <input type="number" id="electricityRate" class="input-blank w-24"> VNĐ/kWh</p>
-                <p class="m-0">Nước: <input type="number" id="waterRate" class="input-blank w-24"> VNĐ/m3</p>
+                <p class="m-0">Nước: <input type="number" id="waterRate" class="input-blank w-24"> VNĐ/m³</p>
                 <p class="m-0">Internet: <input type="number" id="internetFee" class="input-blank w-24"> VNĐ/tháng</p>
                 <p class="m-0">Vệ sinh: <input type="number" id="cleaningFee" class="input-blank w-24"> VNĐ/tháng</p>
                 <p class="m-0">Phí gửi xe: <input type="number" id="parkingFee" class="input-blank w-24"> VNĐ/xe</p>
@@ -126,6 +163,7 @@
             <p class="m-0 font-bold italic mt-4 text-center">Nội dung hợp đồng tuân thủ các quy định tại Điều 7, 8, 9, 10.</p>
         </div>
 
+        <!-- Chữ ký -->
         <div class="mt-20 flex justify-between px-10">
             <div class="text-center w-1/2">
                 <p class="font-bold uppercase m-0">BÊN CHO THUÊ (Bên A)</p>
@@ -148,7 +186,7 @@
         <button type="button" onclick="history.back()" class="px-8 py-3 bg-white border border-gray-300 rounded-xl font-bold hover:bg-gray-50 transition">Quay lại</button>
         <button type="submit" class="px-12 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg transform active:scale-95 transition flex items-center gap-2">
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg>
-            Ký & Tạo Hợp Đồng
+            Ký &amp; Tạo Hợp Đồng
         </button>
     </div>
 </form>

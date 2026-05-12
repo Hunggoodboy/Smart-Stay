@@ -15,7 +15,7 @@ public class ContractCreationRequest {
 
     private Long landLordId;
     private Long customerId;
-    private Long roomId;
+    private Long roomPostId;  // đổi từ roomId → roomPostId
 
     private Double monthlyRent;
     private Double depositAmount;

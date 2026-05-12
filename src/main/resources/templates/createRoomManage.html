@@ -2,208 +2,540 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Tạo Quản Lý Phòng | SmartStay</title>
-    <link rel="stylesheet" href="/css/uno.css">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:wght@700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tạo Phòng Quản Lý | SmartStay</title>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <style>
-        :root { --brand: #316bf2; --surface: #faf9f7; --border: #e5e7eb; }
-        body { font-family: 'DM Sans', sans-serif; background: var(--surface); color: #1f2937; }
-        .card { background: #fff; border: 1px solid var(--border); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        .input-group label { display: block; font-size: 13px; font-weight: 700; color: #6b7280; margin-bottom: 6px; text-transform: uppercase; }
-        .input-group input, .input-group select, .input-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 12px; outline: none; transition: 0.2s; font-family: inherit; }
-        .input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--brand); box-shadow: 0 0 0 4px rgba(49, 107, 242, 0.1); }
-        .btn-submit { background: var(--brand); color: white; padding: 16px; border-radius: 14px; font-weight: 700; width: 100%; cursor: pointer; border: none; font-size: 16px; }
-        .section-title { font-size: 18px; font-weight: 700; color: #1f2937; border-bottom: 2px solid var(--surface); padding-bottom: 8px; margin-top: 24px; margin-bottom: 16px; }
+        :root {
+            --navy: #0f172a; --blue-700: #1d4ed8; --blue-600: #2563eb;
+            --blue-50: #eff6ff; --ocean: #0ea5e9;
+            --brand: #2563eb; --brand-light: #dbeafe;
+            --surface: #f8fafc; --card: #ffffff;
+            --border: #e2e8f0; --ink: #1e293b; --ink-2: #475569; --ink-3: #94a3b8;
+            --success: #10b981; --danger: #ef4444;
+            --r: 16px; --shadow: 0 4px 24px rgba(15,23,42,0.08);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Be Vietnam Pro', sans-serif; background: var(--surface); color: var(--ink); min-height: 100vh; }
+
+        /* ── TOPBAR ── */
+        .topbar {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--blue-700) 100%);
+            padding: 0 32px; height: 64px;
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 16px rgba(15,23,42,0.25);
+        }
+        .topbar-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .topbar-logo { width: 36px; height: 36px; background: #fff; border-radius: 10px; display: grid; place-items: center; font-weight: 900; color: var(--blue-700); font-size: 18px; }
+        .topbar-name { color: #fff; font-weight: 800; font-size: 1.1rem; }
+        .topbar-nav { display: flex; gap: 4px; }
+        .topbar-nav a {
+            color: rgba(255,255,255,0.75); text-decoration: none;
+            padding: 7px 14px; border-radius: 10px; font-size: 14px; font-weight: 600;
+            transition: all .2s;
+        }
+        .topbar-nav a:hover { background: rgba(255,255,255,0.12); color: #fff; }
+        .topbar-nav a.active { background: rgba(255,255,255,0.18); color: #fff; }
+        .topbar-back {
+            color: rgba(255,255,255,0.8); text-decoration: none; font-size: 13px; font-weight: 600;
+            display: flex; align-items: center; gap: 6px;
+            padding: 7px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2);
+            transition: all .2s;
+        }
+        .topbar-back:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
+        /* ── HERO BANNER ── */
+        .hero {
+            background: linear-gradient(130deg, var(--navy) 0%, var(--blue-700) 60%, var(--ocean) 100%);
+            padding: 48px 32px 64px; text-align: center; position: relative; overflow: hidden;
+        }
+        .hero::before {
+            content: ''; position: absolute; inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.9);
+            border: 1px solid rgba(255,255,255,0.2); border-radius: 100px;
+            padding: 6px 16px; font-size: 13px; font-weight: 600; margin-bottom: 16px;
+        }
+        .hero h1 { font-family: 'Playfair Display', serif; color: #fff; font-size: 2.4rem; margin-bottom: 10px; line-height: 1.2; }
+        .hero p { color: rgba(255,255,255,0.7); font-size: 15px; max-width: 480px; margin: 0 auto; }
+
+        /* ── STEPS ── */
+        .steps-bar {
+            display: flex; justify-content: center; gap: 0; margin: -20px auto 0;
+            background: #fff; border-radius: 20px; padding: 20px 32px;
+            max-width: 900px; box-shadow: var(--shadow); position: relative; z-index: 10;
+        }
+        .step { display: flex; align-items: center; gap: 10px; flex: 1; }
+        .step:not(:last-child)::after { content: ''; flex: 1; height: 2px; background: var(--border); margin: 0 12px; }
+        .step-num {
+            width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center;
+            font-weight: 800; font-size: 14px; flex-shrink: 0;
+            background: var(--brand); color: #fff;
+            box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+        }
+        .step-label { font-size: 13px; font-weight: 700; color: var(--ink-2); white-space: nowrap; }
+
+        /* ── LAYOUT ── */
+        .page-body { max-width: 960px; margin: 32px auto; padding: 0 24px 80px; }
+
+        /* ── SECTION CARD ── */
+        .section-card {
+            background: var(--card); border-radius: 20px; border: 1px solid var(--border);
+            box-shadow: var(--shadow); margin-bottom: 24px; overflow: hidden;
+        }
+        .section-head {
+            padding: 20px 28px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 14px;
+            background: linear-gradient(135deg, #f8faff 0%, #fff 100%);
+        }
+        .section-icon {
+            width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center;
+            font-size: 20px; flex-shrink: 0;
+        }
+        .section-icon.blue  { background: #dbeafe; }
+        .section-icon.green { background: #d1fae5; }
+        .section-icon.amber { background: #fef3c7; }
+        .section-icon.purple{ background: #ede9fe; }
+        .section-head-text h3 { font-size: 1rem; font-weight: 800; color: var(--ink); }
+        .section-head-text p  { font-size: 13px; color: var(--ink-3); margin-top: 2px; }
+        .section-body { padding: 28px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .col-span-2 { grid-column: span 2; }
+
+        /* ── FORM INPUTS ── */
+        .field { display: flex; flex-direction: column; gap: 6px; }
+        .field label { font-size: 12px; font-weight: 700; color: var(--ink-2); text-transform: uppercase; letter-spacing: .4px; }
+        .field input, .field select, .field textarea {
+            padding: 12px 16px; border: 1.5px solid var(--border); border-radius: 12px;
+            font-family: inherit; font-size: 14px; color: var(--ink);
+            outline: none; transition: all .2s; background: #fafbff; width: 100%;
+        }
+        .field input:focus, .field select:focus, .field textarea:focus {
+            border-color: var(--brand); box-shadow: 0 0 0 4px rgba(37,99,235,0.1); background: #fff;
+        }
+        .field textarea { resize: vertical; min-height: 90px; }
+        .field .hint { font-size: 11px; color: var(--ink-3); font-style: italic; }
+
+        /* ── INPUT WITH PREFIX ── */
+        .input-wrap { position: relative; }
+        .input-wrap input { padding-left: 48px; }
+        .input-prefix {
+            position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+            font-size: 13px; font-weight: 700; color: var(--ink-3); pointer-events: none;
+        }
+
+        /* ── SUBMIT SECTION ── */
+        .submit-bar {
+            background: var(--card); border-radius: 20px; border: 1px solid var(--border);
+            box-shadow: var(--shadow); padding: 28px; display: flex; gap: 16px; align-items: center;
+        }
+        .btn-submit {
+            flex: 1; padding: 16px; background: linear-gradient(135deg, var(--blue-600) 0%, var(--blue-700) 100%);
+            color: #fff; border: none; border-radius: 14px; font-family: inherit;
+            font-size: 15px; font-weight: 800; cursor: pointer; letter-spacing: .3px;
+            box-shadow: 0 8px 20px rgba(37,99,235,0.3); transition: all .2s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(37,99,235,0.4); }
+        .btn-submit:active { transform: translateY(0); }
+        .btn-cancel {
+            padding: 16px 28px; background: #fff; color: var(--ink-2);
+            border: 1.5px solid var(--border); border-radius: 14px; font-family: inherit;
+            font-size: 14px; font-weight: 700; cursor: pointer; text-decoration: none;
+            transition: all .2s; white-space: nowrap;
+        }
+        .btn-cancel:hover { background: var(--surface); border-color: var(--ink-3); }
+
+        /* ── TOAST ── */
+        #toast {
+            position: fixed; bottom: 28px; right: 28px; z-index: 999;
+            background: #fff; border-radius: 16px; padding: 16px 20px;
+            box-shadow: 0 12px 40px rgba(15,23,42,0.15); display: none;
+            align-items: center; gap: 12px; min-width: 300px; border-left: 4px solid transparent;
+            animation: slideUp .35s ease;
+        }
+        #toast.show { display: flex; }
+        #toast.success { border-color: var(--success); }
+        #toast.error   { border-color: var(--danger); }
+        #toast-icon { font-size: 22px; }
+        #toast-msg  { font-size: 14px; font-weight: 600; color: var(--ink); flex: 1; }
+        @keyframes slideUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+
+        @media (max-width: 640px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .col-span-2 { grid-column: span 1; }
+            .steps-bar { flex-direction: column; gap: 12px; }
+            .step::after { display: none; }
+            .topbar-nav { display: none; }
+            .hero h1 { font-size: 1.7rem; }
+        }
     </style>
 </head>
-<body class="p-6 md:p-12">
-<div class="max-w-4xl mx-auto">
-    <header class="mb-10 text-center">
-        <h1 style="font-family: 'Fraunces', serif;" class="text-4xl mb-2">Quản lý phòng mới</h1>
-        <p class="text-slate-500">Thiết lập trạng thái thuê và gán khách hàng cho phòng</p>
-    </header>
+<body>
 
-    <form id="manageForm" class="card p-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- TOPBAR -->
+<header class="topbar">
+    <a href="/landlord-view" class="topbar-brand">
+        <div class="topbar-logo">S</div>
+        <span class="topbar-name">SmartStay</span>
+    </a>
+    <nav class="topbar-nav">
+        <a href="/landlord-view">Tổng quan</a>
+        <a href="/myContracts">Hợp đồng</a>
+        <a href="/createRoomManage" class="active">Tạo phòng</a>
+    </nav>
+    <a href="/landlord-view" class="topbar-back">← Quay lại</a>
+</header>
 
-            <!-- PHẦN 1: THÔNG TIN CƠ BẢN -->
-            <div class="md:col-span-2 section-title">1. Thông tin cơ bản</div>
+<!-- HERO -->
+<div class="hero">
+    <div class="hero-badge">🏠 Chủ nhà</div>
+    <h1>Tạo phòng quản lý mới</h1>
+    <p>Thiết lập trạng thái thuê và gán khách hàng cho phòng của bạn</p>
+</div>
 
-            <div class="input-group">
-                <label>Số phòng / Tiêu đề (*)</label>
-                <input type="text" id="roomNumber" required>
-            </div>
-            <div class="input-group">
-                <label>Loại phòng</label>
-                <select id="roomType">
-                    <option value="PHONG_TRO">Phòng trọ</option>
-                    <option value="CHUNG_CU_MINI">Chung cư mini</option>
-                    <option value="CHUNG_CU">Chung cư</option>
-                    <option value="STUDIO">Studio</option>
-                    <option value="NHA_NGUYEN_CAN">Nhà nguyên căn</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label>Diện tích (m2)</label>
-                <input type="number" id="areaM2" step="0.1">
-            </div>
-            <div class="input-group">
-                <label>Sức chứa tối đa (người)</label>
-                <input type="number" id="maxOccupants">
-            </div>
-            <div class="input-group md:col-span-2">
-                <label>Mô tả chi tiết</label>
-                <textarea id="description" rows="3" placeholder="Nhập mô tả về phòng..."></textarea>
-            </div>
+<!-- STEPS -->
+<div class="steps-bar">
+    <div class="step">
+        <div class="step-num">1</div>
+        <span class="step-label">Thông tin cơ bản</span>
+    </div>
+    <div class="step">
+        <div class="step-num">2</div>
+        <span class="step-label">Vị trí</span>
+    </div>
+    <div class="step">
+        <div class="step-num">3</div>
+        <span class="step-label">Chi phí</span>
+    </div>
+    <div class="step">
+        <div class="step-num">4</div>
+        <span class="step-label">Khách thuê</span>
+    </div>
+</div>
 
-            <!-- PHẦN 2: ĐỊA CHỈ -->
-            <div class="md:col-span-2 section-title">2. Vị trí / Địa chỉ</div>
-            <div class="input-group md:col-span-2">
-                <label>Địa chỉ chi tiết (Số nhà, đường) (*)</label>
-                <input type="text" id="address" required>
-            </div>
-            <div class="input-group">
-                <label>Phường / Xã</label>
-                <input type="text" id="ward">
-            </div>
-            <div class="input-group">
-                <label>Quận / Huyện</label>
-                <input type="text" id="district">
-            </div>
-            <div class="input-group">
-                <label>Tỉnh / Thành phố</label>
-                <input type="text" id="city">
-            </div>
+<!-- FORM -->
+<form id="manageForm" class="page-body">
 
-            <!-- PHẦN 3: TÀI CHÍNH & TRẠNG THÁI -->
-            <div class="md:col-span-2 section-title">3. Chi phí & Trạng thái</div>
-            <div class="input-group">
-                <label>Trạng thái phòng</label>
-                <select id="status">
-                    <option value="AVAILABLE">Sẵn sàng</option>
-                    <option value="RENTED">Đã cho thuê</option>
-                    <option value="MAINTENANCE">Bảo trì</option>
-                </select>
+    <!-- SECTION 1: Thông tin cơ bản -->
+    <div class="section-card">
+        <div class="section-head">
+            <div class="section-icon blue">🏠</div>
+            <div class="section-head-text">
+                <h3>1. Thông tin cơ bản</h3>
+                <p>Tên, loại phòng và mô tả chi tiết</p>
             </div>
-            <div class="input-group">
-                <label>Giá thuê gốc (VNĐ/tháng) (*)</label>
-                <input type="number" id="rentPrice" required>
-            </div>
-            <div class="input-group">
-                <label>Tiền điện (VNĐ/kWh)</label>
-                <input type="number" id="elecPrice" value="0">
-            </div>
-            <div class="input-group">
-                <label>Tiền nước (VNĐ/m3)</label>
-                <input type="number" id="waterPrice" value="0">
-            </div>
-            <div class="input-group">
-                <label>Phí Internet (VNĐ/tháng)</label>
-                <input type="number" id="internetFee" value="0">
-            </div>
-            <div class="input-group">
-                <label>Phí gửi xe (VNĐ/tháng)</label>
-                <input type="number" id="parkingFee" value="0">
-            </div>
-            <div class="input-group md:col-span-2">
-                <label>Phí vệ sinh (VNĐ/tháng)</label>
-                <input type="number" id="cleaningFee" value="0">
-            </div>
-
-            <!-- PHẦN 4: THÔNG TIN KHÁCH HÀNG & HỢP ĐỒNG -->
-            <div class="md:col-span-2 section-title">4. Gán Khách thuê (Tùy chọn)</div>
-            <div class="input-group">
-                <label>Email người thuê</label>
-                <input type="email" id="customerEmail" placeholder="khachhang@gmail.com">
-                <p class="text-[11px] text-slate-400 mt-2 italic">* Tự động đổi trạng thái sang "Đã cho thuê" nếu nhập.</p>
-            </div>
-            <div class="input-group">
-                <label>Mã hợp đồng</label>
-                <input type="text" id="contractCode" placeholder="VD: HD-2026-001">
-            </div>
-
         </div>
-
-        <div class="mt-10">
-            <button type="submit" class="btn-submit">LƯU THÔNG TIN PHÒNG</button>
+        <div class="section-body">
+            <div class="grid-2">
+                <div class="field">
+                    <label>Số phòng / Tiêu đề *</label>
+                    <input type="text" id="roomNumber" placeholder="VD: Phòng 101 tầng 3" required>
+                </div>
+                <div class="field">
+                    <label>Loại phòng</label>
+                    <select id="roomType">
+                        <option value="PHONG_TRO">🏘 Phòng trọ</option>
+                        <option value="CHUNG_CU_MINI">🏢 Chung cư mini</option>
+                        <option value="CHUNG_CU">🏙 Chung cư</option>
+                        <option value="STUDIO">🛋 Studio</option>
+                        <option value="NHA_NGUYEN_CAN">🏡 Nhà nguyên căn</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Diện tích (m²)</label>
+                    <div class="input-wrap">
+                        <span class="input-prefix">m²</span>
+                        <input type="number" id="areaM2" step="0.1" placeholder="25">
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Sức chứa tối đa</label>
+                    <div class="input-wrap">
+                        <span class="input-prefix">👤</span>
+                        <input type="number" id="maxOccupants" placeholder="2">
+                    </div>
+                </div>
+                <div class="field col-span-2">
+                    <label>Mô tả chi tiết</label>
+                    <textarea id="description" placeholder="Nhập mô tả về phòng, tiện nghi, đặc điểm nổi bật..."></textarea>
+                </div>
+            </div>
         </div>
-    </form>
+    </div>
+
+    <!-- SECTION 2: Địa chỉ -->
+    <div class="section-card">
+        <div class="section-head">
+            <div class="section-icon green">📍</div>
+            <div class="section-head-text">
+                <h3>2. Vị trí / Địa chỉ</h3>
+                <p>Địa chỉ đầy đủ để khách thuê dễ tìm</p>
+            </div>
+        </div>
+        <div class="section-body">
+            <div class="grid-2">
+                <div class="field col-span-2">
+                    <label>Địa chỉ chi tiết (Số nhà, đường) *</label>
+                    <input type="text" id="address" placeholder="VD: 123 Nguyễn Văn A" required>
+                </div>
+                <div class="field">
+                    <label>Phường / Xã</label>
+                    <input type="text" id="ward" placeholder="VD: Phường Bến Nghé">
+                </div>
+                <div class="field">
+                    <label>Quận / Huyện</label>
+                    <input type="text" id="district" placeholder="VD: Quận 1">
+                </div>
+                <div class="field col-span-2">
+                    <label>Tỉnh / Thành phố</label>
+                    <input type="text" id="city" placeholder="VD: TP. Hồ Chí Minh">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 3: Chi phí & Trạng thái -->
+    <div class="section-card">
+        <div class="section-head">
+            <div class="section-icon amber">💰</div>
+            <div class="section-head-text">
+                <h3>3. Chi phí & Trạng thái</h3>
+                <p>Giá thuê và các khoản phí dịch vụ</p>
+            </div>
+        </div>
+        <div class="section-body">
+            <div class="grid-2">
+                <div class="field">
+                    <label>Trạng thái phòng</label>
+                    <select id="status">
+                        <option value="AVAILABLE">✅ Sẵn sàng cho thuê</option>
+                        <option value="RENTED">🔴 Đã cho thuê</option>
+                        <option value="MAINTENANCE">🔧 Đang bảo trì</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Giá thuê gốc (VNĐ/tháng) *</label>
+                    <div class="input-wrap">
+                        <span class="input-prefix">₫</span>
+                        <input type="number" id="rentPrice" placeholder="3500000" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Tiền điện (VNĐ/kWh)</label>
+                    <div class="input-wrap">
+                        <span class="input-prefix">⚡</span>
+                        <input type="number" id="elecPrice" value="0">
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Tiền nước (VNĐ/m³)</label>
+                    <div class="input-wrap">
+                        <span class="input-prefix">💧</span>
+                        <input type="number" id="waterPrice" value="0">
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Phí Internet (VNĐ/tháng)</label>
+                    <div class="input-wrap">
+                        <span class="input-prefix">🌐</span>
+                        <input type="number" id="internetFee" value="0">
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Phí gửi xe (VNĐ/tháng)</label>
+                    <div class="input-wrap">
+                        <span class="input-prefix">🚗</span>
+                        <input type="number" id="parkingFee" value="0">
+                    </div>
+                </div>
+                <div class="field col-span-2">
+                    <label>Phí vệ sinh (VNĐ/tháng)</label>
+                    <div class="input-wrap">
+                        <span class="input-prefix">🧹</span>
+                        <input type="number" id="cleaningFee" value="0">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 4: Thông tin hợp đồng (chỉ đọc) -->
+    <div class="section-card">
+        <div class="section-head">
+            <div class="section-icon purple">📄</div>
+            <div class="section-head-text">
+                <h3>4. Hợp đồng liên kết</h3>
+                <p>Phòng này được tạo từ hợp đồng đã ký</p>
+            </div>
+        </div>
+        <div class="section-body">
+            <div id="contract-info" class="p-4 rounded-2xl border border-blue-100 bg-blue-50 text-sm text-blue-800 font-semibold">
+                ⏳ Đang tải thông tin hợp đồng...
+            </div>
+            <input type="hidden" id="contractId">
+        </div>
+    </div>
+
+    <!-- SUBMIT -->
+    <div class="submit-bar">
+        <a href="/landlord-view" class="btn-cancel">Huỷ</a>
+        <button type="submit" class="btn-submit" id="submitBtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+            </svg>
+            LƯU THÔNG TIN PHÒNG
+        </button>
+    </div>
+</form>
+
+<!-- TOAST -->
+<div id="toast">
+    <span id="toast-icon"></span>
+    <span id="toast-msg"></span>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // LẤY DỮ LIỆU TỪ TRANG CHI TIẾT CHUYỂN SANG (NẾU CÓ)
-        const rawData = sessionStorage.getItem('temp_room_data');
-        if (rawData) {
-            const data = JSON.parse(rawData);
+    function showToast(type, msg, duration = 4000) {
+        const t = document.getElementById('toast');
+        document.getElementById('toast-icon').textContent = type === 'success' ? '✅' : '❌';
+        document.getElementById('toast-msg').textContent  = msg;
+        t.className = 'show ' + type;
+        setTimeout(() => { t.className = ''; }, duration);
+    }
 
-            // Map dữ liệu vào form
-            document.getElementById('roomNumber').value = data.roomNumber || '';
-            document.getElementById('address').value = data.address || '';
-            document.getElementById('areaM2').value = data.areaM2 || '';
-            document.getElementById('maxOccupants').value = data.maxOccupants || '';
-            document.getElementById('rentPrice').value = data.rentPrice || '';
-            document.getElementById('elecPrice').value = data.electricityPricePerKwh || 0;
-            document.getElementById('waterPrice').value = data.waterPricePerM3 || 0;
+    document.addEventListener('DOMContentLoaded', async () => {
+        const params = new URLSearchParams(window.location.search);
+        const requestId = params.get('requestId');
+        const token = localStorage.getItem('smartstay_token');
 
-            // Xử lý map select box loại phòng
-            const typeMap = {
-                'Phòng trọ': 'PHONG_TRO', 'Chung cư mini': 'CHUNG_CU_MINI',
-                'Chung cư': 'CHUNG_CU', 'Studio': 'STUDIO', 'Nhà nguyên căn': 'NHA_NGUYEN_CAN'
-            };
-            if(data.roomType && typeMap[data.roomType]) {
-                document.getElementById('roomType').value = typeMap[data.roomType];
+        if (requestId) {
+            try {
+                // 1. Gọi API Recommend ngay tại trang này
+                const res = await fetch(`/api/room-management/recomendation/${requestId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+
+                    // 2. Điền dữ liệu vào Form
+                    if(data.roomNumber) document.getElementById('roomNumber').value = data.roomNumber;
+                    if(data.roomType) document.getElementById('roomType').value = data.roomType;
+                    if(data.areaM2) document.getElementById('areaM2').value = data.areaM2;
+                    if(data.maxOccupants) document.getElementById('maxOccupants').value = data.maxOccupants;
+                    if(data.description) document.getElementById('description').value = data.description;
+                    if(data.address) document.getElementById('address').value = data.address;
+                    if(data.ward) document.getElementById('ward').value = data.ward;
+                    if(data.district) document.getElementById('district').value = data.district;
+                    if(data.city) document.getElementById('city').value = data.city;
+                    if(data.rentPrice) document.getElementById('rentPrice').value = data.rentPrice;
+                    if(data.electricityPricePerKwh) document.getElementById('elecPrice').value = data.electricityPricePerKwh;
+                    if(data.waterPricePerM3) document.getElementById('waterPrice').value = data.waterPricePerM3;
+                    if(data.internetFee) document.getElementById('internetFee').value = data.internetFee;
+                    if(data.parkingFee) document.getElementById('parkingFee').value = data.parkingFee;
+                    if(data.cleaningFee) document.getElementById('cleaningFee').value = data.cleaningFee;
+
+                    // 3. Xử lý phần Hợp đồng (Lấy contractId từ recommendation)
+                    if(data.contractId) {
+                        document.getElementById('contractId').value = data.contractId;
+                        loadContractDetails(data.contractId, token); // Gọi hàm phụ trợ bên dưới
+                    }
+
+                } else {
+                    showToast('error', 'Không thể lấy dữ liệu gợi ý phòng!');
+                }
+            } catch (e) {
+                console.error(e);
+                showToast('error', 'Lỗi kết nối khi tải dữ liệu phòng.');
             }
+        } else {
+            // (Tuỳ chọn) Xử lý nếu người dùng vào thẳng trang mà không có requestId
+            document.getElementById('contract-info').textContent = 'Tạo phòng thủ công (không liên kết hợp đồng).';
         }
     });
 
+    // Hàm phụ trợ để load thông tin hợp đồng cho gọn code
+    async function loadContractDetails(contractId, token) {
+        const contractInfoEl = document.getElementById('contract-info');
+        try {
+            const res = await fetch(`/api/contract/detail/${contractId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const c = await res.json();
+                contractInfoEl.innerHTML = `
+                ✅ Hợp đồng <strong>#${c.contractCode || contractId}</strong>
+                &nbsp;·&nbsp; Khách: <strong>${c.customerName || c.tenantName || 'N/A'}</strong>
+                &nbsp;·&nbsp; Giá thuê: <strong>${(c.monthlyRent || 0).toLocaleString('vi-VN')} ₫/tháng</strong>
+            `;
+            } else {
+                contractInfoEl.textContent = `Hợp đồng #${contractId} — không thể tải chi tiết.`;
+            }
+        } catch (e) {
+            contractInfoEl.textContent = `Hợp đồng ID: ${contractId}`;
+        }
+    }
+
     document.getElementById('manageForm').onsubmit = async (e) => {
         e.preventDefault();
+        const btn = document.getElementById('submitBtn');
         const token = localStorage.getItem('smartstay_token');
+        btn.disabled = true;
+        btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Đang lưu...';
 
-        // MAP TOÀN BỘ GIÁ TRỊ TỪ FORM SANG DTO
         const payload = {
+            contractId: parseInt(document.getElementById('contractId').value) || null,
             roomNumber: document.getElementById('roomNumber').value,
-            roomType: document.getElementById('roomType').value,
-            description: document.getElementById('description').value,
-            contractCode: document.getElementById('contractCode').value,
-            address: document.getElementById('address').value,
-            ward: document.getElementById('ward').value,
-            district: document.getElementById('district').value,
-            city: document.getElementById('city').value,
-            areaM2: parseFloat(document.getElementById('areaM2').value) || null,
-            maxOccupants: parseInt(document.getElementById('maxOccupants').value) || null,
-            rentPrice: parseFloat(document.getElementById('rentPrice').value) || 0,
-            electricityPricePerKwh: parseFloat(document.getElementById('elecPrice').value) || 0,
-            waterPricePerM3: parseFloat(document.getElementById('waterPrice').value) || 0,
-            internetFee: parseFloat(document.getElementById('internetFee').value) || 0,
-            parkingFee: parseFloat(document.getElementById('parkingFee').value) || 0,
-            cleaningFee: parseFloat(document.getElementById('cleaningFee').value) || 0,
-            status: document.getElementById('status').value,
-            customerEmail: document.getElementById('customerEmail').value
+            roomType:   document.getElementById('roomType').value,
+            description:document.getElementById('description').value,
+            address:    document.getElementById('address').value,
+            ward:       document.getElementById('ward').value,
+            district:   document.getElementById('district').value,
+            city:       document.getElementById('city').value,
+            areaM2:     parseFloat(document.getElementById('areaM2').value) || null,
+            maxOccupants:parseInt(document.getElementById('maxOccupants').value) || null,
+            rentPrice:  parseFloat(document.getElementById('rentPrice').value) || null,
+            electricityPricePerKwh: parseFloat(document.getElementById('elecPrice').value) || null,
+            waterPricePerM3: parseFloat(document.getElementById('waterPrice').value) || null,
+            internetFee: parseFloat(document.getElementById('internetFee').value) || null,
+            parkingFee:  parseFloat(document.getElementById('parkingFee').value) || null,
+            cleaningFee: parseFloat(document.getElementById('cleaningFee').value) || null
         };
+
+        if (!payload.contractId) {
+            showToast('error', 'Thiếu contractId! Vui lòng vào từ trang Hợp đồng.');
+            btn.disabled = false; btn.innerHTML = '💾 LƯU THÔNG TIN PHÒNG';
+            return;
+        }
 
         try {
             const res = await fetch('/api/room-management/create', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(payload)
             });
-
             if (res.ok) {
-                alert("Tạo quản lý phòng thành công!");
-                window.location.href = '/my-rooms';
+                showToast('success', 'Tạo quản lý phòng thành công!');
+                setTimeout(() => { window.location.href = '/landlord-view'; }, 1500);
             } else {
                 const err = await res.json();
-                alert("Lỗi: " + err.message);
+                showToast('error', 'Lỗi: ' + (err.message || 'Không thể lưu phòng'));
+                btn.disabled = false;
+                btn.innerHTML = '💾 LƯU THÔNG TIN PHÒNG';
             }
-        } catch (error) {
-            alert("Không thể kết nối Server.");
+        } catch {
+            showToast('error', 'Không thể kết nối Server.');
+            btn.disabled = false;
+            btn.innerHTML = '💾 LƯU THÔNG TIN PHÒNG';
         }
     };
 </script>
+<style>@keyframes spin { to { transform: rotate(360deg); } }</style>
 </body>
 </html>

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Báo cáo sự cố | Smart Stay</title>
+    <title>Tổng quan Hợp đồng | Smart Stay</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -12,48 +12,45 @@
         rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/uno.css}">
     <style>
-        .incident-select-menu {
-            padding: 6px;
-            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.14), 0 2px 6px rgba(15, 23, 42, 0.08);
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px rgba(15, 23, 42, 0.05);
+        }
+        
+        .pdf-preview {
+            background-color: #e2e8f0;
+            background-image: linear-gradient(45deg, #cbd5e1 25%, transparent 25%, transparent 75%, #cbd5e1 75%, #cbd5e1), 
+                              linear-gradient(45deg, #cbd5e1 25%, transparent 25%, transparent 75%, #cbd5e1 75%, #cbd5e1);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
         }
 
-        .incident-select-option {
-            appearance: none;
-            border: 0;
-            outline: 0;
-            box-shadow: none;
+        .scroll-hidden::-webkit-scrollbar {
+            width: 6px;
+        }
+        .scroll-hidden::-webkit-scrollbar-track {
             background: transparent;
+        }
+        .scroll-hidden::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
             border-radius: 10px;
-            cursor: pointer;
-        }
-
-        .incident-select-option:hover {
-            background: #eff6ff;
-            color: #1e40af;
-        }
-
-        .incident-select-option:focus-visible {
-            background: #dbeafe;
-            color: #1d4ed8;
-            outline: 0;
-        }
-
-        .incident-select-option.is-active {
-            background: #dbeafe;
-            color: #1d4ed8;
-            font-weight: 600;
         }
     </style>
 </head>
 
 <body
-    class="min-h-screen bg-[radial-gradient(circle_at_top,_#fef3c7_0%,_#ffffff_35%,_#dbeafe_100%)] text-slate-800 antialiased [font-family:'Be_Vietnam_Pro',sans-serif]">
-    <div class="pointer-events-none fixed inset-0 overflow-hidden">
-        <div class="absolute -top-22 -left-22 h-64 w-64 rounded-full bg-amber-300/45 blur-3xl animate-pulse"></div>
-        <div class="absolute -bottom-24 -right-20 h-80 w-80 rounded-full bg-sky-300/45 blur-3xl animate-pulse"></div>
+    class="min-h-screen bg-[radial-gradient(circle_at_top,_#fef3c7_0%,_#ffffff_35%,_#dbeafe_100%)] text-slate-800 antialiased [font-family:'Be_Vietnam_Pro',sans-serif] overflow-hidden">
+    <!-- Background Effects -->
+    <div class="pointer-events-none fixed inset-0 overflow-hidden z-0">
+        <div class="absolute -top-22 -left-22 h-96 w-96 rounded-full bg-blue-300/30 blur-3xl animate-pulse"></div>
+        <div class="absolute -bottom-24 -right-20 h-[500px] w-[500px] rounded-full bg-emerald-200/30 blur-[100px] animate-pulse" style="animation-delay: 2s;"></div>
     </div>
 
-    <header class="fixed top-0 left-0 z-50 w-full border-b border-gray-200 bg-white font-sans shadow-sm">
+    <!-- HEADER (KEEPS EXISTING NAV STRUCTURE) -->
+    <header class="fixed top-0 left-0 z-50 w-full border-b border-white/50 bg-white/60 backdrop-blur-md font-sans shadow-sm">
         <div class="px-4 py-3 sm:px-6">
             <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
@@ -63,171 +60,134 @@
                             S</div>
                         <div class="flex flex-col justify-center">
                             <p class="m-0 text-base font-bold">Smart Stay</p>
-                            <p class="hidden m-0 text-sm font-medium text-slate-500 sm:block">Nền tảng quản lí phòng
-                                trọ uy tín</p>
+                            <p class="hidden m-0 text-sm font-medium text-slate-500 sm:block">Tổng quan hợp đồng</p>
                         </div>
                     </div>
-                    <nav class="flex flex-wrap gap-3 text-sm font-semibold text-slate-600">
-                        <a href="/myHome"
-                            class="cursor-pointer rounded-lg px-3 py-2 text-slate-600 no-underline transition hover:bg-gray-50 hover:text-slate-900">Tổng
-                            quan</a>
-                        <a href="/payment"
-                            class="cursor-pointer rounded-lg px-3 py-2 text-slate-600 no-underline transition hover:bg-gray-50 hover:text-slate-900">Hóa
-                            đơn & thanh toán</a>
-                        <a href="/myContracts"
-                            class="cursor-pointer rounded-lg px-3 py-2 text-slate-600 no-underline transition hover:bg-gray-50 hover:text-slate-900">Hợp
-                            đồng</a>
-                        <a href="/incident-report"
-                            class="cursor-pointer rounded-lg bg-slate-100 px-3 py-2 text-slate-900 no-underline">Báo
-                            cáo sự cố</a>
+                    <nav class="flex flex-wrap gap-2 text-sm font-semibold text-slate-600 pl-4 border-l border-slate-200 ml-2">
+                        <a href="/myContracts" class="cursor-pointer rounded-lg px-3 py-2 text-slate-500 no-underline transition hover:bg-slate-100 flex items-center gap-2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Trở về
+                        </a>
                     </nav>
                 </div>
 
+                <!-- RIGHT HEADER CONTROLS (Placeholder for user menu) -->
                 <div class="flex items-center gap-3">
-                    <!-- Notification Bell + Dropdown -->
-                    <div class="relative" id="notif-menu">
-                        <button id="notif-bell-btn" onclick="toggleNotifDropdown()"
-                            class="relative p-2 text-gray-500 hover:text-blue-600 transition-colors border-0 bg-transparent outline-none cursor-pointer rounded-lg hover:bg-gray-50">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                            </svg>
-                            <span id="notification-dot" class="absolute top-1 right-1 flex h-2.5 w-2.5">
-                                <span
-                                    class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
-                            </span>
-                        </button>
-
-                        <!-- Notification dropdown panel -->
-                        <div id="notif-dropdown"
-                            style="display:none;position:absolute;right:0;top:calc(100% + 8px);width:360px;background:#fff;border-radius:16px;border:1px solid #e5e7eb;box-shadow:0 16px 48px rgba(0,0,0,0.12);z-index:200;overflow:hidden;">
-
-                            <!-- Header -->
-                            <div
-                                style="padding:16px 20px 12px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;">
-                                <div style="display:flex;align-items:center;gap:8px;">
-                                    <span style="font-weight:700;font-size:15px;color:#1e293b;">Thông báo</span>
-                                    <span id="notif-badge"
-                                        style="display:none;background:#ef4444;color:#fff;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:700;">0</span>
-                                </div>
-                                <button onclick="markAllRead()"
-                                    style="font-size:12px;color:#3b82f6;background:none;border:none;cursor:pointer;font-weight:600;padding:4px 8px;border-radius:6px;">Đánh
-                                    dấu đã đọc</button>
-                            </div>
-
-                            <!-- List -->
-                            <div id="notif-dropdown-list" style="max-height:380px;overflow-y:auto;">
-                                <div id="notif-loading"
-                                    style="padding:32px;text-align:center;color:#94a3b8;font-size:13px;">
-                                    Đang tải...
-                                </div>
-                            </div>
-
-                            <!-- Footer -->
-                            <div style="padding:10px 20px;border-top:1px solid #f1f5f9;">
-                                <button onclick="openChat();closeNotifDropdown();"
-                                    style="width:100%;padding:9px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;color:#1e293b;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3b82f6"
-                                        stroke-width="2.5">
-                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                                    </svg>
-                                    Nhắn tin chủ nhà
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ===== INBOX ICON + DROPDOWN ===== -->
-                    <div class="relative" id="inbox-menu">
-                        <button id="inbox-btn" onclick="toggleInboxDropdown()"
-                            class="relative p-2 text-gray-500 hover:text-blue-600 transition-colors border-0 bg-transparent outline-none cursor-pointer rounded-lg hover:bg-gray-50">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                            </svg>
-                            <span id="inbox-dot"
-                                style="display:none;position:absolute;top:4px;right:4px;width:10px;height:10px;background:#3b82f6;border-radius:50%;border:2px solid #fff;"></span>
-                        </button>
-
-                        <!-- Inbox dropdown -->
-                        <div id="inbox-dropdown"
-                            style="display:none;position:absolute;right:0;top:calc(100% + 8px);width:320px;background:#fff;border-radius:16px;border:1px solid #e5e7eb;box-shadow:0 16px 48px rgba(0,0,0,0.12);z-index:200;overflow:hidden;animation:notifDrop .2s cubic-bezier(.16,1,.3,1);">
-
-                            <!-- Header -->
-                            <div
-                                style="padding:14px 18px 12px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;">
-                                <div style="display:flex;align-items:center;gap:8px;">
-                                    <span style="font-weight:700;font-size:15px;color:#1e293b;">Tin nhắn</span>
-                                    <span id="inbox-unread-badge"
-                                        style="display:none;background:#3b82f6;color:#fff;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:700;">0</span>
-                                </div>
-                                <button onclick="openChat();closeInboxDropdown();"
-                                    style="font-size:12px;color:#3b82f6;background:none;border:none;cursor:pointer;font-weight:600;padding:4px 8px;border-radius:6px;font-family:inherit;"
-                                    onmouseover="this.style.background='#eff6ff'"
-                                    onmouseout="this.style.background='none'">
-                                    Mở chat
-                                </button>
-                            </div>
-
-                            <!-- Conversation list -->
-                            <div id="inbox-list" style="max-height:360px;overflow-y:auto;">
-                                <div id="inbox-loading"
-                                    style="padding:32px;text-align:center;color:#94a3b8;font-size:13px;">
-                                    Đang tải...
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- ===== END INBOX ===== -->
-
-                    <div class="h-6 w-px bg-gray-300"></div>
-                    <div class="relative" id="user-menu">
-                        <button onclick="toggleUserMenu()" id="user-menu-button" type="button" aria-expanded="false"
-                            class="flex items-center gap-2 rounded-xl p-1.5 text-left hover:bg-gray-50 border-0 bg-transparent outline-none cursor-pointer">
-                            <img src="https://ui-avatars.com/api/?name=Thang&background=eff6ff&color=1d4ed8"
-                                alt="Avatar" id="user-avatar" class="w-8 h-8 rounded-full border border-gray-200">
-                            <div class="hidden sm:block text-left">
-                                <p id="user-room-label" class="text-sm font-semibold text-gray-700 m-0 leading-tight">
-                                    Phòng 204</p>
-                                <p id="user-role-label" class="text-xs text-gray-500 m-0">Khách thuê</p>
-                            </div>
-                            <div id="user-menu-chevron" class="i-mdi-chevron-down text-gray-400 transition"></div>
-                        </button>
-                        <div id="user-dropdown"
-                            class="hidden absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-gray-100 bg-white py-2 shadow-lg">
-                            <div class="border-b border-gray-100 px-4 pb-2 pt-1">
-                                <p id="dropdown-user-name" class="m-0 text-sm font-semibold text-gray-800">Phòng 204
-                                </p>
-                                <p id="dropdown-user-role" class="m-0 mt-1 text-xs text-gray-500">Khách thuê</p>
-                            </div>
-                            <a href="#"
-                                class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 no-underline hover:no-underline">
-                                <div class="i-material-symbols-person text-lg text-gray-500"></div>
-                                <span>Thông tin cá nhân</span>
-                            </a>
-                            <a href="#"
-                                class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 no-underline hover:no-underline">
-                                <div class="i-material-symbols-password text-lg text-gray-500"></div>
-                                <span>Đổi mật khẩu</span>
-                            </a>
-                            <div class="my-1 h-px bg-gray-100"></div>
-                            <form action="/logout" method="post">
-                                <button type="submit"
-                                    class="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 w-full text-left bg-transparent border-0 cursor-pointer">
-                                    <div class="i-material-symbols:logout-rounded text-lg text-red-500"></div>
-                                    <span>Đăng xuất</span>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
+                    <button class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl font-bold shadow-md hover:bg-blue-700 transition border-0 cursor-pointer">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        Tải xuống
+                    </button>
                 </div>
             </div>
         </div>
     </header>
 
-    <main class="relative z-10 mx-auto max-w-7xl px-4 pt-28 pb-8 sm:px-6 lg:px-8">
+    <!-- MAIN DASHBOARD CONTENT -->
+    <main class="relative z-10 h-screen pt-20 pb-4 px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row gap-6">
+        
+        <!-- LEFT PANEL: Summary & Details -->
+        <aside class="w-full md:w-1/3 lg:w-[400px] h-full flex flex-col gap-5 overflow-y-auto scroll-hidden pb-10">
+            
+            <!-- Status Card -->
+            <div class="glass-panel p-6 rounded-3xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-400/20 rounded-full blur-2xl -mr-10 -mt-10"></div>
+                <div class="flex items-center justify-between mb-4">
+                    <span class="px-3 py-1 bg-emerald-100 text-emerald-700 font-black text-[10px] uppercase rounded-lg tracking-widest border border-emerald-200">Đang hiệu lực</span>
+                    <span class="text-xs font-bold text-slate-400">Mã: HĐTN-2026</span>
+                </div>
+                <h2 class="text-2xl font-black text-slate-800 m-0 leading-tight">Phòng 204<br><span class="text-slate-500 text-lg">Smart Stay Building</span></h2>
+            </div>
+
+            <!-- Tenant & Landlord Cards -->
+            <div class="glass-panel p-5 rounded-3xl flex flex-col gap-4">
+                <h3 class="font-bold text-xs uppercase tracking-widest text-slate-400 m-0">Thông tin đối tác</h3>
+                
+                <div class="flex items-center gap-4 bg-white/50 p-3 rounded-2xl border border-white">
+                    <img src="https://ui-avatars.com/api/?name=Thang&background=e0f2fe&color=0284c7" class="w-12 h-12 rounded-full border-2 border-white shadow-sm" alt="">
+                    <div>
+                        <p class="text-[10px] font-bold text-blue-500 uppercase m-0 tracking-wide">Bên cho thuê (A)</p>
+                        <p class="font-bold text-slate-800 m-0">Nguyễn Văn Thắng</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4 bg-white/50 p-3 rounded-2xl border border-white">
+                    <img src="https://ui-avatars.com/api/?name=Hung&background=fef3c7&color=d97706" class="w-12 h-12 rounded-full border-2 border-white shadow-sm" alt="">
+                    <div>
+                        <p class="text-[10px] font-bold text-amber-600 uppercase m-0 tracking-wide">Bên thuê (B)</p>
+                        <p class="font-bold text-slate-800 m-0">Trần Quốc Hùng</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financials Card -->
+            <div class="glass-panel p-6 rounded-3xl">
+                <h3 class="font-bold text-xs uppercase tracking-widest text-slate-400 m-0 mb-4">Điều khoản tài chính</h3>
+                
+                <div class="space-y-4">
+                    <div class="flex justify-between items-end border-b border-slate-200/50 pb-3">
+                        <span class="text-slate-500 font-medium text-sm flex items-center gap-2">
+                            <div class="w-6 h-6 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2"></circle></svg></div> Giá thuê
+                        </span>
+                        <span class="font-black text-slate-800 text-lg">3,500,000 <span class="text-xs text-slate-500">VNĐ</span></span>
+                    </div>
+                    <div class="flex justify-between items-end border-b border-slate-200/50 pb-3">
+                        <span class="text-slate-500 font-medium text-sm flex items-center gap-2">
+                            <div class="w-6 h-6 rounded-lg bg-yellow-50 text-yellow-500 flex items-center justify-center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg></div> Tiền điện
+                        </span>
+                        <span class="font-bold text-slate-700">3,800 <span class="text-xs text-slate-500">đ/kWh</span></span>
+                    </div>
+                    <div class="flex justify-between items-end pb-1">
+                        <span class="text-slate-500 font-medium text-sm flex items-center gap-2">
+                            <div class="w-6 h-6 rounded-lg bg-cyan-50 text-cyan-500 flex items-center justify-center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></div> Tiền nước
+                        </span>
+                        <span class="font-bold text-slate-700">25,000 <span class="text-xs text-slate-500">đ/m3</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Area -->
+            <button class="w-full py-4 bg-slate-800 text-white rounded-2xl font-bold shadow-xl hover:bg-slate-900 transition flex items-center justify-center gap-2 border-0 cursor-pointer">
+                Mở rộng toàn màn hình <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+            </button>
+
+        </aside>
+
+        <!-- RIGHT PANEL: Document Viewer -->
+        <section class="flex-1 h-full pb-6">
+            <div class="w-full h-full rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white/60 relative pdf-preview flex items-center justify-center">
+                
+                <!-- Mock Paper Interface -->
+                <div class="w-full max-w-[80%] h-[90%] bg-white shadow-lg overflow-hidden flex flex-col">
+                    <div class="bg-slate-100 border-b border-slate-200 p-3 flex justify-between items-center">
+                        <div class="flex gap-2">
+                            <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                            <div class="w-3 h-3 rounded-full bg-amber-400"></div>
+                            <div class="w-3 h-3 rounded-full bg-emerald-400"></div>
+                        </div>
+                        <span class="text-xs font-bold text-slate-500">hop-dong-thue-nha-01.pdf</span>
+                        <div class="w-12"></div>
+                    </div>
+                    <div class="flex-1 p-10 overflow-hidden relative">
+                        <!-- Skeleton Content -->
+                        <div class="w-1/2 h-6 bg-slate-200 rounded mx-auto mb-10"></div>
+                        <div class="w-1/3 h-4 bg-slate-200 rounded mx-auto mb-12"></div>
+                        <div class="space-y-4">
+                            <div class="w-full h-3 bg-slate-100 rounded"></div>
+                            <div class="w-full h-3 bg-slate-100 rounded"></div>
+                            <div class="w-5/6 h-3 bg-slate-100 rounded"></div>
+                            <div class="w-full h-3 bg-slate-100 rounded mt-8"></div>
+                            <div class="w-4/5 h-3 bg-slate-100 rounded"></div>
+                        </div>
+                        
+                        <div class="absolute inset-0 bg-white/40 backdrop-blur-sm flex items-center justify-center">
+                            <button onclick="location.href='/contractDetail/1'" class="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-xl hover:bg-blue-700 transition border-0 cursor-pointer hover:scale-105">
+                                Xem bản chi tiết (Mẫu)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
 
     </main>
 

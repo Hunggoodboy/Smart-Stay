@@ -81,7 +81,11 @@ const debounce = (fn, ms) => {
 async function loadRooms() {
     showSkeletons();
     try {
-        const res = await fetch(API_URL);
+        const token = localStorage.getItem('smartstay_token');
+        const headers = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const res = await fetch(API_URL, { headers });
         if (!res.ok) throw new Error(`Server trả về lỗi: ${res.status}`);
         allRooms = await res.json();
 

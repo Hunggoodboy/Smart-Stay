@@ -2,7 +2,9 @@ package vn.edu.ptit.service;
 
 
 import lombok.AllArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import vn.edu.ptit.dto.Request.ContractCreationRequest;
 import vn.edu.ptit.dto.Response.ApiResponse;
 import vn.edu.ptit.dto.Response.ContractResponseDTO;
@@ -23,17 +25,29 @@ import static vn.edu.ptit.entity.RentalRequests.Status.PENDING;
 @AllArgsConstructor
 public class ContractService {
     private final ContractsRepository contractsRepository;
-    private final RoomsRepository roomsRepository;
+    private final RentalRequestRepository rentalRequestRepository;
+    private final RoomPostRepository roomPostRepository;
     private final AuthService authService;
     private final UserRepository userRepository;
     private final CustomerRepository customerRepository;
     private final ContractsRepository contractRepository;
 
-    public ContractSuggestionResponse getContractDraft(Long roomId, Long userId) {
+    @Scheduled(cron = "0 0 0 * * *")
+    @Transactional
+    public void updateContracts() {
+        contractRepository.updateExpiredContracts();
+    }
+
+    public ContractSuggestionResponse getContractDraft(Long roomPostId, Long userId) {
         LandLord currentLandLord = authService.getCurrentLandLord();
-        Customer currentCustomer = customerRepository.findById(userId).orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng"));
-        Rooms currentRoom = roomsRepository.findRoomsById(roomId).orElseThrow(() -> new RuntimeException("Room not found"));
-        ContractSuggestionResponse contractSuggestionResponse = ContractSuggestionResponse.builder()
+        Customer currentCustomer = customerRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng"));
+
+        // Lấy thông tin từ RoomPost (chưa có Rooms ở giai đoạn tạo hợp đồng)
+        RoomPosts roomPost = roomPostRepository.findById(roomPostId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bài đăng phòng"));
+
+        return ContractSuggestionResponse.builder()
                 .landLordId(currentLandLord.getId())
                 .landLordName(currentLandLord.getFullName())
                 .landLordIdentityNumber(currentLandLord.getIdCardNumber())
@@ -41,50 +55,56 @@ public class ContractService {
                 .customerId(currentCustomer.getId())
                 .customerName(currentCustomer.getFullName())
                 .customerAddress(currentCustomer.getAddress())
-                .roomId(currentRoom.getId())
-                .roomAddress(currentRoom.getAddress())
-                .roomArea(currentRoom.getAreaM2())
-                .rentPrice(currentRoom.getRentPrice())
-                .address(currentRoom.getAddress())
-                .ward(currentRoom.getWard())
-                .district(currentRoom.getDistrict())
-                .city(currentRoom.getCity())
-                .areaM2(currentRoom.getAreaM2())
-                .maxOccupants(currentRoom.getMaxOccupants())
-                .electricityPricePerKwh(currentRoom.getElectricityPricePerKwh())
-                .waterPricePerM3(currentRoom.getWaterPricePerM3())
-                .internetFee(currentRoom.getInternetFee())
-                .parkingFee(currentRoom.getParkingFee())
-                .cleaningFee(currentRoom.getCleaningFee())
+                .roomPostId(roomPost.getId())          // đổi từ roomId sang roomPostId
+                .roomAddress(roomPost.getAddress())
+                .roomArea(roomPost.getAreaM2())
+                .rentPrice(roomPost.getMonthlyRent() != null ? roomPost.getMonthlyRent().doubleValue() : null)
+                .address(roomPost.getAddress())
+                .ward(roomPost.getWard())
+                .district(roomPost.getDistrict())
+                .city(roomPost.getCity())
+                .areaM2(roomPost.getAreaM2())
+                .maxOccupants(roomPost.getMaxOccupants() != null ? Long.valueOf(roomPost.getMaxOccupants()) : null)
+                .electricityPricePerKwh(roomPost.getElectricityPricePerKwh() != null ? roomPost.getElectricityPricePerKwh().doubleValue() : null)
+                .waterPricePerM3(roomPost.getWaterPricePerM3() != null ? roomPost.getWaterPricePerM3().doubleValue() : null)
+                .internetFee(roomPost.getInternetFee())
+                .parkingFee(roomPost.getParkingFee())
+                .cleaningFee(roomPost.getCleaningFee())
                 .build();
-        return contractSuggestionResponse;
     }
 
     public ApiResponse createContract(ContractCreationRequest request) {
-        ApiResponse apiResponse = new ApiResponse();
         String randomPart = java.util.UUID.randomUUID().toString()
-                                          .substring(0, 8).toUpperCase();
+                .substring(0, 8).toUpperCase();
+        RentalRequests rentalRequests = rentalRequestRepository.findByRoomPostIdAndCustomerId(request.getRoomPostId(), request.getCustomerId()).orElseThrow(
+                () -> new RuntimeException("Bạn chưa yêu cầu thuê phòng này")
+        );
         Contracts contracts = Contracts.builder()
-           .contractCode("HD-" + java.time.LocalDate.now().getYear() + "-" + randomPart)
-           .startDate(request.getStartDate())
-           .endDate(request.getEndDate())
-           .monthlyRent(request.getMonthlyRent())
-           .depositAmount(request.getDepositAmount())
-           .billingDate(request.getBillingDate())
-           .status(String.valueOf(RentalRequests.Status.PENDING))
-           .contractFileUrl(null)
-           .numOccupants(request.getNumOccupants())
-           .notes(null)
-           .createdAt(LocalDateTime.now())
-           .electricityPricePerKwh(request.getElectricityRate())
-           .waterPricePerM3(request.getWaterRate())
-           .internetFee(request.getInternetFee())
-           .parkingFee(request.getParkingFee())
-           .cleaningFee(request.getCleaningFee())
-           .landLord(userRepository.findById(request.getLandLordId()).orElseThrow(() -> new RuntimeException("Landlord not found")))
-           .customer(userRepository.findById(request.getCustomerId()).orElseThrow(() -> new RuntimeException("Customer not found")))
-           .room(roomsRepository.findRoomsById(request.getRoomId()).orElseThrow(() -> new RuntimeException("Room not found")))
-           .build();
+                .contractCode("HD-" + java.time.LocalDate.now().getYear() + "-" + randomPart)
+                .startDate(request.getStartDate())
+                .endDate(request.getEndDate())
+                .monthlyRent(request.getMonthlyRent())
+                .depositAmount(request.getDepositAmount())
+                .billingDate(request.getBillingDate())
+                .status(String.valueOf(RentalRequests.Status.PENDING))
+                .rentalRequest(rentalRequests)
+                .contractFileUrl(null)
+                .numOccupants(request.getNumOccupants())
+                .isExpiration(true)
+                .notes(null)
+                .createdAt(LocalDateTime.now())
+                .electricityPricePerKwh(request.getElectricityRate())
+                .waterPricePerM3(request.getWaterRate())
+                .internetFee(request.getInternetFee())
+                .parkingFee(request.getParkingFee())
+                .cleaningFee(request.getCleaningFee())
+                .landLord(userRepository.findById(request.getLandLordId())
+                        .orElseThrow(() -> new RuntimeException("Landlord not found")))
+                .customer(userRepository.findById(request.getCustomerId())
+                        .orElseThrow(() -> new RuntimeException("Customer not found")))
+                // KHAI BÁO: Không gán .room() vì Contracts không còn giữ FK room_id nữa
+                // Room sẽ được tạo sau khi Contract được dúyệt và gắn FK contract_id → contracts.id
+                .build();
         contractRepository.save(contracts);
         return ApiResponse.builder()
                 .success(true)
@@ -92,9 +112,11 @@ public class ContractService {
                 .build();
     }
 
-    public List<ContractResponseDTO> getMyContracts(){
+    public List<ContractResponseDTO> getMyValidContracts(){
         Long userId = authService.getCurrentUser().getId();
-        List<Contracts> contracts = contractsRepository.findContractsByUserIdOrderByCreatedAt(userId);
+        List<Contracts> contracts = contractsRepository.findValidContractsForUser(userId);
+        System.out.println(userId);
+        System.out.println("Số hợp đồng của người dùng là "+contracts.size());
         return contracts.stream().map(contract -> ContractResponseDTO.builder()
                                                                                                    .id(contract.getId())
         .contractCode(contract.getContractCode())
@@ -116,6 +138,33 @@ public class ContractService {
         .roomAddress(contract.getRoom() != null ? contract.getRoom().getAddress() : "N/A")
         .build()
 ).collect(Collectors.toList());
+
+    }
+
+    public List<ContractResponseDTO> getMyContractsExpired(){
+        Long userId = authService.getCurrentUser().getId();
+        List<Contracts> contracts = contractsRepository.findExpiredContractsForUser(userId);
+        return contracts.stream().map(contract -> ContractResponseDTO.builder()
+                                                                     .id(contract.getId())
+                                                                     .contractCode(contract.getContractCode())
+                                                                     .startDate(contract.getStartDate())
+                                                                     .endDate(contract.getEndDate())
+                                                                     .monthlyRent(contract.getMonthlyRent())
+                                                                     .depositAmount(contract.getDepositAmount())
+                                                                     .billingDate(contract.getBillingDate())
+                                                                     .status(contract.getStatus())
+                                                                     .electricityPricePerKwh(contract.getElectricityPricePerKwh())
+                                                                     .waterPricePerM3(contract.getWaterPricePerM3())
+                                                                     .internetFee(contract.getInternetFee())
+                                                                     .parkingFee(contract.getParkingFee())
+                                                                     .cleaningFee(contract.getCleaningFee())
+                                                                     // Mapping thông tin 2 bên A và B
+                                                                     .landLord(mapToUserResponse(contract.getLandLord()))
+                                                                     .customer(mapToUserResponse(contract.getCustomer()))
+                                                                     // Lấy địa chỉ phòng (null-safe)
+                                                                     .roomAddress(contract.getRoom() != null ? contract.getRoom().getAddress() : "N/A")
+                                                                     .build()
+        ).collect(Collectors.toList());
 
     }
 }

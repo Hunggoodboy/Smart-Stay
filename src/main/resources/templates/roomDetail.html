@@ -92,6 +92,31 @@
         #loader, #error { text-align: center; padding: 100px 0; font-size: 18px; color: var(--ink-3); }
         #app { display: none; }
 
+        /* ================= TOAST NOTIFICATION ================= */
+        #toast-container {
+            position: fixed; top: 80px; right: 24px; z-index: 9999;
+            display: flex; flex-direction: column; gap: 12px;
+        }
+        .toast {
+            display: flex; align-items: flex-start; gap: 12px;
+            padding: 16px 20px; border-radius: 12px; min-width: 300px; max-width: 400px;
+            background: #fff; box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            border-left: 4px solid transparent;
+            animation: toastIn 0.35s cubic-bezier(0.21,1.02,0.73,1) forwards;
+            font-family: var(--font-body); font-size: 14px; line-height: 1.5;
+        }
+        .toast.success { border-color: #10b981; }
+        .toast.error   { border-color: #ef4444; }
+        .toast.warning { border-color: #f59e0b; }
+        .toast-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+        .toast-body { flex: 1; }
+        .toast-title { font-weight: 700; color: var(--ink); margin-bottom: 2px; }
+        .toast-msg   { color: var(--ink-2); }
+        .toast-close { background: none; border: none; cursor: pointer; color: var(--ink-4); font-size: 18px; padding: 0 0 0 8px; line-height: 1; }
+        .toast.hiding { animation: toastOut 0.3s ease forwards; }
+        @keyframes toastIn  { from { opacity:0; transform:translateX(60px); } to { opacity:1; transform:translateX(0); } }
+        @keyframes toastOut { from { opacity:1; transform:translateX(0); } to { opacity:0; transform:translateX(60px); } }
+
         @media (max-width: 900px) {
             .content-layout { grid-template-columns: 1fr; }
             .gallery-grid { height: 250px; }
@@ -100,6 +125,8 @@
     </style>
 </head>
 <body>
+
+<div id="toast-container"></div>
 
 <nav class="navbar">
     <a href="/" class="logo"><span>S</span> SmartStay</a>
@@ -317,6 +344,31 @@
         document.getElementById('error').style.display = 'block';
     }
 
+    // ============================================================
+    // TOAST NOTIFICATION HELPER
+    // ============================================================
+    function showToast(type, title, message, duration = 5000) {
+        const icons = { success: '✅', error: '❌', warning: '⚠️' };
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `
+            <span class="toast-icon">${icons[type] || 'ℹ️'}</span>
+            <div class="toast-body">
+                <div class="toast-title">${title}</div>
+                <div class="toast-msg">${message}</div>
+            </div>
+            <button class="toast-close" onclick="this.closest('.toast').remove()">×</button>
+        `;
+        container.appendChild(toast);
+        const dismiss = () => {
+            toast.classList.add('hiding');
+            setTimeout(() => toast.remove(), 300);
+        };
+        const timer = setTimeout(dismiss, duration);
+        toast.querySelector('.toast-close').addEventListener('click', () => clearTimeout(timer));
+    }
+
     // 4. Hàm gọi API gửi yêu cầu thuê phòng thật
     async function sendRequest() {
         const btn = document.getElementById('btnAction');
@@ -324,8 +376,8 @@
 
         // 1. Kiểm tra xem token có tồn tại không trước khi gửi
         if (!token) {
-            alert("Bạn cần đăng nhập bằng tài khoản Khách thuê để thực hiện chức năng này!");
-            window.location.href = '/login';
+            showToast('warning', 'Chưa đăng nhập', 'Bạn cần đăng nhập bằng tài khoản Khách thuê để thực hiện chức năng này!');
+            setTimeout(() => { window.location.href = '/login'; }, 1800);
             return;
         }
 
@@ -338,48 +390,67 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}` // Gửi kèm token
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify(payload)
             });
 
             if (!response.ok) {
-                // Xử lý riêng lỗi 401 (Hết hạn token)
+                // Xử lý lỗi 401 (Hết hạn token)
                 if (response.status === 401) {
-                    alert("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại!");
-                    window.location.href = '/login';
+                    showToast('error', 'Phiên hết hạn', 'Vui lòng đăng nhập lại để tiếp tục.');
+                    setTimeout(() => { window.location.href = '/login'; }, 2000);
                     return;
                 }
 
-                // Xử lý riêng lỗi 403 (Sai quyền)
+                // Xử lý lỗi 403 (Sai quyền)
                 if (response.status === 403) {
-                    throw new Error("Bạn không có quyền gửi yêu cầu! (Có thể bạn đang đăng nhập bằng tài khoản Chủ trọ thay vì Khách thuê).");
+                    showToast('error', 'Không có quyền', 'Bạn không có quyền gửi yêu cầu! Có thể bạn đang đăng nhập bằng tài khoản Chủ trọ.');
+                    btn.textContent = 'Gửi yêu cầu thuê phòng';
+                    btn.disabled = false;
+                    return;
                 }
 
-                // 2. Cách đọc lỗi an toàn (Không dùng ngay .json() để tránh crash)
+                // Đọc message lỗi từ server (400, v.v.)
                 const textData = await response.text();
-                let errorMessage = 'Gửi yêu cầu thất bại';
+                let errorMessage = 'Gửi yêu cầu thất bại, vui lòng thử lại.';
+                let isDuplicate = false;
                 try {
                     if (textData) {
                         const errorJson = JSON.parse(textData);
                         errorMessage = errorJson.message || errorMessage;
+                        // Nhận diện trường hợp đã gửi yêu cầu rồi
+                        if (errorJson.message && errorJson.message.includes('đã yêu cầu')) {
+                            isDuplicate = true;
+                        }
                     }
                 } catch (e) {
                     console.error("Lỗi từ server không phải JSON:", textData);
                 }
-                throw new Error(errorMessage);
+
+                if (isDuplicate) {
+                    // Khóa nút vĩnh viễn, hiển thị trạng thái đã gửi
+                    btn.textContent = '⏳ Đang chờ chủ nhà duyệt';
+                    btn.disabled = true;
+                    btn.style.background = '#f59e0b';
+                    showToast('warning', 'Yêu cầu đã tồn tại', errorMessage, 7000);
+                } else {
+                    // Lỗi khác → nhả nút để user thử lại
+                    btn.textContent = 'Gửi yêu cầu thuê phòng';
+                    btn.disabled = false;
+                    showToast('error', 'Gửi thất bại', errorMessage);
+                }
+                return;
             }
 
             // Thành công 200 OK
-            const data = await response.json();
-            alert("Gửi yêu cầu thuê phòng thành công!");
-
-            btn.textContent = 'Đã gửi yêu cầu';
-            btn.style.background = '#10b981'; // Đổi màu nút sang xanh lá báo thành công
+            showToast('success', 'Thành công!', 'Yêu cầu thuê phòng đã được gửi. Chủ nhà sẽ liên hệ với bạn sớm nhất!', 6000);
+            btn.textContent = '✅ Đã gửi yêu cầu';
+            btn.disabled = true;
+            btn.style.background = '#10b981';
 
         } catch (error) {
-            alert("Lỗi: " + error.message);
-            // Nhả nút ra để khách có thể bấm lại nếu lỗi
+            showToast('error', 'Lỗi kết nối', error.message || 'Không thể kết nối đến máy chủ, vui lòng thử lại.');
             btn.textContent = 'Gửi yêu cầu thuê phòng';
             btn.disabled = false;
         }

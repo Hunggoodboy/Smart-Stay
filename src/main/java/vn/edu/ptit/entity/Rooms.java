@@ -85,6 +85,10 @@ public class Rooms implements Serializable {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "deleted_at", nullable = true)
+    private LocalDateTime deletedAt = null;
+
+
     // ==================== RELATIONSHIPS ====================
 
     /**
@@ -104,9 +108,25 @@ public class Rooms implements Serializable {
      * 1 Phòng có 1 hợp đồng (theo thời gian)
      */
 
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "room")
+    /**
+     * Phòng quản lý được tạo SAU hợp đồng → Rooms giữ FK contract_id
+     * FK: rooms.contract_id → contracts.id
+     */
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "contract_id")
     @ToString.Exclude
     private Contracts contract;
+
+    /**
+     * Bài đăng gốc tạo ra phòng này → Rooms giữ FK room_post_id
+     * FK: rooms.room_post_id → room_posts.id
+     * Dùng để kiểm tra phòng đã có người thuê chưa khi có yêu cầu mới.
+     */
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "room_post_id", nullable = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private RoomPosts roomPost;
 
     /**
      * 1 Phòng có nhiều hóa đơn điện nước

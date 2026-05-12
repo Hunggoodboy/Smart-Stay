@@ -17,12 +17,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // 1. Phân quyền hiển thị Menu dựa trên Role
         if (user.role === 'CUSTOMER') {
             extraLinks += `<a href="/payment" class="nav-link">Phòng đang thuê</a>`;
+            extraLinks += `<a href="/myContracts" class="nav-link">Hợp đồng của tôi</a>`;
             extraLinks += `<a href="/registerLandLord" class="nav-link">Đăng ký chủ nhà</a>`;
         }
         else if (user.role === 'LANDLORD') {
             extraLinks += `<a href="/payment" class="nav-link">Phòng đang thuê</a>`;
             extraLinks += `<a href="/MyRentalRequest" class="nav-link">Yêu cầu thuê</a>`;
             extraLinks += `<a href="/postRooms" class="nav-link">Đăng phòng</a>`;
+            extraLinks += `<a href="/myContracts" class="nav-link">Hợp đồng của tôi</a>`;
         }
         else if (user.role === 'ADMIN') {
             // Highlight màu xanh cho Admin nổi bật

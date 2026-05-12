@@ -234,19 +234,17 @@ public class BillingService {
     private Contracts resolveContract(MonthlyBillRequest request, Rooms room) {
         if (request.getContractId() != null) {
             Contracts contract = contractsRepository.findById(request.getContractId())
-                                                    .orElseThrow(() -> new RuntimeException("Không tìm thấy hợp đồng với id = " + request.getContractId()));
-            if (contract.getRoom() != null && contract.getRoom()
-                                                      .getId() != null
-                    && !contract.getRoom()
-                                .getId()
-                                .equals(room.getId())) {
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy hợp đồng với id = " + request.getContractId()));
+            // Kiểm tra contract có thuộc room này không (FK giờ nằm ở Rooms.contract_id)
+            Contracts roomContract = room.getContract();
+            if (roomContract != null && !roomContract.getId().equals(contract.getId())) {
                 throw new RuntimeException("contractId không thuộc roomId đã gửi");
             }
             return contract;
         }
 
-        return contractsRepository.findByRoomIdAndStatus(room.getId(), "ACTIVE")
-                                  .orElse(null);
+        // Fallback: lấy contract gắn với room (Rooms giữ FK contract_id)
+        return room.getContract();
     }
 
     private UtilityBills resolvePreviousBill(Long roomId, String billingMonth) {
