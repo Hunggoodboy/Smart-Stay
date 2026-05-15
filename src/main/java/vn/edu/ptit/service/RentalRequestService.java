@@ -9,15 +9,13 @@ import vn.edu.ptit.dto.Request.RentalRequestDTO;
 import vn.edu.ptit.dto.Response.ApiResponse;
 import vn.edu.ptit.dto.Response.RentalRequestResponse;
 import vn.edu.ptit.entity.*;
-import vn.edu.ptit.repository.ContractsRepository;
-import vn.edu.ptit.repository.RentalRequestRepository;
-import vn.edu.ptit.repository.RoomPostRepository;
-import vn.edu.ptit.repository.RoomsRepository;
+import vn.edu.ptit.repository.*;
 import vn.edu.ptit.service.Authentication.AuthService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,7 +26,8 @@ public class RentalRequestService {
     private final RoomsRepository roomsRepository;
     private final AuthService authService;
     private final ContractsRepository  contractsRepository;
-
+    private final CustomerRepository customerRepository;
+    private final UserRepository userRepository;
     public ApiResponse createNewRentalRequest(RentalRequestDTO request) {
         Long currentId = authService.getCurrentUser().getId();
 
@@ -42,13 +41,25 @@ public class RentalRequestService {
             throw new RuntimeException("Phòng này hiện đã có người thuê, vui lòng chọn phòng khác");
         }
 
+        Optional<Customer> currentCustomer = customerRepository.findById(currentId);
+        if(!userRepository.findById(currentId).isPresent()  && currentCustomer.isEmpty()){
+            return ApiResponse.builder()
+                              .success(false)
+                              .message("REQUIRE_USER_INFO") // Tín hiệu đặc biệt
+                              .build();
+        }
+        else if(currentCustomer.isEmpty()){
+            return ApiResponse.builder()
+                              .success(false)
+                              .message("REQUIRE_CUSTOMER_INFO") // Tín hiệu đặc biệt
+                              .build();
+        }
         RentalRequests rentalRequests = new RentalRequests();
         BeanUtils.copyProperties(request, rentalRequests);
         RoomPosts roomPost = roomPostRepository.findById(request.getRoomPostId()).orElseThrow();
         rentalRequests.setRoomPost(roomPost);
         rentalRequests.setLandlord(roomPost.getLandlord());
-        Customer customerRef = new Customer();
-        customerRef.setId(currentId);
+        Customer customerRef = currentCustomer.get();
         rentalRequests.setCustomer(customerRef);
         rentalRequests.setCreatedAt(LocalDateTime.now());
         rentalRequests.setStatus(RentalRequests.Status.PENDING);

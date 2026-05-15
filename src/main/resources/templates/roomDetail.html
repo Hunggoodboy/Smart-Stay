@@ -374,7 +374,6 @@
         const btn = document.getElementById('btnAction');
         const token = localStorage.getItem('smartstay_token');
 
-        // 1. Kiểm tra xem token có tồn tại không trước khi gửi
         if (!token) {
             showToast('warning', 'Chưa đăng nhập', 'Bạn cần đăng nhập bằng tài khoản Khách thuê để thực hiện chức năng này!');
             setTimeout(() => { window.location.href = '/login'; }, 1800);
@@ -386,6 +385,7 @@
 
         try {
             const payload = { roomPostId: parseInt(roomId) };
+            // LƯU Ý: Đảm bảo đường dẫn API này khớp với Backend của bạn
             const response = await fetch('/api/customer/requests', {
                 method: 'POST',
                 headers: {
@@ -395,66 +395,118 @@
                 body: JSON.stringify(payload)
             });
 
-            if (!response.ok) {
-                // Xử lý lỗi 401 (Hết hạn token)
+            // 1. Phân tích Json dù cho response.ok là true hay false
+            let data = {};
+            try { data = await response.json(); } catch (e) { }
+
+            // 2. NẾU CÓ LỖI HOẶC BACKEND TRẢ VỀ SUCCESS = FALSE
+            if (!response.ok || data.success === false) {
+
+                // --- ĐÂY LÀ ĐOẠN HỨNG TÍN HIỆU TỪ BACKEND ---
+                if (data.message === 'REQUIRE_CUSTOMER_INFO') {
+                    // Mở Modal xịn xò vừa code
+                    document.getElementById('customer-upgrade-modal').style.display = 'flex';
+
+                    // Nhả nút lại trạng thái cũ
+                    btn.textContent = 'Gửi yêu cầu thuê phòng';
+                    btn.disabled = false;
+                    return;
+                }
+
+                if (data.message === 'REQUIRE_USER_INFO') {
+                    showToast('warning', 'Thiếu thông tin', 'Vui lòng cập nhật hồ sơ cá nhân đầy đủ trước.');
+                    btn.textContent = 'Gửi yêu cầu thuê phòng';
+                    btn.disabled = false;
+                    return;
+                }
+                // ------------------------------------------
+
                 if (response.status === 401) {
                     showToast('error', 'Phiên hết hạn', 'Vui lòng đăng nhập lại để tiếp tục.');
                     setTimeout(() => { window.location.href = '/login'; }, 2000);
                     return;
                 }
 
-                // Xử lý lỗi 403 (Sai quyền)
-                if (response.status === 403) {
-                    showToast('error', 'Không có quyền', 'Bạn không có quyền gửi yêu cầu! Có thể bạn đang đăng nhập bằng tài khoản Chủ trọ.');
-                    btn.textContent = 'Gửi yêu cầu thuê phòng';
-                    btn.disabled = false;
-                    return;
-                }
-
-                // Đọc message lỗi từ server (400, v.v.)
-                const textData = await response.text();
-                let errorMessage = 'Gửi yêu cầu thất bại, vui lòng thử lại.';
-                let isDuplicate = false;
-                try {
-                    if (textData) {
-                        const errorJson = JSON.parse(textData);
-                        errorMessage = errorJson.message || errorMessage;
-                        // Nhận diện trường hợp đã gửi yêu cầu rồi
-                        if (errorJson.message && errorJson.message.includes('đã yêu cầu')) {
-                            isDuplicate = true;
-                        }
-                    }
-                } catch (e) {
-                    console.error("Lỗi từ server không phải JSON:", textData);
-                }
-
-                if (isDuplicate) {
-                    // Khóa nút vĩnh viễn, hiển thị trạng thái đã gửi
+                // Nhận diện lỗi trùng lặp
+                if (data.message && data.message.includes('đã yêu cầu')) {
                     btn.textContent = '⏳ Đang chờ chủ nhà duyệt';
                     btn.disabled = true;
                     btn.style.background = '#f59e0b';
-                    showToast('warning', 'Yêu cầu đã tồn tại', errorMessage, 7000);
+                    showToast('warning', 'Yêu cầu đã tồn tại', data.message, 7000);
                 } else {
-                    // Lỗi khác → nhả nút để user thử lại
                     btn.textContent = 'Gửi yêu cầu thuê phòng';
                     btn.disabled = false;
-                    showToast('error', 'Gửi thất bại', errorMessage);
+                    showToast('error', 'Gửi thất bại', data.message || 'Gửi yêu cầu thất bại.');
                 }
                 return;
             }
 
-            // Thành công 200 OK
+            // NẾU THÀNH CÔNG THẬT SỰ (response.ok = true VÀ data.success = true)
             showToast('success', 'Thành công!', 'Yêu cầu thuê phòng đã được gửi. Chủ nhà sẽ liên hệ với bạn sớm nhất!', 6000);
             btn.textContent = '✅ Đã gửi yêu cầu';
             btn.disabled = true;
             btn.style.background = '#10b981';
 
         } catch (error) {
-            showToast('error', 'Lỗi kết nối', error.message || 'Không thể kết nối đến máy chủ, vui lòng thử lại.');
+            showToast('error', 'Lỗi kết nối', error.message || 'Không thể kết nối đến máy chủ.');
             btn.textContent = 'Gửi yêu cầu thuê phòng';
             btn.disabled = false;
         }
     }
+
+    async function submitCustomerUpgrade() {
+        const idCard = document.getElementById('upgrade-idcard').value.trim();
+        const address = document.getElementById('upgrade-address').value.trim();
+
+        if (!idCard || !address) {
+            showToast('warning', 'Nhập thiếu', 'Vui lòng nhập đủ CCCD và địa chỉ!');
+            return;
+        }
+
+        const token = localStorage.getItem('smartstay_token');
+
+        // Đổi nút thành trạng thái loading để tránh bấm nhiều lần
+        const btnSubmit = document.querySelector('#customer-upgrade-modal button:last-child');
+        const originalText = btnSubmit.textContent;
+        btnSubmit.textContent = 'Đang xử lý...';
+        btnSubmit.disabled = true;
+
+        try {
+            // Gọi đúng API bạn vừa tạo trong AuthController
+            const res = await fetch('/api/user/upgrade/customer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                // Body khớp với UpgradeCustomerRequest.java
+                body: JSON.stringify({
+                    idCardNumber: idCard,
+                    address: address
+                })
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                // Tắt Modal
+                document.getElementById('customer-upgrade-modal').style.display = 'none';
+                showToast('success', 'Cập nhật thành công', 'Hồ sơ đã hoàn tất. Hệ thống đang tự động gửi yêu cầu thuê phòng...');
+
+                // Tự động gọi lại hàm gửi yêu cầu thuê phòng sau 1.5 giây
+                setTimeout(() => sendRequest(), 1500);
+            } else {
+                showToast('error', 'Lỗi cập nhật', data.message || 'Số CCCD có thể đã tồn tại.');
+                btnSubmit.textContent = originalText;
+                btnSubmit.disabled = false;
+            }
+        } catch (e) {
+            showToast('error', 'Lỗi kết nối', 'Không thể kết nối đến máy chủ.');
+            btnSubmit.textContent = originalText;
+            btnSubmit.disabled = false;
+        }
+    }
+
     // Hàm lưu dữ liệu vào session và chuyển trang
     function goToManagement() {
         // Lấy dữ liệu phòng hiện tại đang hiển thị trên UI
@@ -479,5 +531,26 @@
     fetchRoomDetail();
 </script>
 <script th:src="@{/js/chat-ai-widget.js}" src="../static/js/chat-ai-widget.js"></script>
+<div id="customer-upgrade-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div style="background: white; padding: 28px; border-radius: 20px; width: 420px; max-width: 90%; box-shadow: 0 20px 40px rgba(0,0,0,0.1);">
+        <h3 style="margin-top: 0; font-family: 'Fraunces', serif; color: #1f2937; font-size: 22px;">Hoàn thiện hồ sơ</h3>
+        <p style="font-size: 14px; color: #6b7280; margin-bottom: 24px;">Để đảm bảo an toàn, chủ nhà yêu cầu bạn cung cấp Số Căn cước công dân và Địa chỉ trước khi gửi yêu cầu thuê phòng.</p>
+
+        <div style="margin-bottom: 16px;">
+            <label style="font-size: 13px; font-weight: 700; color: #374151;">Số Căn cước công dân <span style="color: red;">*</span></label>
+            <input type="text" id="upgrade-idcard" style="width: 100%; padding: 12px 16px; border: 1.5px solid #e5e7eb; border-radius: 10px; margin-top: 6px; font-family: inherit; font-size: 14px; outline: none;" placeholder="Nhập 12 số CCCD của bạn">
+        </div>
+
+        <div style="margin-bottom: 28px;">
+            <label style="font-size: 13px; font-weight: 700; color: #374151;">Địa chỉ thường trú <span style="color: red;">*</span></label>
+            <input type="text" id="upgrade-address" style="width: 100%; padding: 12px 16px; border: 1.5px solid #e5e7eb; border-radius: 10px; margin-top: 6px; font-family: inherit; font-size: 14px; outline: none;" placeholder="Ví dụ: Đống Đa, Hà Nội">
+        </div>
+
+        <div style="display: flex; gap: 12px;">
+            <button onclick="document.getElementById('customer-upgrade-modal').style.display='none'" style="flex: 1; padding: 12px; background: #f3f4f6; color: #4b5563; font-weight: 600; border: none; border-radius: 12px; cursor: pointer; transition: 0.2s;">Hủy bỏ</button>
+            <button onclick="submitCustomerUpgrade()" style="flex: 1; padding: 12px; background: #316bf2; color: white; font-weight: 600; border: none; border-radius: 12px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(49, 107, 242, 0.2);">Xác nhận & Gửi</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>

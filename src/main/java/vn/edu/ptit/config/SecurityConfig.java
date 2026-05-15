@@ -29,7 +29,7 @@ public class SecurityConfig {
             ,"/room-posted", "/room-detail/**",
             "/api/user/login", "/api/user/register",
             "/postRooms", "/MyRentalRequest", "/myHome", "/payment", "/chatMessage", "/adminVerify", "/registerLandLord", "/error", "/gs-guide-websocket/**"
-                ,"/contract/create", "/myContracts", "/contractDetail/**" , "/createRoomManage", "/landlord-view/**" , "/room-detail-management/**"
+                ,"/contract/create", "/myContracts", "/contractDetail/**" , "/revenue-management", "/createRoomManage", "/landlord-view/**" , "/room-detail-management/**"
     };
 
     private static final String[] LANDLORD_API_URLS = {

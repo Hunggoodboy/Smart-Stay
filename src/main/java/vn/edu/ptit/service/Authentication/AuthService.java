@@ -14,6 +14,8 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Service;
+import vn.edu.ptit.dto.Request.UpgradeCustomerRequest;
+import vn.edu.ptit.dto.Response.ApiResponse;
 import vn.edu.ptit.dto.Response.AuthResponse;
 import vn.edu.ptit.dto.Request.LoginRequest;
 import vn.edu.ptit.dto.Request.RegisterRequest;
@@ -90,6 +92,15 @@ public class AuthService {
         catch (Exception ex) {
             return new AuthResponse("Đăng nhập thất bại: " + ex.getMessage(), false, null, null);
         }
+    }
+    public ApiResponse upgradeCustomer(UpgradeCustomerRequest request){
+        Long currentId = getCurrentUserId();
+        userRepository.updateUserType(currentId);
+        userRepository.insertIntoCustomer(currentId, request.getAddress(), request.getIdCardNumber());
+        return ApiResponse.builder()
+                .success(true)
+                .message("Bạn đã đăng ký thành diện khách hàng thành công")
+                .build();
     }
 
     public UserDTO getCurrentUser() {

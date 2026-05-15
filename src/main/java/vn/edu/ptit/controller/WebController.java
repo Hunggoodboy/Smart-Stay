@@ -89,4 +89,9 @@ public class WebController {
     public String createRoomManage() {
         return "createRoomManage";
     }
+
+    @GetMapping("/revenue-management")
+    public String revenueManagement() {
+        return "revenue_management";
+    }
 }

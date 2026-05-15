@@ -5,6 +5,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import vn.edu.ptit.dto.Request.UpgradeCustomerRequest;
+import vn.edu.ptit.dto.Response.ApiResponse;
 import vn.edu.ptit.dto.Response.AuthResponse;
 import vn.edu.ptit.dto.Request.LoginRequest;
 import vn.edu.ptit.dto.Request.RegisterRequest;
@@ -36,7 +38,14 @@ public class AuthController {
         }
         return ResponseEntity.ok(authResponse);
     }
-
+    @PostMapping("upgrade/customer")
+    public ResponseEntity<?> upgradeToCustomer(@RequestBody UpgradeCustomerRequest upgradeCustomerRequest) {
+        ApiResponse authResponse = authService.upgradeCustomer(upgradeCustomerRequest);
+        if(!authResponse.isSuccess()){
+            return ResponseEntity.badRequest().body(authResponse);
+        }
+        return ResponseEntity.ok(authResponse);
+    }
     @GetMapping("/tenant")
     public ResponseEntity<?> getTenant() {
         return ResponseEntity.ok(authService.getCurrentUser());
