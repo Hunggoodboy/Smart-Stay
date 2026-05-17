@@ -50,10 +50,12 @@ public class WebController {
     public String roomDetail(@PathVariable Long id) {
         return "roomDetail";
     }
+
     @GetMapping("/room-detail-management/{id}")
     public String roomDetailManagement(@PathVariable Long id) {
         return "roomDetailManagement";
     }
+
     @GetMapping("/MyRentalRequest")
     public String rentalRequest() {
         return "rentalRequests";
@@ -62,6 +64,21 @@ public class WebController {
     @GetMapping("/adminVerify")
     public String adminVerify() {
         return "adminVerify";
+    }
+
+    @GetMapping("/adminDashboard")
+    public String adminDashboard() {
+        return "adminDashboard";
+    }
+
+    @GetMapping("/adminUsers")
+    public String adminUsers() {
+        return "adminUsers";
+    }
+
+    @GetMapping("/adminPosts")
+    public String adminPosts() {
+        return "adminPosts";
     }
 
     @GetMapping("/registerLandLord")
@@ -73,18 +90,22 @@ public class WebController {
     public String landlordView() {
         return "landlord_index";
     }
+
     @GetMapping("/contract/create")
     public String createContract() {
         return "contractCreation";
     }
+
     @GetMapping("/myContracts")
     public String myContracts() {
         return "myContracts";
     }
+
     @GetMapping("/contractDetail/{id}")
-    public String contractDetail(@PathVariable Long id){
+    public String contractDetail(@PathVariable Long id) {
         return "contractDetail";
     }
+
     @GetMapping("/createRoomManage")
     public String createRoomManage() {
         return "createRoomManage";
