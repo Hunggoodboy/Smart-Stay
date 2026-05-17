@@ -13,11 +13,11 @@ public interface RentPaymentsRepository extends JpaRepository<RentPayments, Long
 
     List<RentPayments> findByContract_Id(Long contractId);
 
-    List<RentPayments> findByStatus(String status);
+    List<RentPayments> findByStatus(RentPayments.Status status);
 
-    List<RentPayments> findByStatusOrderByDueDateAsc(String status);
+    List<RentPayments> findByStatusOrderByDueDateAsc(RentPayments.Status status);
 
-    List<RentPayments> findByContract_IdAndStatus(Long contractId, String status);
+    List<RentPayments> findByContract_IdAndStatus(Long contractId, RentPayments.Status status);
 
     Optional<RentPayments> findTopByContract_IdAndBillingMonthOrderByCreatedAtDesc(Long contractId, String billingMonth);
 }
