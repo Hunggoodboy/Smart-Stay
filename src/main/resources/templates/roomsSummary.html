@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Phòng đang cho thuê – SmartStay</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=DM+Sans:wght@400;500;600&display=swap"
+        rel="stylesheet" />
     <link rel="stylesheet" th:href="@{/css/roomsSummary.css}" />
     <style>
         /* Admin badge */
@@ -14,295 +17,346 @@
             color: #b45309 !important;
             background: #fffbeb !important;
             border: 1px solid #fde68a;
-            display: none !important; /* ẩn mặc định, JS bật khi là ADMIN */
+            display: none !important;
+            /* ẩn mặc định, JS bật khi là ADMIN */
             align-items: center;
             gap: 5px;
         }
+
         .nav-link-admin:hover {
             background: #fef3c7 !important;
             border-color: #f59e0b;
             color: #92400e !important;
         }
-        .nav-link-admin.visible { display: inline-flex !important; }
+
+        .nav-link-admin.visible {
+            display: inline-flex !important;
+        }
 
         /* User info chip */
         .nav-user {
-            display: none; /* ẩn mặc định */
-            align-items: center; gap: 8px;
-            font-size: 14px; font-weight: 500;
-            color: var(--ink-2); padding: 6px 12px;
+            display: none;
+            /* ẩn mặc định */
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--ink-2);
+            padding: 6px 12px;
             border-radius: var(--r-sm);
             background: var(--tag-bg);
             border: 1px solid var(--border);
         }
-        .nav-user.visible { display: flex; }
+
+        .nav-user.visible {
+            display: flex;
+        }
+
         .nav-user-avatar {
-            width: 26px; height: 26px; border-radius: 50%;
-            background: var(--brand); color: #fff;
-            font-size: 12px; font-weight: 700;
-            display: grid; place-items: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: var(--brand);
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            display: grid;
+            place-items: center;
         }
 
         /* Logout button */
         .btn-logout {
-            display: none; /* ẩn mặc định */
+            display: none;
+            /* ẩn mặc định */
             font-family: var(--font-body);
-            font-size: 14px; font-weight: 600;
-            color: #fff; background: #dc2626;
-            border: none; padding: 9px 20px;
-            border-radius: var(--r-sm); cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            background: #dc2626;
+            border: none;
+            padding: 9px 20px;
+            border-radius: var(--r-sm);
+            cursor: pointer;
             transition: background .15s;
         }
-        .btn-logout:hover { background: #b91c1c; }
-        .btn-logout.visible { display: inline-flex; align-items: center; }
+
+        .btn-logout:hover {
+            background: #b91c1c;
+        }
+
+        .btn-logout.visible {
+            display: inline-flex;
+            align-items: center;
+        }
     </style>
 </head>
+
 <body>
 
-<!-- ══════════════════════════════
+    <!-- ══════════════════════════════
      NAVBAR
      ══════════════════════════════ -->
-<header class="navbar">
-    <div class="nav-inner" id="navInner">
-        <a href="/" class="logo">
-            <span class="logo-mark">S</span>
-            <span class="logo-text">Smart<em>Stay</em></span>
-        </a>
-
-        <!-- ── Tất cả link điều hướng từ WebController ── -->
-        <!-- ── Tất cả link điều hướng từ WebController ── -->
-        <nav class="nav-links">
-            <a href="/"                 class="nav-link active">Khám phá</a>
-
-            <!-- Link chung (Hiện mặc định) -->
-            <a href="/chatMessage"      class="nav-link">Tin nhắn</a>
-            <a href="/registerLandLord" class="nav-link" id="linkRegisterLandlord">Trở thành chủ nhà</a>
-
-            <!-- Link dành riêng cho CHỦ NHÀ (Ẩn mặc định) -->
-            <a href="/postRooms"        class="nav-link nav-link-landlord" style="display: none;">Đăng phòng</a>
-            <a href="/landlord-view"    class="nav-link nav-link-landlord" style="display: none;">Quản lý phòng</a>
-            <a href="/MyRentalRequest"  class="nav-link nav-link-landlord" style="display: none;">Yêu cầu thuê</a>
-            <a href="/myContracts"      class="nav-link nav-link-landlord" style="display: none;">Hợp đồng của tôi</a>
-
-            <!-- Link dành riêng cho KHÁCH THUÊ (Ẩn mặc định) -->
-            <a href="/payment"          class="nav-link nav-link-tenant" style="display: none;">Thanh toán</a>
-            <a href="/myHome"           class="nav-link nav-link-tenant" style="display: none;">Phòng tôi đang thuê</a>
-            <a href="/MyRentalRequest"  class="nav-link nav-link-tenant" style="display: none;">Yêu cầu thuê</a>
-            <a href="/myContracts"      class="nav-link nav-link-tenant" style="display: none;">Hợp đồng của tôi</a>
-
-            <!-- Chỉ hiện khi ADMIN – JS xử lý -->
-            <a href="/adminVerify" class="nav-link nav-link-admin" id="btnAdminVerify">
-                <!-- ... SVG icon ... -->
-                Kiểm duyệt
+    <header class="navbar">
+        <div class="nav-inner" id="navInner">
+            <a href="/" class="logo">
+                <span class="logo-mark">S</span>
+                <span class="logo-text">Smart<em>Stay</em></span>
             </a>
-        </nav>
 
-        <!-- ── Actions: mặc định hiện Login/Register ── -->
-        <div class="nav-actions">
-            <!-- Luôn hiện, JS ẩn khi đã login -->
-            <a href="/login"    class="btn-ghost"   id="btnLogin">Đăng nhập</a>
-            <a href="/register" class="btn-primary" id="btnRegister">Đăng ký</a>
+            <!-- ── Tất cả link điều hướng từ WebController ── -->
+            <!-- ── Tất cả link điều hướng từ WebController ── -->
+            <nav class="nav-links">
+                <a href="/" class="nav-link active">Khám phá</a>
 
-            <!-- Ẩn mặc định, JS hiện khi đã login -->
-            <span class="nav-user" id="navUser">
-                <span class="nav-user-avatar" id="userAvatar">U</span>
-                <span id="userName">User</span>
-            </span>
-            <button class="btn-logout" id="btnLogout">Đăng xuất</button>
+                <!-- Link chung (Hiện mặc định) -->
+                <a href="/chatMessage" class="nav-link">Tin nhắn</a>
+                <a href="/registerLandLord" class="nav-link" id="linkRegisterLandlord">Trở thành chủ nhà</a>
+
+                <!-- Link dành riêng cho CHỦ NHÀ (Ẩn mặc định) -->
+                <a href="/postRooms" class="nav-link nav-link-landlord" style="display: none;">Đăng phòng</a>
+                <a href="/landlord-view" class="nav-link nav-link-landlord" style="display: none;">Quản lý phòng</a>
+                <a href="/MyRentalRequest" class="nav-link nav-link-landlord" style="display: none;">Yêu cầu thuê</a>
+                <a href="/myContracts" class="nav-link nav-link-landlord" style="display: none;">Hợp đồng của tôi</a>
+
+                <!-- Link dành riêng cho KHÁCH THUÊ (Ẩn mặc định) -->
+                <a href="/payment" class="nav-link nav-link-tenant" style="display: none;">Thanh toán</a>
+                <a href="/myHome" class="nav-link nav-link-tenant" style="display: none;">Phòng tôi đang thuê</a>
+                <a href="/MyRentalRequest" class="nav-link nav-link-tenant" style="display: none;">Yêu cầu thuê</a>
+                <a href="/myContracts" class="nav-link nav-link-tenant" style="display: none;">Hợp đồng của tôi</a>
+
+                <!-- Chỉ hiện khi ADMIN – JS xử lý -->
+                <a href="/adminVerify" class="nav-link nav-link-admin" id="btnAdminVerify">
+                    <!-- ... SVG icon ... -->
+                    Kiểm duyệt
+                </a>
+            </nav>
+
+            <!-- ── Actions: mặc định hiện Login/Register ── -->
+            <div class="nav-actions">
+                <!-- Luôn hiện, JS ẩn khi đã login -->
+                <a href="/login" class="btn-ghost" id="btnLogin">Đăng nhập</a>
+                <a href="/register" class="btn-primary" id="btnRegister">Đăng ký</a>
+
+                <!-- Ẩn mặc định, JS hiện khi đã login -->
+                <span class="nav-user" id="navUser">
+                    <span class="nav-user-avatar" id="userAvatar">U</span>
+                    <span id="userName">User</span>
+                </span>
+                <button class="btn-logout" id="btnLogout">Đăng xuất</button>
+            </div>
+
+            <button class="hamburger" id="hamburger" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
         </div>
+    </header>
 
-        <button class="hamburger" id="hamburger" aria-label="Menu">
-            <span></span><span></span><span></span>
-        </button>
-    </div>
-</header>
-
-<!-- ══════════════════════════════
+    <!-- ══════════════════════════════
      HERO + SEARCH
      ══════════════════════════════ -->
-<section class="hero">
-    <div class="hero-bg"></div>
-    <div class="hero-content">
-        <p class="hero-eyebrow" id="heroCount">Đang tải dữ liệu...</p>
-        <h1 class="hero-title">Tìm phòng trọ<br/><em>ưng ý</em> của bạn</h1>
-        <div class="search-bar">
-            <div class="search-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-                </svg>
+    <section class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-content">
+            <p class="hero-eyebrow" id="heroCount">Đang tải dữ liệu...</p>
+            <h1 class="hero-title">Tìm phòng trọ<br /><em>ưng ý</em> của bạn</h1>
+            <div class="search-bar">
+                <div class="search-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="m21 21-4.35-4.35" />
+                    </svg>
+                </div>
+                <input type="text" id="searchInput" class="search-input" placeholder="Tìm tiêu đề, địa chỉ, khu vực…"
+                    autocomplete="off" />
+                <button class="search-btn" id="searchBtn">Tìm kiếm</button>
             </div>
-            <input type="text" id="searchInput" class="search-input"
-                   placeholder="Tìm tiêu đề, địa chỉ, khu vực…" autocomplete="off" />
-            <button class="search-btn" id="searchBtn">Tìm kiếm</button>
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- ══════════════════════════════
+    <!-- ══════════════════════════════
      MAIN CONTENT
      ══════════════════════════════ -->
-<main class="main-content">
+    <main class="main-content">
 
-    <div class="filter-bar">
-        <div class="filter-row">
-            <div class="filter-group">
-                <label class="filter-label">Loại nhà</label>
-                <div class="select-wrap">
-                    <select id="filterType" class="filter-select">
-                        <option value="">Tất cả loại</option>
-                        <option value="PHONG_TRO">Phòng trọ</option>
-                        <option value="CHUNG_CU_MINI">Chung cư mini</option>
-                        <option value="CHUNG_CU">Chung cư</option>
-                        <option value="STUDIO">Studio</option>
-                        <option value="NHA_NGUYEN_CAN">Nhà nguyên căn</option>
-                    </select>
-                    <svg class="select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        <div class="filter-bar">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label class="filter-label">Loại nhà</label>
+                    <div class="select-wrap">
+                        <select id="filterType" class="filter-select">
+                            <option value="">Tất cả loại</option>
+                            <option value="PHONG_TRO">Phòng trọ</option>
+                            <option value="CHUNG_CU_MINI">Chung cư mini</option>
+                            <option value="CHUNG_CU">Chung cư</option>
+                            <option value="STUDIO">Studio</option>
+                            <option value="NHA_NGUYEN_CAN">Nhà nguyên căn</option>
+                        </select>
+                        <svg class="select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2.5">
+                            <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                    </div>
                 </div>
-            </div>
-            <div class="filter-group">
-                <label class="filter-label">Mức giá</label>
-                <div class="select-wrap">
-                    <select id="filterPrice" class="filter-select">
-                        <option value="">Tất cả giá</option>
-                        <option value="0-2000000">Dưới 2 triệu</option>
-                        <option value="2000000-4000000">2 – 4 triệu</option>
-                        <option value="4000000-7000000">4 – 7 triệu</option>
-                        <option value="7000000-99999999">Trên 7 triệu</option>
-                    </select>
-                    <svg class="select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                <div class="filter-group">
+                    <label class="filter-label">Mức giá</label>
+                    <div class="select-wrap">
+                        <select id="filterPrice" class="filter-select">
+                            <option value="">Tất cả giá</option>
+                            <option value="0-2000000">Dưới 2 triệu</option>
+                            <option value="2000000-4000000">2 – 4 triệu</option>
+                            <option value="4000000-7000000">4 – 7 triệu</option>
+                            <option value="7000000-99999999">Trên 7 triệu</option>
+                        </select>
+                        <svg class="select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2.5">
+                            <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                    </div>
                 </div>
-            </div>
-            <div class="filter-group">
-                <label class="filter-label">Sắp xếp</label>
-                <div class="select-wrap">
-                    <select id="filterSort" class="filter-select">
-                        <option value="newest">Mới nhất</option>
-                        <option value="price_asc">Giá thấp → cao</option>
-                        <option value="price_desc">Giá cao → thấp</option>
-                    </select>
-                    <svg class="select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                <div class="filter-group">
+                    <label class="filter-label">Sắp xếp</label>
+                    <div class="select-wrap">
+                        <select id="filterSort" class="filter-select">
+                            <option value="newest">Mới nhất</option>
+                            <option value="price_asc">Giá thấp → cao</option>
+                            <option value="price_desc">Giá cao → thấp</option>
+                        </select>
+                        <svg class="select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2.5">
+                            <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                    </div>
                 </div>
+                <button class="btn-reset" id="btnReset">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round">
+                        <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+                    </svg>
+                    Xoá lọc
+                </button>
             </div>
-            <button class="btn-reset" id="btnReset">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
-                Xoá lọc
-            </button>
+            <div class="active-tags" id="activeTags"></div>
         </div>
-        <div class="active-tags" id="activeTags"></div>
-    </div>
 
-    <div class="results-header">
-        <div class="results-count" id="resultsCount">Đang tải…</div>
-        <div class="view-toggle">
-            <button class="view-btn active" id="btnGrid" title="Dạng lưới">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
-                    <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
-                </svg>
-            </button>
-            <button class="view-btn" id="btnList" title="Dạng danh sách">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <rect x="3" y="3" width="18" height="5" rx="1"/><rect x="3" y="10" width="18" height="5" rx="1"/>
-                    <rect x="3" y="17" width="18" height="5" rx="1"/>
-                </svg>
-            </button>
+        <div class="results-header">
+            <div class="results-count" id="resultsCount">Đang tải…</div>
+            <div class="view-toggle">
+                <button class="view-btn active" id="btnGrid" title="Dạng lưới">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <rect x="3" y="3" width="7" height="7" rx="1" />
+                        <rect x="14" y="3" width="7" height="7" rx="1" />
+                        <rect x="3" y="14" width="7" height="7" rx="1" />
+                        <rect x="14" y="14" width="7" height="7" rx="1" />
+                    </svg>
+                </button>
+                <button class="view-btn" id="btnList" title="Dạng danh sách">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <rect x="3" y="3" width="18" height="5" rx="1" />
+                        <rect x="3" y="10" width="18" height="5" rx="1" />
+                        <rect x="3" y="17" width="18" height="5" rx="1" />
+                    </svg>
+                </button>
+            </div>
         </div>
-    </div>
 
-    <div id="roomGrid" class="room-grid"></div>
-    <div class="pagination" id="pagination"></div>
+        <div id="roomGrid" class="room-grid"></div>
+        <div class="pagination" id="pagination"></div>
 
-</main>
+    </main>
 
-<!-- ══════════════════════════════
+    <!-- ══════════════════════════════
      FOOTER
      ══════════════════════════════ -->
-<footer class="footer">
-    <div class="footer-inner">
-        <div class="footer-brand">
-            <span class="logo-mark small">S</span>
-            <span class="footer-name">SmartStay</span>
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <span class="logo-mark small">S</span>
+                <span class="footer-name">SmartStay</span>
+            </div>
+            <p class="footer-copy">© 2025 SmartStay · Nền tảng cho thuê phòng thông minh</p>
         </div>
-        <p class="footer-copy">© 2025 SmartStay · Nền tảng cho thuê phòng thông minh</p>
-    </div>
-</footer>
+    </footer>
 
-<script th:src="@{/js/roomsSummary.js}"></script>
-<script>
-    (function () {
-        function parseJwt(token) {
-            try {
-                const base64 = token.split('.')[1]
-                    .replace(/-/g, '+').replace(/_/g, '/');
-                return JSON.parse(atob(base64));
-            } catch { return null; }
-        }
+    <script th:src="@{/js/roomsSummary.js}"></script>
+    <script>
+        (function () {
+            function parseJwt(token) {
+                try {
+                    const base64 = token.split('.')[1]
+                        .replace(/-/g, '+').replace(/_/g, '/');
+                    return JSON.parse(atob(base64));
+                } catch { return null; }
+            }
 
-        const token   = localStorage.getItem('smartstay_token');
-        const payload = token ? parseJwt(token) : null;
-        const isLoggedIn = payload && (payload.exp * 1000 > Date.now());
+            const token = localStorage.getItem('smartstay_token');
+            const payload = token ? parseJwt(token) : null;
+            const isLoggedIn = payload && (payload.exp * 1000 > Date.now());
 
-        if (!isLoggedIn) {
-            return;
-        }
+            if (!isLoggedIn) {
+                return;
+            }
 
-        // ── Ẩn Login / Register ──────────────────────────────
-        document.getElementById('btnLogin').style.display    = 'none';
-        document.getElementById('btnRegister').style.display = 'none';
+            // ── Ẩn Login / Register ──────────────────────────────
+            document.getElementById('btnLogin').style.display = 'none';
+            document.getElementById('btnRegister').style.display = 'none';
 
-        // ── Hiện tên user ────────────────────────────────────
-        const username = payload.sub || payload.username || payload.name || 'User';
-        document.getElementById('userAvatar').textContent = username.charAt(0).toUpperCase();
-        document.getElementById('userName').textContent   = username;
-        document.getElementById('navUser').classList.add('visible');
-        document.getElementById('btnLogout').classList.add('visible');
+            // ── Hiện tên user ────────────────────────────────────
+            const username = payload.sub || payload.username || payload.name || 'User';
+            document.getElementById('userAvatar').textContent = username.charAt(0).toUpperCase();
+            document.getElementById('userName').textContent = username;
+            document.getElementById('navUser').classList.add('visible');
+            document.getElementById('btnLogout').classList.add('visible');
 
-        // ── Lấy roles từ Token ────────────────────────────────
-        const rawRoles = [].concat(
-            payload.roles || payload.authorities || payload.role || []
-        );
-        const roles   = rawRoles.map(r =>
-            (typeof r === 'string' ? r : (r.authority || '')).toUpperCase()
-        );
+            // ── Lấy roles từ Token ────────────────────────────────
+            const rawRoles = [].concat(
+                payload.roles || payload.authorities || payload.role || []
+            );
+            const roles = rawRoles.map(r =>
+                (typeof r === 'string' ? r : (r.authority || '')).toUpperCase()
+            );
 
-        // ── XỬ LÝ PHÂN QUYỀN (ROLE-BASED UI) ───────────────────
-        const isAdmin = roles.some(r => r.includes('ADMIN'));
-        const isLandlord = roles.some(r => r.includes('LANDLORD'));
+            // ── XỬ LÝ PHÂN QUYỀN (ROLE-BASED UI) ───────────────────
+            const isAdmin = roles.some(r => r.includes('ADMIN'));
+            const isLandlord = roles.some(r => r.includes('LANDLORD'));
 
-        // Mặc định, nếu đã đăng nhập mà không phải Admin hay Landlord thì là Tenant (Khách thuê)
-        const isTenant = !isAdmin && !isLandlord;
+            // Mặc định, nếu đã đăng nhập mà không phải Admin hay Landlord thì là Tenant (Khách thuê)
+            const isTenant = !isAdmin && !isLandlord;
 
-        if (isAdmin) {
-            // Hiện nút Admin
-            document.getElementById('btnAdminVerify').classList.add('visible');
-        }
+            if (isAdmin) {
+                // Hiện nút Admin
+                document.getElementById('btnAdminVerify').classList.add('visible');
+            }
 
-        if (isLandlord) {
-            // Hiện các link của Chủ nhà
-            document.querySelectorAll('.nav-link-landlord').forEach(el => {
-                el.style.display = 'inline-flex';
+            if (isLandlord) {
+                // Hiện các link của Chủ nhà
+                document.querySelectorAll('.nav-link-landlord').forEach(el => {
+                    el.style.display = 'inline-flex';
+                });
+                // Ẩn nút "Trở thành chủ nhà" vì họ đã là chủ nhà rồi
+                const regLandlordLink = document.getElementById('linkRegisterLandlord');
+                if (regLandlordLink) regLandlordLink.style.display = 'none';
+            }
+
+            if (isTenant) {
+                // Hiện các link của Khách thuê
+                document.querySelectorAll('.nav-link-tenant').forEach(el => {
+                    el.style.display = 'inline-flex';
+                });
+            }
+
+            // ── Logout ────────────────────────────────────────────
+            document.getElementById('btnLogout').addEventListener('click', function () {
+                localStorage.removeItem('smartstay_token');
+                localStorage.removeItem('smartstay_user');
+                document.cookie = 'smartstay_token=; Max-Age=0; path=/';
+                window.location.href = '/login';
             });
-            // Ẩn nút "Trở thành chủ nhà" vì họ đã là chủ nhà rồi
-            const regLandlordLink = document.getElementById('linkRegisterLandlord');
-            if (regLandlordLink) regLandlordLink.style.display = 'none';
-        }
+        })();
 
-        if (isTenant) {
-            // Hiện các link của Khách thuê
-            document.querySelectorAll('.nav-link-tenant').forEach(el => {
-                el.style.display = 'inline-flex';
-            });
-        }
-
-        // ── Logout ────────────────────────────────────────────
-        document.getElementById('btnLogout').addEventListener('click', function () {
-            localStorage.removeItem('smartstay_token');
-            window.location.href = '/login';
-        });
-    })();
-
-</script>
-<script th:src="@{/js/chat-ai-widget.js}" src="../static/js/chat-ai-widget.js"></script>
+    </script>
+    <script th:src="@{/js/chat-ai-widget.js}" src="../static/js/chat-ai-widget.js"></script>
 
 </body>
+
 </html>

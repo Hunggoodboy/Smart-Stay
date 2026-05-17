@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard | Smart Stay</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Playfair+Display:wght@700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" th:href="@{/css/uno.css}" href="../static/css/uno.css" />
+    <style>
+        :root {
+            --blue-50: #eff6ff;
+            --blue-100: #dbeafe;
+            --blue-200: #bfdbfe;
+            --blue-400: #60a5fa;
+            --blue-500: #3b82f6;
+            --blue-600: #2563eb;
+            --blue-700: #1d4ed8;
+            --blue-800: #1e40af;
+            --blue-900: #1e3a8a;
+            --navy: #0f172a;
+            --ocean: #0ea5e9;
+            --sky-100: #e0f2fe;
+            --white: #ffffff;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --radius-card: 1.25rem;
+            --shadow-card: 0 2px 16px rgba(30, 64, 175, 0.08), 0 1px 4px rgba(30, 64, 175, 0.06);
+            --shadow-hero: 0 20px 60px rgba(14, 165, 233, 0.18), 0 4px 16px rgba(30, 64, 175, 0.14);
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: #f0f6ff;
+            color: var(--gray-800);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Header */
+        .ss-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1.5px solid var(--blue-100);
+            box-shadow: 0 2px 12px rgba(37, 99, 235, 0.07);
+        }
+
+        .ss-header-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .ss-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            text-decoration: none;
+        }
+
+        .ss-brand-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--navy) 0%, var(--blue-700) 100%);
+            display: grid;
+            place-items: center;
+            color: #fff;
+            font-weight: 900;
+            font-size: 1rem;
+            letter-spacing: -0.5px;
+            font-family: 'Playfair Display', serif;
+            box-shadow: 0 2px 8px rgba(29, 78, 216, 0.25);
+        }
+
+        .ss-brand-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ss-brand-name {
+            font-weight: 800;
+            font-size: 1rem;
+            color: var(--navy);
+            line-height: 1.1;
+        }
+
+        .ss-brand-sub {
+            font-size: 0.7rem;
+            color: var(--gray-400);
+            font-weight: 600;
+        }
+
+        .ss-nav {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .ss-nav a {
+            padding: 0.45rem 0.9rem;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--gray-500);
+            text-decoration: none;
+            transition: all 0.18s;
+            white-space: nowrap;
+        }
+
+        .ss-nav a:hover {
+            background: var(--blue-50);
+            color: var(--blue-700);
+        }
+
+        .ss-nav a.active {
+            background: var(--blue-600);
+            color: #fff;
+        }
+
+        .ss-header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* Layout */
+        .ss-body {
+            padding-top: 64px;
+        }
+
+        .ss-main {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 4rem;
+        }
+
+        /* Hero */
+        .ss-hero {
+            background: linear-gradient(130deg, var(--navy) 0%, var(--blue-700) 50%, var(--ocean) 100%);
+            border-radius: 1.5rem;
+            padding: 2.5rem 2.5rem 2.25rem;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-hero);
+            margin-bottom: 2rem;
+        }
+
+        .ss-hero::before {
+            content: '';
+            position: absolute;
+            top: -60px;
+            right: -60px;
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .ss-hero::after {
+            content: '';
+            position: absolute;
+            bottom: -40px;
+            left: 30%;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: rgba(14, 165, 233, 0.15);
+        }
+
+        .ss-hero-inner {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .ss-hero-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .ss-hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 100px;
+            padding: 0.3rem 0.9rem;
+            font-size: 0.68rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(186, 230, 253, 0.95);
+            margin-bottom: 0.75rem;
+        }
+
+        .ss-hero-badge span {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #86efac;
+        }
+
+        .ss-hero h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            line-height: 1.15;
+            margin-bottom: 0.45rem;
+        }
+
+        .ss-hero p {
+            font-size: 0.88rem;
+            color: rgba(186, 230, 253, 0.9);
+            line-height: 1.65;
+            max-width: 520px;
+            margin-bottom: 1.1rem;
+        }
+
+        .ss-hero-btns {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .ss-btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: #fff;
+            color: var(--navy);
+            padding: 0.6rem 1.3rem;
+            border-radius: 100px;
+            font-size: 0.82rem;
+            font-weight: 800;
+            text-decoration: none;
+            transition: transform 0.16s, box-shadow 0.16s;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .ss-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+        }
+
+        .ss-btn-ghost {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            padding: 0.6rem 1.3rem;
+            border-radius: 100px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: background 0.16s;
+        }
+
+        .ss-btn-ghost:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .ss-hero-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.85rem;
+        }
+
+        .ss-stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 1rem;
+            padding: 0.95rem 1.1rem;
+            backdrop-filter: blur(8px);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .ss-stat-card:hover {
+            background: rgba(255, 255, 255, 0.17);
+        }
+
+        .ss-stat-label {
+            font-size: 0.62rem;
+            font-weight: 800;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: rgba(186, 230, 253, 0.75);
+        }
+
+        .ss-stat-value {
+            font-size: 2.2rem;
+            font-weight: 900;
+            line-height: 1.1;
+            margin: 0.2rem 0 0.15rem;
+        }
+
+        .ss-stat-sub {
+            font-size: 0.68rem;
+            color: rgba(186, 230, 253, 0.7);
+        }
+
+        /* Grid */
+        .ss-grid {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        .ss-left {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .ss-right {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Cards */
+        .ss-card {
+            background: var(--white);
+            border: 1.5px solid var(--blue-100);
+            border-radius: var(--radius-card);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-card);
+        }
+
+        .ss-card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .ss-card-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--navy);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .ss-card-sub {
+            font-size: 0.78rem;
+            color: var(--gray-400);
+            margin-top: 0.2rem;
+        }
+
+        .ss-btn-dark {
+            background: var(--navy);
+            color: #fff;
+            border: none;
+            border-radius: 100px;
+            padding: 0.5rem 1.1rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            transition: background 0.15s, transform 0.13s;
+            white-space: nowrap;
+        }
+
+        .ss-btn-dark:hover {
+            background: var(--blue-800);
+            transform: translateY(-1px);
+        }
+
+        .ss-btn-blue {
+            background: var(--blue-600);
+            color: #fff;
+            border: none;
+            border-radius: 100px;
+            padding: 0.5rem 1.1rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            transition: background 0.15s;
+            white-space: nowrap;
+        }
+
+        .ss-btn-blue:hover {
+            background: var(--blue-700);
+        }
+
+        /* Table */
+        .ss-table-wrap {
+            overflow-x: auto;
+            border: 1.5px solid var(--blue-100);
+            border-radius: 1rem;
+        }
+
+        .ss-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+        }
+
+        .ss-table thead {
+            background: linear-gradient(90deg, var(--blue-50) 0%, #f0f9ff 100%);
+        }
+
+        .ss-table th {
+            padding: 0.85rem 1.1rem;
+            text-align: left;
+            font-size: 0.68rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--blue-700);
+            white-space: nowrap;
+        }
+
+        .ss-table td {
+            padding: 0.9rem 1.1rem;
+            border-top: 1px solid var(--gray-100);
+            vertical-align: middle;
+        }
+
+        .ss-table tbody tr:hover {
+            background: var(--blue-50);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            border-radius: 100px;
+            padding: 0.22rem 0.7rem;
+            font-size: 0.68rem;
+            font-weight: 800;
+            border: 1.5px solid transparent;
+        }
+
+        /* Messages */
+        .msg-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.75rem 0.9rem;
+            border-radius: 0.85rem;
+            background: var(--gray-50);
+            border: 1.5px solid var(--gray-100);
+            text-decoration: none;
+            transition: all 0.15s;
+            margin-bottom: 0.6rem;
+        }
+
+        .msg-item:hover {
+            border-color: var(--blue-200);
+            background: var(--blue-50);
+        }
+
+        .msg-avatar {
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            background: var(--blue-100);
+            display: grid;
+            place-items-center;
+            font-weight: 800;
+            font-size: 1rem;
+            color: var(--blue-700);
+        }
+
+        .msg-name {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--navy);
+        }
+
+        .msg-preview {
+            font-size: 0.73rem;
+            color: var(--gray-400);
+            margin-top: 1px;
+        }
+
+        .msg-time {
+            font-size: 0.68rem;
+            color: var(--gray-400);
+            margin-top: 3px;
+            font-weight: 600;
+        }
+
+        .msg-badge {
+            background: #fee2e2;
+            color: #dc2626;
+            border-radius: 100px;
+            padding: 0.1rem 0.45rem;
+            font-size: 0.65rem;
+            font-weight: 800;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        /* Count badge */
+        .count-badge {
+            background: var(--blue-50);
+            color: var(--blue-700);
+            border-radius: 100px;
+            padding: 0.2rem 0.65rem;
+            font-size: 0.72rem;
+            font-weight: 800;
+            border: 1px solid var(--blue-100);
+        }
+
+        /* Divider */
+        .ss-divider {
+            height: 1px;
+            background: linear-gradient(90deg, var(--blue-100) 0%, transparent 100%);
+            margin: 1rem 0;
+        }
+
+        /* Tabs */
+        .ss-tabs {
+            display: flex;
+            gap: 0.4rem;
+            margin-bottom: 1.1rem;
+        }
+
+        .ss-tab {
+            padding: 0.4rem 1rem;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1.5px solid transparent;
+            transition: all 0.15s;
+            color: var(--gray-500);
+            background: var(--gray-100);
+        }
+
+        .ss-tab.active {
+            background: var(--blue-600);
+            color: #fff;
+            border-color: var(--blue-600);
+        }
+
+        /* Admin adjustments */
+        .admin-stats {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .admin-mini-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.9rem;
+        }
+
+        .admin-mini-card {
+            border: 1.5px solid var(--blue-100);
+            border-radius: 1rem;
+            padding: 1rem;
+            background: #fff;
+            box-shadow: 0 2px 12px rgba(37, 99, 235, 0.06);
+        }
+
+        .admin-mini-title {
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: var(--navy);
+        }
+
+        .admin-mini-desc {
+            font-size: 0.72rem;
+            color: var(--gray-400);
+            margin-top: 0.35rem;
+            line-height: 1.4;
+        }
+
+        .admin-mini-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.75rem;
+        }
+
+        .admin-mini-tag {
+            background: var(--blue-50);
+            color: var(--blue-700);
+            border: 1px solid var(--blue-100);
+            border-radius: 100px;
+            padding: 0.18rem 0.6rem;
+            font-size: 0.68rem;
+            font-weight: 800;
+        }
+
+        .admin-table-title {
+            font-weight: 700;
+            color: var(--navy);
+        }
+
+        .admin-table-sub {
+            font-size: 0.72rem;
+            color: var(--gray-400);
+            margin-top: 2px;
+        }
+
+        .avatar-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: var(--blue-100);
+        }
+
+        .badge-pending {
+            background: #fffbeb;
+            color: #b45309;
+            border-color: #fde68a;
+        }
+
+        .badge-success {
+            background: #f0fdf4;
+            color: #16a34a;
+            border-color: #bbf7d0;
+        }
+
+        .btn-approve {
+            background: var(--blue-600);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.14s;
+        }
+
+        .btn-approve:hover {
+            background: var(--blue-700);
+        }
+
+        /* Responsive */
+        @media (max-width: 1100px) {
+            .ss-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .ss-right {
+                order: -1;
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+
+            .ss-right>* {
+                flex: 1;
+                min-width: 280px;
+            }
+
+            .admin-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .admin-mini-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .ss-hero h1 {
+                font-size: 1.6rem;
+            }
+
+            .ss-nav {
+                display: none;
+            }
+
+            .admin-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-mini-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .ss-hero-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .ss-main {
+                padding: 1.25rem 1rem 3rem;
+            }
+        }
+
+        /* Entrance animation */
+        .fade-in {
+            animation: fadeIn 0.4s ease both;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .delay-1 {
+            animation-delay: 0.08s;
+        }
+
+        .delay-2 {
+            animation-delay: 0.16s;
+        }
+
+        .delay-3 {
+            animation-delay: 0.24s;
+        }
+
+        .delay-4 {
+            animation-delay: 0.32s;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="ss-header">
+        <div class="ss-header-inner">
+            <a class="ss-brand" href="/">
+                <div class="ss-brand-icon">S</div>
+                <div class="ss-brand-text">
+                    <span class="ss-brand-name">Smart Stay</span>
+                    <span class="ss-brand-sub">Bảng điều khiển Admin</span>
+                </div>
+            </a>
+
+            <nav class="ss-nav">
+                <a class="active" href="/adminDashboard">Tổng quan</a>
+                <a href="/adminUsers">Quản lý người dùng</a>
+                <a href="/adminDashboard#admin-recalled">Tin nhắn thu hồi</a>
+                <a href="/adminPosts">Quản lý phòng / bài đăng</a>
+            </nav>
+
+            <div class="ss-header-right">
+                <span class="count-badge">Admin</span>
+                <button type="button" class="ss-btn-dark" onclick="handleAdminLogout()">Đăng xuất</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="ss-body">
+        <main class="ss-main">
+            <section class="ss-hero fade-in" id="admin-overview">
+                <div class="ss-hero-inner">
+                    <div class="ss-hero-top">
+                        <div>
+                            <div class="ss-hero-badge"><span></span>Admin Workspace</div>
+                            <h1>Tổng quan quản trị hệ thống</h1>
+                            <p>Theo dõi người dùng, bài đăng và tin nhắn bị thu hồi trên một màn hình.</p>
+                            <div class="ss-hero-btns">
+                                <a href="/adminUsers" class="ss-btn-primary">Quản lý người dùng</a>
+                                <a href="/adminPosts" class="ss-btn-ghost">Quản lý bài đăng</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ss-hero-stats admin-stats">
+                        <div class="ss-stat-card">
+                            <div class="ss-stat-label">Tổng tài khoản</div>
+                            <div class="ss-stat-value" id="admin-stat-users">—</div>
+                            <div class="ss-stat-sub">Bao gồm chủ nhà & khách thuê</div>
+                        </div>
+                        <div class="ss-stat-card">
+                            <div class="ss-stat-label">Chờ phê duyệt</div>
+                            <div class="ss-stat-value" id="admin-stat-pending">—</div>
+                            <div class="ss-stat-sub">Yêu cầu xác thực chủ nhà</div>
+                        </div>
+                        <div class="ss-stat-card">
+                            <div class="ss-stat-label">Tin nhắn thu hồi</div>
+                            <div class="ss-stat-value" id="admin-stat-recalled">—</div>
+                            <div class="ss-stat-sub">Trong 7 ngày gần nhất</div>
+                        </div>
+                        <div class="ss-stat-card">
+                            <div class="ss-stat-label">Bài đăng cần xử lý</div>
+                            <div class="ss-stat-value" id="admin-stat-flagged">—</div>
+                            <div class="ss-stat-sub">Vi phạm hoặc cần gắn nhãn</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="ss-grid">
+                <div class="ss-left">
+                    <section class="ss-card fade-in delay-1" id="admin-shortcuts">
+                        <div class="ss-card-header">
+                            <div>
+                                <div class="ss-card-title">Điều hướng quản trị</div>
+                                <div class="ss-card-sub">Truy cập nhanh các khu vực quản lý chuyên sâu.</div>
+                            </div>
+                            <span class="count-badge">Admin</span>
+                        </div>
+
+                        <div class="admin-mini-grid">
+                            <div class="admin-mini-card">
+                                <div class="admin-mini-title">Quản lý người dùng</div>
+                                <div class="admin-mini-desc">Danh sách tài khoản, khóa/mở khóa và phân quyền.</div>
+                                <div class="admin-mini-actions">
+                                    <a href="/adminUsers" class="ss-btn-blue">Mở trang</a>
+                                </div>
+                            </div>
+                            <div class="admin-mini-card">
+                                <div class="admin-mini-title">Quản lý phòng / bài đăng</div>
+                                <div class="admin-mini-desc">Xử lý bài đăng vi phạm, gắn nhãn và cập nhật trạng thái.
+                                </div>
+                                <div class="admin-mini-actions">
+                                    <a href="/adminPosts" class="ss-btn-blue">Mở trang</a>
+                                </div>
+                            </div>
+                            <div class="admin-mini-card">
+                                <div class="admin-mini-title">Duyệt chủ nhà</div>
+                                <div class="admin-mini-desc">Phê duyệt hoặc xem lại các hồ sơ đã xác thực.</div>
+                                <div class="admin-mini-actions">
+                                    <a href="/adminUsers#admin-verification" class="ss-btn-dark">Xem hồ sơ</a>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="ss-right">
+                    <section class="ss-card fade-in delay-3" id="admin-recalled">
+                        <div class="ss-card-header">
+                            <div>
+                                <div class="ss-card-title">Tin nhắn đã được thu hồi</div>
+                                <div class="ss-card-sub">Theo dõi các tin nhắn bị thu hồi để kiểm duyệt nội dung nhạy
+                                    cảm.</div>
+                            </div>
+                        </div>
+                        <div id="admin-recalled-list">
+                            <div class="msg-item">
+                                <div class="msg-avatar">…</div>
+                                <div>
+                                    <div class="msg-name">Đang tải dữ liệu...</div>
+                                    <div class="msg-preview">Vui lòng chờ trong giây lát.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script th:src="@{/js/adminDashboard.js}" src="../static/js/adminDashboard.js"></script>
+</body>
+
+</html>
