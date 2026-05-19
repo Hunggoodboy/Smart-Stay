@@ -46,6 +46,8 @@ public class LandLordService {
         return convertToListResponse(landLords);
     }
     public ApiResponse verifyLandLord(Long userId) {
+        User currentUser = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
+        userRepository.updateUserType("LANDLORD", currentUser.getId());
         LandLord landLord = landLordRepository.findById(userId).orElse(null);
         landLord.setVerified(true);
         landLordRepository.save(landLord);

@@ -52,4 +52,9 @@ public class LandLord extends User {
 
     @OneToMany(mappedBy = "landlord", cascade = CascadeType.ALL)
     private List<RoomPosts>  roomPosts;
+
+    @OneToMany(mappedBy = "landlord", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<Appointments> appointments;
 }

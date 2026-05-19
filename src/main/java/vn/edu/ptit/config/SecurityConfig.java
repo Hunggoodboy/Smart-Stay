@@ -42,7 +42,7 @@ public class SecurityConfig {
                         "/api/notifications/**", "/api/utility-bills/**",
                         "/api/chat/**", "/api/customer/**", "/api/landlord/requestToLandLord", "/api/contract/**",
                         "/get-my-contracts", "/api/vector/**", "/api/post-list-room", "/api/chat-ai/**",
-                        "/api/delete/request"
+                        "/api/delete/request", "/api/appointments"
         };
 
         @Bean

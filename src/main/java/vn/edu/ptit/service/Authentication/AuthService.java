@@ -102,7 +102,7 @@ public class AuthService {
 
     public ApiResponse upgradeCustomer(UpgradeCustomerRequest request) {
         Long currentId = getCurrentUserId();
-        userRepository.updateUserType(currentId);
+        userRepository.updateUserType("TENANT", currentId);
         userRepository.insertIntoCustomer(currentId, request.getAddress(), request.getIdCardNumber());
         return ApiResponse.builder()
                 .success(true)

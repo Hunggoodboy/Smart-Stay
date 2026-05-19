@@ -157,4 +157,9 @@ public class RoomPosts implements Serializable {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private List<RentalRequests> rentalRequests = new ArrayList<>();
+
+    @OneToMany(mappedBy = "roomPost", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<Appointments> appointments = new ArrayList<>();
 }

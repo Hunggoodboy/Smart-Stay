@@ -90,4 +90,9 @@ public class RentalRequests implements Serializable {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private Contracts contract;
+
+    @OneToOne(mappedBy = "rentalRequest", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Appointments appointment;
 }

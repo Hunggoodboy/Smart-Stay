@@ -281,6 +281,16 @@ function renderLandlordActions(req) {
                         </svg>
                         Tiến hành làm hợp đồng
                     </button>
+                    <button onclick="openAppointmentForm(${req.id})"
+                            class="w-full btn-modern text-base" style="background:#e0e7ff; color:#4338ca; border:1px solid #c7d2fe;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        Tạo lịch hẹn xem nhà
+                    </button>
                 </div>
             `;
         }
@@ -457,3 +467,83 @@ function openRoomManageForm(requestId, customerId, roomPostId) {
 
 // Khởi chạy khi load trang
 document.addEventListener('DOMContentLoaded', loadRequests);
+
+// ==========================================
+// TẠO LỊCH HẸN XEM NHÀ
+// ==========================================
+function openAppointmentForm(requestId) {
+    actions.innerHTML = `
+        <div class="w-full flex flex-col gap-3 text-left">
+            <h4 class="font-bold text-slate-800 text-sm">Tạo lịch hẹn xem nhà</h4>
+            <div>
+                <label class="text-xs font-bold text-slate-500 uppercase">Thời gian</label>
+                <input type="datetime-local" id="appt-time" class="w-full p-2 border rounded-lg mt-1 text-sm">
+            </div>
+            <div>
+                <label class="text-xs font-bold text-slate-500 uppercase">Địa điểm</label>
+                <input type="text" id="appt-location" placeholder="Nhập địa chỉ xem nhà..." class="w-full p-2 border rounded-lg mt-1 text-sm">
+            </div>
+            <div>
+                <label class="text-xs font-bold text-slate-500 uppercase">Ghi chú (tùy chọn)</label>
+                <input type="text" id="appt-note" placeholder="Ghi chú thêm..." class="w-full p-2 border rounded-lg mt-1 text-sm">
+            </div>
+            <div class="flex gap-2 mt-2">
+                <button onclick="submitAppointment(${requestId})" class="flex-1 btn-modern btn-accept text-sm py-2">Tạo lịch</button>
+                <button onclick="closeDetail()" class="flex-1 btn-modern btn-reject text-sm py-2">Hủy</button>
+            </div>
+        </div>
+    `;
+    
+    // Set default time to tomorrow 09:00
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(9, 0, 0, 0);
+    const tzoffset = (new Date()).getTimezoneOffset() * 60000; // offset in milliseconds
+    const localISOTime = (new Date(tomorrow - tzoffset)).toISOString().slice(0,16);
+    document.getElementById('appt-time').value = localISOTime;
+}
+
+async function submitAppointment(requestId) {
+    const time = document.getElementById('appt-time').value;
+    const location = document.getElementById('appt-location').value;
+    const note = document.getElementById('appt-note').value;
+
+    if (!time || !location) {
+        alert("Vui lòng nhập đầy đủ thời gian và địa điểm!");
+        return;
+    }
+
+    const payload = {
+        rentalRequestId: requestId,
+        appointmentTime: time + ":00",
+        location: location,
+        note: note
+    };
+
+    const token = getToken();
+    const btnContainer = actions.innerHTML;
+    actions.innerHTML = '<div class="text-center py-4 text-slate-500">Đang tạo lịch hẹn...</div>';
+
+    try {
+        const response = await fetch('/api/appointments', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        if (response.ok) {
+            alert("Tạo lịch hẹn xem nhà thành công!");
+            closeDetail();
+            loadRequests();
+        } else {
+            alert(data.message || 'Có lỗi xảy ra, vui lòng thử lại.');
+            actions.innerHTML = btnContainer;
+        }
+    } catch (err) {
+        alert('Lỗi kết nối đến máy chủ: ' + err.message);
+        actions.innerHTML = btnContainer;
+    }
+}

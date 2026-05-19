@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý lịch hẹn - Smart Stay</title>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/uno.css}">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --slate-800: #1e293b;
+            --slate-500: #64748b;
+        }
+
+        body {
+            background: #f8fafc;
+            min-height: 100vh;
+            font-family: 'Be Vietnam Pro', sans-serif;
+            color: var(--slate-800);
+            margin: 0;
+        }
+
+        .page-header {
+            padding: 30px 0;
+            margin-bottom: 20px;
+        }
+
+        .page-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .appointment-card {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .appointment-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-color: #bfdbfe;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .status-PENDING { background: #fef3c7; color: #d97706; }
+        .status-CONFIRMED_BY_TENANT { background: #e0e7ff; color: #4338ca; }
+        .status-CONFIRMED_BY_LANDLORD { background: #e0e7ff; color: #4338ca; }
+        .status-CONFIRMED_BY_BOTH { background: #dcfce7; color: #16a34a; }
+        .status-COMPLETED { background: #f1f5f9; color: #475569; }
+        .status-CANCELLED { background: #fee2e2; color: #dc2626; }
+
+        .avatar-img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Modal chi tiết */
+        #detail-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        #detail-overlay.show {
+            opacity: 1;
+        }
+
+        #detail-card {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 32px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: translateY(20px) scale(0.95);
+            transition: all 0.3s;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        #detail-overlay.show #detail-card {
+            transform: translateY(0) scale(1);
+        }
+        
+        .btn-modern {
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            border: none;
+            width: 100%;
+        }
+        .btn-accept { background: #10b981; color: white; }
+        .btn-accept:hover { background: #059669; }
+        .btn-reject { background: #fee2e2; color: #dc2626; }
+        .btn-reject:hover { background: #fca5a5; }
+        .btn-complete { background: #3b82f6; color: white; }
+        .btn-complete:hover { background: #2563eb; }
+
+    </style>
+</head>
+<body class="p-6 md:p-10">
+<div class="max-w-6xl mx-auto">
+    <header class="page-header flex flex-col md:flex-row justify-between items-start md:items-center">
+        <div>
+            <h1 class="page-title">Quản lý lịch hẹn</h1>
+            <p class="text-slate-500 font-medium">Danh sách các lịch hẹn xem nhà của bạn.</p>
+        </div>
+        <a href="/" class="mt-4 md:mt-0 px-5 py-2.5 bg-white rounded-full text-indigo-600 font-bold shadow-sm hover:shadow-md transition border border-indigo-100 no-underline">
+            ← Về trang chủ
+        </a>
+    </header>
+
+    <div id="appointment-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="col-span-full py-20 flex flex-col items-center justify-center">
+            <div class="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+            <p class="text-slate-500 font-medium">Đang tải danh sách lịch hẹn...</p>
+        </div>
+    </div>
+</div>
+
+<div id="detail-overlay" onclick="closeDetail(event)">
+    <div id="detail-card" onclick="event.stopPropagation()">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-slate-900 font-['Space_Grotesk']">Chi tiết lịch hẹn</h2>
+            <button onclick="closeDetail()" class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-200 transition">✕</button>
+        </div>
+        <div id="detail-content" class="space-y-4">
+            <!-- Render via JS -->
+            <div class="text-center py-10"><div class="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto"></div></div>
+        </div>
+        <div class="mt-6 flex flex-col gap-3" id="action-buttons">
+            <!-- Render via JS -->
+        </div>
+    </div>
+</div>
+
+<script src="/js/appointments.js"></script>
+</body>
+</html>

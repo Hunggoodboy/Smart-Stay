@@ -115,4 +115,9 @@ public class WebController {
     public String revenueManagement() {
         return "revenue_management";
     }
+
+    @GetMapping("/my-appointments")
+    public String myAppointments() {
+        return "appointments";
+    }
 }
