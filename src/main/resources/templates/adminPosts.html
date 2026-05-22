@@ -327,17 +327,54 @@
             box-shadow: 0 2px 12px rgba(37, 99, 235, 0.06);
         }
 
+        .admin-mini-card.action-card {
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+        }
+
+        .admin-mini-card.action-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--blue-200);
+            box-shadow: 0 10px 28px rgba(37, 99, 235, 0.12);
+        }
+
+        .admin-mini-top {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .admin-mini-icon {
+            width: 40px;
+            height: 40px;
+            flex: 0 0 40px;
+            border-radius: 0.85rem;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg, var(--blue-50), #e0f2fe);
+            color: var(--blue-700);
+            border: 1px solid var(--blue-100);
+        }
+
+        .admin-mini-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
         .admin-mini-title {
-            font-size: 0.82rem;
+            font-size: 0.9rem;
             font-weight: 800;
             color: var(--navy);
         }
 
         .admin-mini-desc {
-            font-size: 0.72rem;
+            font-size: 0.76rem;
             color: var(--gray-400);
             margin-top: 0.35rem;
-            line-height: 1.4;
+            line-height: 1.55;
         }
 
         .admin-mini-actions {
@@ -345,6 +382,36 @@
             flex-wrap: wrap;
             gap: 0.4rem;
             margin-top: 0.75rem;
+        }
+
+        .admin-mini-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.85rem;
+        }
+
+        .admin-shortcut-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: fit-content;
+            margin-top: 1rem;
+            padding: 0.52rem 0.9rem;
+            border-radius: 999px;
+            background: var(--blue-600);
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.74rem;
+            font-weight: 900;
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
+        }
+
+        .admin-shortcut-link.secondary {
+            background: var(--blue-50);
+            color: var(--blue-700);
+            border: 1px solid var(--blue-100);
+            box-shadow: none;
         }
 
         .admin-mini-tag {
@@ -367,6 +434,280 @@
             border: 1px solid var(--blue-100);
         }
 
+        .admin-toolbar {
+            display: grid;
+            grid-template-columns: 1fr 180px auto;
+            gap: 0.75rem;
+            align-items: end;
+            margin-bottom: 1rem;
+        }
+
+        .admin-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .admin-field label {
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: var(--gray-500);
+            text-transform: uppercase;
+        }
+
+        .admin-input,
+        .admin-select,
+        .admin-textarea {
+            width: 100%;
+            border: 1.5px solid var(--blue-100);
+            border-radius: 0.75rem;
+            padding: 0.62rem 0.75rem;
+            font: inherit;
+            color: var(--gray-800);
+            background: #fff;
+            outline: none;
+        }
+
+        .admin-textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        .admin-table-wrap {
+            overflow-x: auto;
+            border: 1.5px solid var(--blue-100);
+            border-radius: 1rem;
+            background: #fff;
+            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.06);
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1040px;
+        }
+
+        .admin-table th,
+        .admin-table td {
+            padding: 0.85rem;
+            border-bottom: 1px solid var(--gray-100);
+            text-align: left;
+            vertical-align: middle;
+            font-size: 0.78rem;
+        }
+
+        .admin-table th {
+            color: var(--gray-500);
+            background: linear-gradient(180deg, #f8fbff 0%, var(--gray-50) 100%);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .admin-table tbody tr {
+            transition: background 0.16s ease;
+        }
+
+        .admin-table tbody tr:hover {
+            background: #f8fbff;
+        }
+
+        .admin-table tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .admin-row-title {
+            font-weight: 800;
+            color: var(--navy);
+            max-width: 340px;
+            line-height: 1.3;
+        }
+
+        .admin-row-sub {
+            color: var(--gray-500);
+            font-size: 0.72rem;
+            margin-top: 0.2rem;
+            line-height: 1.45;
+        }
+
+        .post-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            min-width: 360px;
+        }
+
+        .post-thumb {
+            width: 88px;
+            height: 64px;
+            flex: 0 0 88px;
+            border-radius: 0.85rem;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--blue-50), var(--gray-100));
+            border: 1px solid var(--blue-100);
+        }
+
+        .post-thumb img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: cover;
+        }
+
+        .post-thumb-placeholder {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            place-items: center;
+            color: var(--blue-400);
+            font-size: 0.68rem;
+            font-weight: 900;
+        }
+
+        .post-info {
+            min-width: 0;
+        }
+
+        .price-value {
+            font-size: 0.86rem;
+            font-weight: 900;
+            color: var(--navy);
+        }
+
+        .type-pill {
+            display: inline-flex;
+            width: fit-content;
+            margin-top: 0.35rem;
+            border-radius: 999px;
+            padding: 0.18rem 0.55rem;
+            background: var(--gray-100);
+            color: var(--gray-700);
+            font-size: 0.66rem;
+            font-weight: 900;
+        }
+
+        .admin-actions {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+
+        .admin-btn {
+            border: 0;
+            border-radius: 999px;
+            padding: 0.45rem 0.75rem;
+            font-size: 0.72rem;
+            font-weight: 800;
+            cursor: pointer;
+            background: var(--blue-600);
+            color: #fff;
+            transition: transform 0.14s ease, box-shadow 0.14s ease, background 0.14s ease;
+            box-shadow: 0 6px 14px rgba(37, 99, 235, 0.16);
+        }
+
+        .admin-btn:hover {
+            transform: translateY(-1px);
+            background: var(--blue-700);
+        }
+
+        .admin-btn.secondary {
+            background: var(--blue-50);
+            color: var(--blue-700);
+            border: 1px solid var(--blue-100);
+            box-shadow: none;
+        }
+
+        .admin-btn.secondary:hover {
+            background: var(--blue-100);
+        }
+
+        .admin-btn.danger {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
+        .admin-btn:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            border-radius: 999px;
+            padding: 0.2rem 0.55rem;
+            background: var(--blue-50);
+            color: var(--blue-700);
+            border: 1px solid var(--blue-100);
+            font-size: 0.68rem;
+            font-weight: 900;
+        }
+
+        .featured-pill {
+            background: #fef3c7;
+            color: #92400e;
+            border-color: #fde68a;
+        }
+
+        .admin-state {
+            padding: 1rem;
+            color: var(--gray-500);
+            font-size: 0.82rem;
+        }
+
+        .admin-section-hidden {
+            display: none;
+        }
+
+        .admin-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.46);
+        }
+
+        .admin-modal.open {
+            display: flex;
+        }
+
+        .admin-modal-panel {
+            width: min(760px, 100%);
+            max-height: 90vh;
+            overflow: auto;
+            background: #fff;
+            border-radius: 1rem;
+            box-shadow: 0 20px 60px rgba(15, 23, 42, 0.24);
+            padding: 1.25rem;
+        }
+
+        .admin-modal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .admin-modal-title {
+            font-size: 1rem;
+            font-weight: 900;
+            color: var(--navy);
+        }
+
+        .admin-form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .admin-form-grid .wide {
+            grid-column: 1 / -1;
+        }
+
         @media (max-width: 1100px) {
             .admin-mini-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -383,6 +724,11 @@
             }
 
             .admin-mini-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-toolbar,
+            .admin-form-grid {
                 grid-template-columns: 1fr;
             }
         }
@@ -409,7 +755,6 @@
             <nav class="ss-nav">
                 <a href="/adminDashboard">Tổng quan</a>
                 <a href="/adminUsers">Quản lý người dùng</a>
-                <a href="/adminDashboard#admin-recalled">Tin nhắn thu hồi</a>
                 <a class="active" href="/adminPosts">Quản lý phòng / bài đăng</a>
             </nav>
 
@@ -430,7 +775,7 @@
                         <p>Chỉnh sửa bài đăng vi phạm, gắn nhãn ưu tiên và cập nhật trạng thái phòng.</p>
                         <div class="ss-hero-btns">
                             <a href="#admin-post-actions" class="ss-btn-primary">Danh sách bài đăng</a>
-                            <a href="/adminDashboard#admin-recalled" class="ss-btn-ghost">Tin nhắn thu hồi</a>
+                            <a href="#admin-room-list" class="ss-btn-ghost" data-admin-view="rooms">Danh sách phòng</a>
                         </div>
                     </div>
                 </div>
@@ -446,36 +791,265 @@
                 </div>
 
                 <div class="admin-mini-grid">
-                    <div class="admin-mini-card">
-                        <div class="admin-mini-title">Chỉnh sửa / gỡ bài vi phạm</div>
-                        <div class="admin-mini-desc">Ẩn hoặc chỉnh sửa nội dung không phù hợp.</div>
-                        <div class="admin-mini-actions">
-                            <a href="#" class="ss-btn-blue">Xem danh sách</a>
+                    <div class="admin-mini-card action-card">
+                        <div>
+                            <div class="admin-mini-top">
+                                <div class="admin-mini-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 20h9" />
+                                        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="admin-mini-title">Kiểm duyệt bài đăng</div>
+                                    <div class="admin-mini-desc">Xem danh sách, chỉnh sửa nội dung sai hoặc ẩn bài đăng không phù hợp.</div>
+                                </div>
+                            </div>
+                            <div class="admin-mini-meta">
+                                <span class="admin-mini-tag">Sửa nội dung</span>
+                                <span class="admin-mini-tag">Ẩn bài</span>
+                            </div>
                         </div>
+                        <a href="#admin-post-list" class="admin-shortcut-link" data-admin-view="review">Mở danh sách bài đăng</a>
                     </div>
-                    <div class="admin-mini-card">
-                        <div class="admin-mini-title">Gắn nhãn nổi bật</div>
-                        <div class="admin-mini-desc">Ưu tiên hiển thị các bài đăng chất lượng.</div>
-                        <div class="admin-mini-actions">
-                            <span class="admin-mini-tag">Ưu tiên</span>
-                            <span class="admin-mini-tag">Tin mới</span>
+
+                    <div class="admin-mini-card action-card">
+                        <div>
+                            <div class="admin-mini-top">
+                                <div class="admin-mini-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 2l2.9 6.26L22 9.27l-5 4.87 1.18 6.86L12 17.77 5.82 21 7 14.14 2 9.27l7.1-1.01Z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="admin-mini-title">Gắn nhãn nổi bật</div>
+                                    <div class="admin-mini-desc">Đẩy bài chất lượng lên trước theo độ ưu tiên và thời hạn nổi bật.</div>
+                                </div>
+                            </div>
+                            <div class="admin-mini-meta">
+                                <span class="admin-mini-tag">Priority</span>
+                                <span class="admin-mini-tag">Hết hạn</span>
+                            </div>
                         </div>
+                        <a href="#admin-post-list" class="admin-shortcut-link" data-admin-view="featured">Quản lý nổi bật</a>
                     </div>
-                    <div class="admin-mini-card">
-                        <div class="admin-mini-title">Trạng thái phòng</div>
-                        <div class="admin-mini-desc">Theo dõi phòng còn trống, đã thuê hoặc tạm ẩn.</div>
-                        <div class="admin-mini-actions">
-                            <span class="admin-mini-tag">Còn trống</span>
-                            <span class="admin-mini-tag">Đã thuê</span>
-                            <span class="admin-mini-tag">Tạm ẩn</span>
+
+                    <div class="admin-mini-card action-card">
+                        <div>
+                            <div class="admin-mini-top">
+                                <div class="admin-mini-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M3 9.5 12 3l9 6.5" />
+                                        <path d="M5 8.5V21h14V8.5" />
+                                        <path d="M9 21v-6h6v6" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="admin-mini-title">Quản lý trạng thái phòng</div>
+                                    <div class="admin-mini-desc">Theo dõi phòng còn trống, đã thuê hoặc đang bảo trì trong hệ thống.</div>
+                                </div>
+                            </div>
+                            <div class="admin-mini-meta">
+                                <span class="admin-mini-tag">AVAILABLE</span>
+                                <span class="admin-mini-tag">RENTED</span>
+                                <span class="admin-mini-tag">MAINTENANCE</span>
+                            </div>
                         </div>
+                        <a href="#admin-room-list" class="admin-shortcut-link secondary" data-admin-view="rooms">Mở danh sách phòng</a>
                     </div>
+                </div>
+            </section>
+
+            <section class="ss-card" id="admin-post-list">
+                <div class="ss-card-header">
+                    <div>
+                        <div class="ss-card-title" id="post-list-title">Danh sach bai dang</div>
+                        <div class="ss-card-sub" id="post-list-subtitle">Loc va quan ly bai dang theo nghiep vu da chon.</div>
+                    </div>
+                    <span class="count-badge" id="post-count-badge">0 bai</span>
+                </div>
+
+                <div class="admin-toolbar">
+                    <div class="admin-field">
+                        <label for="post-keyword">Tu khoa</label>
+                        <input id="post-keyword" class="admin-input" type="search" placeholder="Tim theo tieu de, dia chi, thanh pho" />
+                    </div>
+                    <div class="admin-field">
+                        <label for="post-status">Trang thai</label>
+                        <select id="post-status" class="admin-select">
+                            <option value="">Tat ca</option>
+                            <option value="DRAFT">DRAFT</option>
+                            <option value="ACTIVE">ACTIVE</option>
+                            <option value="INACTIVE">INACTIVE</option>
+                            <option value="RENTED">RENTED</option>
+                            <option value="DELETED">DELETED</option>
+                        </select>
+                    </div>
+                    <button id="post-search-btn" class="admin-btn" type="button">Tai danh sach</button>
+                </div>
+
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr id="post-table-head-row">
+                                <th>Bai dang</th>
+                                <th>Gia / Loai</th>
+                                <th>Chu nha</th>
+                                <th>Trang thai</th>
+                                <th>Noi bat</th>
+                                <th>Thao tac</th>
+                            </tr>
+                        </thead>
+                        <tbody id="post-table-body">
+                            <tr><td colspan="6" class="admin-state">Dang tai...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="ss-card" id="admin-room-list">
+                <div class="ss-card-header">
+                    <div>
+                        <div class="ss-card-title">Danh sach phong quan ly</div>
+                        <div class="ss-card-sub">Theo doi va cap nhat trang thai phong that trong he thong.</div>
+                    </div>
+                    <span class="count-badge" id="room-count-badge">0 phong</span>
+                </div>
+
+                <div class="admin-toolbar">
+                    <div class="admin-field">
+                        <label for="room-keyword">Tu khoa</label>
+                        <input id="room-keyword" class="admin-input" type="search" placeholder="Tim theo so phong, dia chi, thanh pho" />
+                    </div>
+                    <div class="admin-field">
+                        <label for="room-status">Trang thai</label>
+                        <select id="room-status" class="admin-select">
+                            <option value="">Tat ca</option>
+                            <option value="AVAILABLE">AVAILABLE</option>
+                            <option value="RENTED">RENTED</option>
+                            <option value="MAINTENANCE">MAINTENANCE</option>
+                        </select>
+                    </div>
+                    <button id="room-search-btn" class="admin-btn" type="button">Tai danh sach</button>
+                </div>
+
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Phong</th>
+                                <th>Gia / Loai</th>
+                                <th>Chu nha</th>
+                                <th>Khach thue</th>
+                                <th>Trang thai</th>
+                                <th>Thao tac</th>
+                            </tr>
+                        </thead>
+                        <tbody id="room-table-body">
+                            <tr><td colspan="6" class="admin-state">Dang tai...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </section>
         </main>
     </div>
 
+    <div class="admin-modal" id="edit-post-modal">
+        <div class="admin-modal-panel">
+            <div class="admin-modal-head">
+                <div class="admin-modal-title">Chinh sua bai dang</div>
+                <button class="admin-btn secondary" type="button" data-close-modal="edit-post-modal">Dong</button>
+            </div>
+            <form id="edit-post-form" class="admin-form-grid">
+                <input type="hidden" id="edit-post-id" />
+                <div class="admin-field wide">
+                    <label for="edit-title">Tieu de</label>
+                    <input id="edit-title" class="admin-input" type="text" />
+                </div>
+                <div class="admin-field wide">
+                    <label for="edit-description">Mo ta</label>
+                    <textarea id="edit-description" class="admin-textarea"></textarea>
+                </div>
+                <div class="admin-field">
+                    <label for="edit-monthly-rent">Gia thue</label>
+                    <input id="edit-monthly-rent" class="admin-input" type="number" min="0" step="1000" />
+                </div>
+                <div class="admin-field">
+                    <label for="edit-deposit-amount">Tien coc</label>
+                    <input id="edit-deposit-amount" class="admin-input" type="number" min="0" step="1000" />
+                </div>
+                <div class="admin-field">
+                    <label for="edit-area-m2">Dien tich</label>
+                    <input id="edit-area-m2" class="admin-input" type="number" min="0" step="0.1" />
+                </div>
+                <div class="admin-field">
+                    <label for="edit-max-occupants">So nguoi toi da</label>
+                    <input id="edit-max-occupants" class="admin-input" type="number" min="1" step="1" />
+                </div>
+                <div class="admin-field">
+                    <label for="edit-room-type">Loai phong</label>
+                    <input id="edit-room-type" class="admin-input" type="text" />
+                </div>
+                <div class="admin-field">
+                    <label for="edit-city">Thanh pho</label>
+                    <input id="edit-city" class="admin-input" type="text" />
+                </div>
+                <div class="admin-field wide">
+                    <label for="edit-address">Dia chi</label>
+                    <input id="edit-address" class="admin-input" type="text" />
+                </div>
+                <div class="admin-field">
+                    <label for="edit-ward">Phuong / Xa</label>
+                    <input id="edit-ward" class="admin-input" type="text" />
+                </div>
+                <div class="admin-field">
+                    <label for="edit-district">Quan / Huyen</label>
+                    <input id="edit-district" class="admin-input" type="text" />
+                </div>
+                <div class="admin-actions wide">
+                    <button class="admin-btn" type="submit">Luu thay doi</button>
+                    <button class="admin-btn secondary" type="button" data-close-modal="edit-post-modal">Huy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="admin-modal" id="featured-post-modal">
+        <div class="admin-modal-panel">
+            <div class="admin-modal-head">
+                <div class="admin-modal-title">Gan nhan noi bat</div>
+                <button class="admin-btn secondary" type="button" data-close-modal="featured-post-modal">Dong</button>
+            </div>
+            <form id="featured-post-form" class="admin-form-grid">
+                <input type="hidden" id="featured-post-id" />
+                <div class="admin-field">
+                    <label for="featured-enabled">Trang thai</label>
+                    <select id="featured-enabled" class="admin-select">
+                        <option value="true">Bat noi bat</option>
+                        <option value="false">Bo noi bat</option>
+                    </select>
+                </div>
+                <div class="admin-field">
+                    <label for="featured-priority">Do uu tien</label>
+                    <input id="featured-priority" class="admin-input" type="number" min="0" step="1" />
+                </div>
+                <div class="admin-field wide">
+                    <label for="featured-until">Het han noi bat</label>
+                    <input id="featured-until" class="admin-input" type="datetime-local" />
+                </div>
+                <div class="admin-actions wide">
+                    <button class="admin-btn" type="submit">Luu noi bat</button>
+                    <button class="admin-btn secondary" type="button" data-close-modal="featured-post-modal">Huy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script th:src="@{/js/adminDashboard.js}" src="../static/js/adminDashboard.js"></script>
+    <script th:src="@{/js/adminPosts.js}" src="../static/js/adminPosts.js"></script>
 </body>
 
 </html>

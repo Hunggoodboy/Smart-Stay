@@ -162,4 +162,18 @@ public class RoomPosts implements Serializable {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private List<Appointments> appointments = new ArrayList<>();
+
+    // them cho noi bat
+    //  Dùng để đánh dấu bài đăng có phải tin nổi bật hay không.
+    @Column(name = "featured", nullable = false)
+    private Boolean featured = false;
+    //Dùng để sắp xếp độ ưu tiên giữa các tin nổi bật.
+    @Column(name = "featured_priority", nullable = false)
+    private Integer featuredPriority = 0;
+    //featuredAt
+    @Column(name = "featured_at")
+    private LocalDateTime featuredAt;
+    //featuredUntil
+    @Column(name = "featured_until")
+    private LocalDateTime featuredUntil;
 }

@@ -67,7 +67,7 @@ public class RoomPostService {
         Long userId = authService.getCurrentUserIdOrNull(); // An toàn: trả null nếu chưa đăng nhập
         List<RoomPosts> roomPosts;
         if (userId == null) {
-            roomPosts = roomPostRepository.findAll();
+            roomPosts = roomPostRepository.findAllOrderByFeaturedPriorityAndCreatedAt();
         } else {
             roomPosts = roomPostRepository.findAllRoomsWithoutMine(userId);
         }

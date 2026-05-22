@@ -53,7 +53,14 @@ public interface RoomPostRepository extends JpaRepository<RoomPosts, Long> {
               AND (:keyword  IS NULL
                     OR LOWER(p.title)   LIKE LOWER(CONCAT('%', :keyword, '%'))
                     OR LOWER(p.address) LIKE LOWER(CONCAT('%', :keyword, '%')))
-            ORDER BY p.createdAt DESC
+            ORDER BY
+              CASE
+                WHEN p.featured = true
+                 AND (p.featuredUntil IS NULL OR p.featuredUntil > CURRENT_TIMESTAMP)
+                THEN 1 ELSE 0
+              END DESC,
+              p.featuredPriority DESC,
+              p.createdAt DESC
             """)
     Page<RoomPosts> searchActive(
             @Param("city")      String city,
@@ -86,6 +93,30 @@ public interface RoomPostRepository extends JpaRepository<RoomPosts, Long> {
             """)
     List<RoomPosts> findExpiredActivePosts();
 
-    @Query("Select r from RoomPosts r where r.landlord.id != :userId")
+    @Query("""
+            SELECT r FROM RoomPosts r
+            ORDER BY
+              CASE
+                WHEN r.featured = true
+                 AND (r.featuredUntil IS NULL OR r.featuredUntil > CURRENT_TIMESTAMP)
+                THEN 1 ELSE 0
+              END DESC,
+              r.featuredPriority DESC,
+              r.createdAt DESC
+            """)
+    List<RoomPosts> findAllOrderByFeaturedPriorityAndCreatedAt();
+
+    @Query("""
+            SELECT r FROM RoomPosts r
+            WHERE r.landlord.id != :userId
+            ORDER BY
+              CASE
+                WHEN r.featured = true
+                 AND (r.featuredUntil IS NULL OR r.featuredUntil > CURRENT_TIMESTAMP)
+                THEN 1 ELSE 0
+              END DESC,
+              r.featuredPriority DESC,
+              r.createdAt DESC
+            """)
     List<RoomPosts> findAllRoomsWithoutMine(@Param("userId") Long userId);
 }
