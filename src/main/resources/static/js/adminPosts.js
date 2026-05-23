@@ -460,6 +460,19 @@
         if (!state.posts.length) loadPosts();
     }
 
+    function scrollToViewTarget(link) {
+        const href = link.getAttribute('href');
+        if (!href || !href.startsWith('#')) return;
+
+        const target = document.querySelector(href);
+        if (!target) return;
+
+        window.history.replaceState(null, '', href);
+        requestAnimationFrame(() => {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    }
+
     function handlePostTableClick(event) {
         const button = event.target.closest('button[data-action]');
         if (!button) return;
@@ -484,7 +497,11 @@
 
     function bindEvents() {
         document.querySelectorAll('[data-admin-view]').forEach(link => {
-            link.addEventListener('click', () => switchView(link.dataset.adminView));
+            link.addEventListener('click', event => {
+                event.preventDefault();
+                switchView(link.dataset.adminView);
+                scrollToViewTarget(link);
+            });
         });
         els.postSearchBtn.addEventListener('click', loadPosts);
         els.roomSearchBtn.addEventListener('click', loadRooms);

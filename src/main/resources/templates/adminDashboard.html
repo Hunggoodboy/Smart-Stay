@@ -506,7 +506,7 @@
             border-radius: 50%;
             background: var(--blue-100);
             display: grid;
-            place-items-center;
+            place-items: center;
             font-weight: 800;
             font-size: 1rem;
             color: var(--blue-700);
@@ -784,7 +784,7 @@
             <nav class="ss-nav">
                 <a class="active" href="/adminDashboard">Tổng quan</a>
                 <a href="/adminUsers">Quản lý người dùng</a>
-                <a href="/adminDashboard#admin-recalled">Tin nhắn thu hồi</a>
+                <a href="/adminDashboard#admin-system-stats">Thống kê hệ thống</a>
                 <a href="/adminPosts">Quản lý phòng / bài đăng</a>
             </nav>
 
@@ -803,7 +803,7 @@
                         <div>
                             <div class="ss-hero-badge"><span></span>Admin Workspace</div>
                             <h1>Tổng quan quản trị hệ thống</h1>
-                            <p>Theo dõi người dùng, bài đăng và tin nhắn bị thu hồi trên một màn hình.</p>
+                            <p>Theo dõi người dùng, chủ nhà, phòng và bài đăng cần xử lý trên một màn hình.</p>
                             <div class="ss-hero-btns">
                                 <a href="/adminUsers" class="ss-btn-primary">Quản lý người dùng</a>
                                 <a href="/adminPosts" class="ss-btn-ghost">Quản lý bài đăng</a>
@@ -822,9 +822,9 @@
                             <div class="ss-stat-sub">Yêu cầu xác thực chủ nhà</div>
                         </div>
                         <div class="ss-stat-card">
-                            <div class="ss-stat-label">Tin nhắn thu hồi</div>
-                            <div class="ss-stat-value" id="admin-stat-recalled">—</div>
-                            <div class="ss-stat-sub">Trong 7 ngày gần nhất</div>
+                            <div class="ss-stat-label">Tổng phòng quản lý</div>
+                            <div class="ss-stat-value" id="admin-stat-rooms">—</div>
+                            <div class="ss-stat-sub">Phòng chưa bị xóa mềm</div>
                         </div>
                         <div class="ss-stat-card">
                             <div class="ss-stat-label">Bài đăng cần xử lý</div>
@@ -874,15 +874,14 @@
                 </div>
 
                 <div class="ss-right">
-                    <section class="ss-card fade-in delay-3" id="admin-recalled">
+                    <section class="ss-card fade-in delay-3" id="admin-system-stats">
                         <div class="ss-card-header">
                             <div>
-                                <div class="ss-card-title">Tin nhắn đã được thu hồi</div>
-                                <div class="ss-card-sub">Theo dõi các tin nhắn bị thu hồi để kiểm duyệt nội dung nhạy
-                                    cảm.</div>
+                                <div class="ss-card-title">Thống kê hệ thống</div>
+                                <div class="ss-card-sub">Các chỉ số phụ trợ cho trang tổng quan quản trị.</div>
                             </div>
                         </div>
-                        <div id="admin-recalled-list">
+                        <div id="admin-system-stats-list">
                             <div class="msg-item">
                                 <div class="msg-avatar">…</div>
                                 <div>

@@ -355,7 +355,7 @@
 
         .admin-mini-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 0.9rem;
         }
 
@@ -391,79 +391,132 @@
             background: var(--blue-50);
             color: var(--blue-700);
             border: 1px solid var(--blue-100);
-            .admin-filter-row {
-                display: grid;
-                grid-template-columns: 1.3fr 0.6fr 0.6fr auto;
-                gap: 0.75rem;
-                margin-top: 1rem;
-            }
-            .admin-input {
-                width: 100%;
-                border: 1.5px solid var(--blue-100);
-                border-radius: 10px;
-                padding: 0.65rem 0.85rem;
-                font-size: 0.82rem;
-                font-family: 'Nunito', sans-serif;
-                background: #fff;
-                color: var(--gray-700);
-                outline: none;
-            }
-            .admin-select {
-                width: 100%;
-                border: 1.5px solid var(--blue-100);
-                border-radius: 10px;
-                padding: 0.65rem 0.85rem;
-                font-size: 0.82rem;
-                font-family: 'Nunito', sans-serif;
-                background: #fff;
-                color: var(--gray-700);
-                outline: none;
-            }
-            .btn-outline {
-                border: 1.5px solid var(--blue-200);
-                background: var(--blue-50);
-                color: var(--blue-700);
-                border-radius: 100px;
-                padding: 0.5rem 1rem;
-                font-size: 0.75rem;
-                font-weight: 800;
-                cursor: pointer;
-            }
-            .btn-danger {
-                border: 1.5px solid #fecaca;
-                background: #fee2e2;
-                color: #dc2626;
-                border-radius: 8px;
-                padding: 0.35rem 0.75rem;
-                font-size: 0.72rem;
-                font-weight: 700;
-                cursor: pointer;
-            }
-            .status-pill {
-                display: inline-flex;
-                align-items: center;
-                gap: 0.35rem;
-                border-radius: 100px;
-                padding: 0.2rem 0.7rem;
-                font-size: 0.68rem;
-                font-weight: 800;
-                border: 1px solid transparent;
-            }
-            .status-active { background: #f0fdf4; color: #16a34a; border-color: #bbf7d0; }
-            .status-inactive { background: #fee2e2; color: #dc2626; border-color: #fecaca; }
-            .role-select {
-                border: 1.5px solid var(--blue-100);
-                border-radius: 8px;
-                padding: 0.35rem 0.55rem;
-                font-size: 0.72rem;
-                font-weight: 700;
-                color: var(--gray-700);
-            }
             border-radius: 100px;
             padding: 0.2rem 0.65rem;
             font-size: 0.72rem;
             font-weight: 800;
             border: 1px solid var(--blue-100);
+        }
+
+        .admin-filter-row {
+            display: grid;
+            grid-template-columns: 1.3fr 0.6fr 0.6fr auto;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .admin-input,
+        .admin-select {
+            width: 100%;
+            border: 1.5px solid var(--blue-100);
+            border-radius: 10px;
+            padding: 0.65rem 0.85rem;
+            font-size: 0.82rem;
+            font-family: 'Nunito', sans-serif;
+            background: #fff;
+            color: var(--gray-700);
+            outline: none;
+        }
+
+        .admin-checkbox {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            color: var(--gray-500);
+            font-size: 0.78rem;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .admin-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+
+        .ss-btn-blue {
+            background: var(--blue-600);
+            color: #fff;
+            border: none;
+            border-radius: 100px;
+            padding: 0.5rem 1.1rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            transition: background 0.15s;
+            white-space: nowrap;
+        }
+
+        .ss-btn-blue:hover {
+            background: var(--blue-700);
+        }
+
+        .ss-btn-dark {
+            background: var(--navy);
+            color: #fff;
+            border: none;
+            border-radius: 100px;
+            padding: 0.5rem 1.1rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            transition: background 0.15s;
+            white-space: nowrap;
+        }
+
+        .btn-outline {
+            border: 1.5px solid var(--blue-200);
+            background: var(--blue-50);
+            color: var(--blue-700);
+            border-radius: 8px;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.72rem;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .btn-danger {
+            border: 1.5px solid #fecaca;
+            background: #fee2e2;
+            color: #dc2626;
+            border-radius: 8px;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            border-radius: 100px;
+            padding: 0.2rem 0.7rem;
+            font-size: 0.68rem;
+            font-weight: 800;
+            border: 1px solid transparent;
+        }
+
+        .status-active { background: #f0fdf4; color: #16a34a; border-color: #bbf7d0; }
+        .status-inactive { background: #fee2e2; color: #dc2626; border-color: #fecaca; }
+        .status-deleted { background: #f1f5f9; color: #64748b; border-color: #cbd5e1; }
+
+        .admin-state {
+            padding: 1.25rem;
+            text-align: center;
+            color: var(--gray-400);
+            font-weight: 800;
         }
 
         .ss-tabs {
@@ -602,6 +655,10 @@
             .admin-mini-grid {
                 grid-template-columns: 1fr;
             }
+
+            .admin-filter-row {
+                grid-template-columns: 1fr;
+            }
         }
 
         @media (max-width: 480px) {
@@ -630,7 +687,7 @@
             <nav class="ss-nav">
                 <a href="/adminDashboard">Tổng quan</a>
                 <a class="active" href="/adminUsers">Quản lý người dùng</a>
-                <a href="/adminDashboard#admin-recalled">Tin nhắn thu hồi</a>
+                <a href="/adminDashboard#admin-system-stats">Thống kê hệ thống</a>
                 <a href="/adminPosts">Quản lý phòng / bài đăng</a>
             </nav>
 
@@ -650,24 +707,24 @@
                         <h1>Quản lý người dùng</h1>
                         <p>Theo dõi tài khoản, khóa/mở khóa và phê duyệt chủ nhà từ một giao diện thống nhất.</p>
                         <div class="ss-hero-btns">
-                            <a href="#admin-users-list" class="ss-btn-primary">Danh sách tài khoản</a>
-                            <a href="#admin-verification" class="ss-btn-ghost">Duyệt chủ nhà</a>
+                            <a href="#admin-users-list" class="ss-btn-primary">Quản lý tài khoản</a>
+                            <a href="#admin-verification" class="ss-btn-ghost">Yêu cầu xác thực chủ nhà</a>
                         </div>
                     </div>
                     <div class="ss-hero-stats">
                         <div class="ss-stat-card">
                             <div class="ss-stat-label">Tổng tài khoản</div>
-                            <div class="ss-stat-value">—</div>
+                            <div class="ss-stat-value" id="admin-users-total">—</div>
                             <div class="ss-stat-sub">Tất cả vai trò</div>
                         </div>
                         <div class="ss-stat-card">
                             <div class="ss-stat-label">Chờ duyệt</div>
-                            <div class="ss-stat-value">—</div>
+                            <div class="ss-stat-value" id="admin-users-pending">—</div>
                             <div class="ss-stat-sub">Hồ sơ chủ nhà</div>
                         </div>
                         <div class="ss-stat-card">
                             <div class="ss-stat-label">Tài khoản khóa</div>
-                            <div class="ss-stat-value">—</div>
+                            <div class="ss-stat-value" id="admin-users-locked">—</div>
                             <div class="ss-stat-sub">Đang cần xử lý</div>
                         </div>
                     </div>
@@ -677,36 +734,83 @@
             <section class="ss-card" id="admin-users-list">
                 <div class="ss-card-header">
                     <div>
-                        <div class="ss-card-title">Tổng hợp tác vụ</div>
-                        <div class="ss-card-sub">Lọc theo vai trò, cập nhật trạng thái và phân quyền.</div>
+                        <div class="ss-card-title" id="admin-users-list-title">Quản lý tài khoản</div>
+                        <div class="ss-card-sub" id="admin-users-list-subtitle">Quản lý tài khoản và xử lý yêu cầu xác thực chủ nhà.</div>
                     </div>
-                    <span class="count-badge">Quản trị</span>
+                    <span class="count-badge" id="admin-users-count-badge">0 tài khoản</span>
                 </div>
 
                 <div class="admin-mini-grid">
                     <div class="admin-mini-card">
-                        <div class="admin-mini-title">Danh sách tài khoản</div>
+                        <div class="admin-mini-title">Quản lý tài khoản</div>
                         <div class="admin-mini-desc">Theo dõi admin, landlord và customer.</div>
                         <div class="admin-mini-actions">
-                            <a href="#" class="ss-btn-blue">Xem danh sách</a>
+                            <a href="#admin-users-table" class="ss-btn-blue" data-user-mode="manage">Xem danh sách</a>
                         </div>
                     </div>
                     <div class="admin-mini-card">
-                        <div class="admin-mini-title">Khóa / mở khóa / xóa</div>
-                        <div class="admin-mini-desc">Thao tác nhanh với các tài khoản vi phạm.</div>
+                        <div class="admin-mini-title">Yêu cầu xác thực chủ nhà</div>
+                        <div class="admin-mini-desc">Xem danh sách chủ nhà đang chờ phê duyệt hồ sơ.</div>
                         <div class="admin-mini-actions">
-                            <span class="admin-mini-tag">Khóa</span>
-                            <span class="admin-mini-tag">Mở khóa</span>
-                            <span class="admin-mini-tag">Xóa</span>
+                            <a href="#admin-verification" class="ss-btn-dark">Xem yêu cầu</a>
                         </div>
                     </div>
                     <div class="admin-mini-card">
-                        <div class="admin-mini-title">Phân quyền</div>
-                        <div class="admin-mini-desc">Cấp quyền admin/landlord theo xác thực.</div>
+                        <div class="admin-mini-title">Khôi phục tài khoản bị xóa</div>
+                        <div class="admin-mini-desc">Mở danh sách tài khoản đã xóa mềm để khôi phục khi cần.</div>
                         <div class="admin-mini-actions">
-                            <a href="#" class="ss-btn-dark">Cập nhật quyền</a>
+                            <a href="#admin-users-table" class="ss-btn-blue" data-user-mode="restore">Khôi phục</a>
                         </div>
                     </div>
+                    <div class="admin-mini-card">
+                        <div class="admin-mini-title">Cập nhật vai trò tài khoản</div>
+                        <div class="admin-mini-desc">Mở danh sách và đổi vai trò Admin, chủ nhà hoặc khách thuê.</div>
+                        <div class="admin-mini-actions">
+                            <a href="#admin-users-table" class="ss-btn-dark" data-user-mode="role">Cập nhật vai trò</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-filter-row">
+                    <input id="admin-user-keyword" class="admin-input" type="search"
+                        placeholder="Tìm theo tên, email, username hoặc số điện thoại" />
+                    <select id="admin-user-role" class="admin-select">
+                        <option value="">Tất cả vai trò</option>
+                        <option value="ADMIN">Admin</option>
+                        <option value="LANDLORD">Chủ nhà</option>
+                        <option value="CUSTOMER">Khách thuê</option>
+                    </select>
+                    <select id="admin-user-active" class="admin-select">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="true">Đang hoạt động</option>
+                        <option value="false">Đã khóa</option>
+                    </select>
+                    <button id="admin-user-search-btn" type="button" class="ss-btn-blue">Lọc</button>
+                </div>
+
+                <label class="admin-checkbox" style="margin-bottom:1rem;">
+                    <input id="admin-user-include-deleted" type="checkbox" />
+                    Hiển thị tài khoản đã xóa
+                </label>
+
+                <div class="ss-table-wrap" id="admin-users-table">
+                    <table class="ss-table">
+                        <thead>
+                            <tr>
+                                <th>Tài khoản</th>
+                                <th>Liên hệ</th>
+                                <th>Vai trò</th>
+                                <th>Trạng thái</th>
+                                <th>Ngày tạo</th>
+                                <th style="text-align:right;">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-users-table-body">
+                            <tr>
+                                <td colspan="6" class="admin-state">Đang tải danh sách tài khoản...</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </section>
 
@@ -741,6 +845,7 @@
         </main>
     </div>
 
+    <script th:src="@{/js/adminUsers.js}" src="../static/js/adminUsers.js"></script>
     <script th:src="@{/js/adminVerify.js}" src="../static/js/adminVerify.js"></script>
     <script th:src="@{/js/adminDashboard.js}" src="../static/js/adminDashboard.js"></script>
 </body>
