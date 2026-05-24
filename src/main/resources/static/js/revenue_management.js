@@ -10,10 +10,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const totalRevenue = document.getElementById('totalRevenue');
     const totalBills = document.getElementById('totalBills');
     const avgRevenue = document.getElementById('avgRevenue');
+    const highestRevenue = document.getElementById('highestRevenue');
+    const highestRevenueSub = document.getElementById('highestRevenueSub');
+    const lowestRevenue = document.getElementById('lowestRevenue');
+    const lowestRevenueSub = document.getElementById('lowestRevenueSub');
     const revenueSub = document.getElementById('revenueSub');
     const tableBody = document.getElementById('revenueTableBody');
+    const yearOnlyElements = document.querySelectorAll('.year-only');
+    const btnHighestRevenueMonth = document.getElementById('btnHighestRevenueMonth');
+    const btnLowestRevenueMonth = document.getElementById('btnLowestRevenueMonth');
 
     let revenueChart = null;
+    let currentYearlyData = null;
 
     // Initialize years
     const currentYear = new Date().getFullYear();
@@ -26,9 +34,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     reportType.addEventListener('change', function() {
         monthControl.style.display = this.value === 'monthly' ? 'block' : 'none';
+        setYearOnlyVisible(this.value === 'year');
     });
 
     btnFilter.addEventListener('click', loadReport);
+    btnHighestRevenueMonth.addEventListener('click', function() {
+        renderExtremeMonthChart('highest');
+    });
+    btnLowestRevenueMonth.addEventListener('click', function() {
+        renderExtremeMonthChart('lowest');
+    });
+    setYearOnlyVisible(reportType.value === 'year');
 
     async function loadReport() {
         const type = reportType.value;
@@ -69,6 +85,14 @@ document.addEventListener('DOMContentLoaded', function() {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const yearSummary = await yearRes.json();
+        const highestMonthRes = await fetch(`/api/revenue-report/highest-month?year=${year}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const highestMonth = await highestMonthRes.json();
+        const lowestMonthRes = await fetch(`/api/revenue-report/lowest-month?year=${year}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const lowestMonth = await lowestMonthRes.json();
         
         // Fetch months for the chart
         const monthsData = await Promise.all(
@@ -78,15 +102,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 }).then(r => r.json())
             )
         );
-
         return {
             summary: yearSummary,
-            months: monthsData
+            months: monthsData,
+            highestMonth: highestMonth,
+            lowestMonth: lowestMonth
         };
     }
 
     function updateDashboard(data, type) {
         if (type === 'monthly') {
+            currentYearlyData = null;
+            setYearOnlyVisible(false);
             totalRevenue.textContent = fmtMoney(data.totalRevenue);
             totalBills.textContent = data.paidCount;
             avgRevenue.textContent = fmtMoney(data.totalRevenue); // For single month, avg is the same
@@ -95,14 +122,49 @@ document.addEventListener('DOMContentLoaded', function() {
             renderTable([data]);
             renderChart([data], 'monthly');
         } else {
+            currentYearlyData = data;
+            setYearOnlyVisible(true);
             totalRevenue.textContent = fmtMoney(data.summary.totalRevenue);
             totalBills.textContent = data.summary.paidCount;
             avgRevenue.textContent = fmtMoney(data.summary.totalRevenue / 12);
             revenueSub.textContent = `Trong năm ${data.summary.year}`;
+            updateExtremeRevenue(data.highestMonth, data.lowestMonth);
             
             renderTable(data.months);
             renderChart(data.months, 'year');
         }
+    }
+
+    function setYearOnlyVisible(isVisible) {
+        yearOnlyElements.forEach(element => {
+            element.style.display = isVisible ? 'flex' : 'none';
+        });
+    }
+
+    function updateExtremeRevenue(highestMonth, lowestMonth) {
+        highestRevenue.textContent = fmtMoney(highestMonth.totalRevenue);
+        lowestRevenue.textContent = fmtMoney(lowestMonth.totalRevenue);
+
+        highestRevenueSub.textContent = highestMonth.month
+            ? `Tháng ${highestMonth.month}/${highestMonth.year}`
+            : 'Chưa có dữ liệu';
+        lowestRevenueSub.textContent = lowestMonth.month
+            ? `Tháng ${lowestMonth.month}/${lowestMonth.year}`
+            : 'Chưa có dữ liệu';
+
+        btnHighestRevenueMonth.disabled = !highestMonth.month;
+        btnLowestRevenueMonth.disabled = !lowestMonth.month;
+    }
+
+    function renderExtremeMonthChart(type) {
+        if (!currentYearlyData) return;
+
+        const monthData = type === 'highest'
+            ? currentYearlyData.highestMonth
+            : currentYearlyData.lowestMonth;
+
+        if (!monthData || !monthData.month) return;
+        renderChart([monthData], 'monthly');
     }
 
     function renderTable(list) {
@@ -155,15 +217,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         label: 'Tiền phòng',
                         data: rentData,
                         backgroundColor: 'rgba(37, 99, 235, 0.7)',
-                        borderRadius: 6,
-                        stack: 'combined'
+                        borderRadius: 6
                     },
                     {
                         label: 'Tiền dịch vụ',
                         data: utilityData,
                         backgroundColor: 'rgba(14, 165, 233, 0.7)',
-                        borderRadius: 6,
-                        stack: 'combined'
+                        borderRadius: 6
                     }
                 ]
             },

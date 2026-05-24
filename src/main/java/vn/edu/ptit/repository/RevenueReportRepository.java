@@ -34,4 +34,16 @@ public interface RevenueReportRepository extends JpaRepository<RentPayments, Lon
             @Param("landlordId") Long landlordId,
             @Param("paidStatus") RentPayments.Status paidStatus
     );
+
+    @Query("SELECT SUBSTRING(p.billingMonth, 6, 2), COALESCE(SUM(p.totalAmount), 0.0) " +
+            "FROM RentPayments p " +
+            "WHERE p.billingMonth LIKE CONCAT(:yearText, '%') " +
+            "AND p.status = :paidStatus " +
+            "AND (:landlordId IS NULL OR p.contract.landLord.id = :landlordId) " +
+            "GROUP BY p.billingMonth")
+    List<Object[]> reportMonthlyRevenueByYear(
+            @Param("yearText") String yearText,
+            @Param("landlordId") Long landlordId,
+            @Param("paidStatus") RentPayments.Status paidStatus
+    );
 }
