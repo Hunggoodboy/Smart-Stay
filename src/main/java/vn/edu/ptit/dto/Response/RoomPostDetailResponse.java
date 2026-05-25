@@ -63,6 +63,9 @@ public class RoomPostDetailResponse {
     /** URL ảnh đại diện — lấy nhanh không cần duyệt images */
     private String mainImageUrl;
 
+    // ==================== NỘI THẤT ====================
+    private List<String> interiors;
+
     // ==================== TRẠNG THÁI YÊU CẦU THUÊ CỦA NGƯỜI DÙNG HIỆN TẠI ====================
 
     /**

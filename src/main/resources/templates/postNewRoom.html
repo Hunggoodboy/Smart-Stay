@@ -388,7 +388,7 @@
 
             <div class="panel-footer">
                 <button class="btn btn-ghost" onclick="prevStep(4)">← Quay lại</button>
-                <button class="btn btn-primary" onclick="nextStep(4)">Xem lại & đăng →</button>
+                <button class="btn btn-primary" onclick="nextStep(4); fetchAIAmenities();">Xem lại & đăng →</button>
             </div>
         </section>
 
@@ -401,6 +401,27 @@
         </div>
 
         <div class="form-body">
+
+            <!-- Vùng hiển thị review nội dung -->
+            <div id="review-content" class="review-content-wrap"></div>
+
+            <!-- AI Suggestion Card -->
+            <div class="ai-suggestion-card" style="background: #f8f9fa; border: 1px dashed #007bff; border-radius: 8px; padding: 20px; margin-bottom: 20px; margin-top: 20px;">
+                <h3 style="margin-top: 0; color: #007bff; font-size: 16px; margin-bottom: 5px;">
+                    ✨ AI Gợi ý Tiện ích Nội thất
+                </h3>
+                <p style="font-size: 13px; color: #6c757d;">Hệ thống tự động nhận diện nội thất dựa trên ảnh bạn tải lên.</p>
+
+                <div id="ai-loading" style="display: none; color: #28a745; font-weight: 500; font-size: 14px;">
+                    ⏳ Đang phân tích hình ảnh...
+                </div>
+
+                <div id="ai-results" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
+                    <span style="color: #6c757d; font-style: italic; font-size: 13px;">Chưa có dữ liệu.</span>
+                </div>
+
+                <input type="hidden" id="detectedInteriors" name="detectedInteriors" value="[]">
+            </div>
 
             <div class="publish-option">
               <input type="radio" name="publishMode" id="mode-publish" value="true" />

@@ -265,6 +265,9 @@ body { padding-top: 80px; }
                 </div>
             </div>
 
+            <h3 class="section-title">Nội thất nổi bật</h3>
+            <div id="rInteriors" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 32px;"></div>
+
             <h3 class="section-title">Mô tả chi tiết</h3>
             <div class="room-desc" id="rDesc"></div>
 
@@ -395,6 +398,14 @@ body { padding-top: 80px; }
         document.getElementById('rArea').textContent = room.areaM2 ? `${room.areaM2} m²` : '--';
         document.getElementById('rOcc').textContent = room.maxOccupants ? `Tối đa ${room.maxOccupants} người` : '--';
         document.getElementById('rDesc').textContent = room.description || 'Chưa có mô tả.';
+
+        // ==================== Render Nội thất ====================
+        const rInteriors = document.getElementById('rInteriors');
+        if (room.interiors && room.interiors.length > 0) {
+            rInteriors.innerHTML = room.interiors.map(item => `<span style="background: #eef4ff; color: #316bf2; padding: 6px 12px; border-radius: 20px; font-size: 14px; font-weight: 500; border: 1px solid #dbeafe;">✔️ ${item}</span>`).join('');
+        } else {
+            rInteriors.innerHTML = '<span style="color: #6b7280; font-size: 14px; font-style: italic;">Chưa có thông tin nội thất.</span>';
+        }
 
         // ==================== Render Giá & Chủ nhà ====================
         document.getElementById('rRent').textContent = new Intl.NumberFormat('vi-VN').format(room.monthlyRent);

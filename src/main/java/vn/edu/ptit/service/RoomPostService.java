@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 import vn.edu.ptit.dto.LandlordInfo;
 import vn.edu.ptit.dto.Request.CreateRoomPostRequest;
 import vn.edu.ptit.dto.Response.ApiResponse;
+import vn.edu.ptit.dto.Response.ApiResponseCreateRoomPost;
 import vn.edu.ptit.dto.Response.RoomPostDetailResponse;
 import vn.edu.ptit.dto.Response.RoomPostSummaryResponse;
 import vn.edu.ptit.entity.LandLord;
@@ -35,8 +36,8 @@ public class RoomPostService {
     private final VectorService vectorService;
 
     @Transactional
-    public ApiResponse createNewRoomPost(CreateRoomPostRequest createRoomPostRequest, MultipartFile mainImg,
-            List<MultipartFile> imageUrls) throws IOException {
+    public ApiResponseCreateRoomPost createNewRoomPost(CreateRoomPostRequest createRoomPostRequest, MultipartFile mainImg,
+                                                       List<MultipartFile> imageUrls) throws IOException {
         RoomPosts roomPosts = new RoomPosts();
         BeanUtils.copyProperties(createRoomPostRequest, roomPosts);
         LandLord landLord = authService.getCurrentLandLord();
@@ -58,9 +59,12 @@ public class RoomPostService {
                 roomPostImages.setImageUrl(url);
             }
         }
-        roomPostRepository.save(roomPosts);
+        RoomPosts save = roomPostRepository.save(roomPosts);
         vectorService.addRoomPosts(roomPosts);
-        return ApiResponse.builder().message("Thêm phòng thành công").success(true).build();
+        return ApiResponseCreateRoomPost.builder()
+                .message("Thêm phòng thành công")
+                .success(true)
+                .roomPostId(save.getId()).build();
     }
 
     public List<RoomPostSummaryResponse> getAllRoomPosts() {

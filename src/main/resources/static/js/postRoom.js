@@ -51,7 +51,73 @@ function goToStep(n) {
         scrollToTop();
     }
 }
+// Hàm gọi AI Flask
+async function fetchAIAmenities() {
+    const mainImgInput = document.getElementById('mainImageFile');
+    const galleryInput = document.getElementById('galleryFiles');
+    const formData = new FormData();
+    let hasFiles = false;
 
+    // Lấy ảnh bìa
+    if (mainImgInput.files.length > 0) {
+        formData.append('file', mainImgInput.files[0]);
+        hasFiles = true;
+    }
+
+    // Lấy ảnh gallery
+    if (galleryInput.files.length > 0) {
+        for (let i = 0; i < galleryInput.files.length; i++) {
+            formData.append('file', galleryInput.files[i]);
+        }
+        hasFiles = true;
+    }
+
+    // Nếu không có ảnh nào, không làm gì cả
+    if (!hasFiles) return;
+
+    // Hiển thị UI Đang tải ở Bước 5
+    document.getElementById('ai-loading').style.display = 'block';
+    document.getElementById('ai-results').innerHTML = '';
+
+    try {
+        // GỌI SANG CỔNG 5000 CỦA FLASK (sử dụng hostname hiện tại)
+        let host = window.location.hostname;
+        if (host === 'localhost') {
+            host = '127.0.0.1';
+        }
+        const response = await fetch(`http://${host}:5000/predict`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+        document.getElementById('ai-loading').style.display = 'none';
+
+        if (data.success) {
+            const resultsContainer = document.getElementById('ai-results');
+
+            // Lưu mảng kết quả vào input ẩn để hàm submitForm() lấy dùng
+            document.getElementById('detectedInteriors').value = JSON.stringify(data.detected_amenities);
+
+            if (data.detected_amenities.length === 0) {
+                resultsContainer.innerHTML = '<span style="font-size: 13px; color: #dc3545;">Không tìm thấy nội thất nổi bật.</span>';
+                return;
+            }
+
+            // Render các tag đẹp mắt
+            data.detected_amenities.forEach(item => {
+                const tag = document.createElement('span');
+                tag.style.cssText = 'background: #e2f0fd; color: #007bff; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; border: 1px solid #b8daff;';
+                tag.innerText = "✔️ " + item;
+                resultsContainer.appendChild(tag);
+            });
+        }
+    } catch (error) {
+        document.getElementById('ai-loading').style.display = 'none';
+        document.getElementById('ai-results').innerHTML = '<span style="color: #dc3545; font-size: 13px;">Lỗi kết nối AI Server.</span>';
+        console.error("AI Error:", error);
+    }
+}
 function updateStepUI() {
     // Panels
     document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
@@ -401,23 +467,48 @@ async function submitForm() {
     btn.disabled = true;
     btn.innerHTML = '<span>⏳ Đang xử lý...</span>';
 
-    // 1. Lấy dữ liệu Text (Không còn chứa link ảnh cũ nữa)
+    // 1. Lấy dữ liệu Text cơ bản
     const bodyData = buildRequestBody();
+
+    // ================== BẮT ĐẦU PHẦN THÊM MỚI (AI AMENITIES) ==================
+    // Lấy chuỗi JSON từ input ẩn mà hàm AI đã lưu lúc nãy
+    let aiAmenities = [];
+    try {
+        const aiInput = document.getElementById('detectedInteriors');
+        if (aiInput && aiInput.value) {
+            aiAmenities = JSON.parse(aiInput.value);
+        }
+    } catch (e) {
+        console.warn("Không parse được tiện ích AI, gửi mảng rỗng.");
+    }
+
+    // Đóng gói đúng chuẩn cấu trúc InteriorRoomRequest.java bên Spring Boot
+    const interiorData = {
+        roomId: null, // Để null, Spring Boot (RoomPostService) sẽ tự động map ID phòng vừa tạo vào
+        interiorName: aiAmenities
+    };
+    // ============================ KẾT THÚC THÊM MỚI ============================
 
     // 2. Khởi tạo FormData để gửi cả Text và File
     const formData = new FormData();
+
+    // Gắn Part 1: request
     formData.append("request", new Blob([JSON.stringify(bodyData)], { type: "application/json" }));
 
+    // Gắn Part 2 & 3: mainImage và gallery
     if (mainImageFileObj) formData.append("mainImage", mainImageFileObj);
     galleryFilesArray.forEach(file => formData.append("gallery", file));
+
+    // THÊM MỚI - Gắn Part 4: interiors (Gửi cho Backend Spring Boot)
+    formData.append("interiors", new Blob([JSON.stringify(interiorData)], { type: "application/json" }));
 
     try {
         const res = await fetch(API_ENDPOINT, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${token}` // <--- Chỉ thêm token, để trình duyệt tự lo Content-Type
+                'Authorization': `Bearer ${token}`
             },
-            body: formData, // Trình duyệt tự động set Header multipart/form-data
+            body: formData,
         });
 
         if (res.ok) {

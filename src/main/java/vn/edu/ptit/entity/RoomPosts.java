@@ -90,6 +90,21 @@ public class RoomPosts implements Serializable {
     @Column(name = "cleaning_fee", nullable = false)
     private Double cleaningFee = 0.0;
 
+    @Column(name = "featured", nullable = false, columnDefinition = "boolean default false")
+    private Boolean featured = false;
+
+    // Dùng để sắp xếp độ ưu tiên giữa các tin nổi bật.
+    @Column(name = "featured_priority", nullable = false, columnDefinition = "integer default 0")
+    private Integer featuredPriority = 0;
+
+    // featuredAt
+    @Column(name = "featured_at", nullable = false, columnDefinition = "timestamp default current_timestamp")
+    private LocalDateTime featuredAt;
+
+    // featuredUntil (Cột này cho phép null nên giữ nguyên)
+    @Column(name = "featured_until")
+    private LocalDateTime featuredUntil;
+
     // ==================== TRẠNG THÁI ====================
 
     public enum Status {
@@ -163,20 +178,6 @@ public class RoomPosts implements Serializable {
     @EqualsAndHashCode.Exclude
     private List<Appointments> appointments = new ArrayList<>();
 
-    // them cho noi bat
-// Dùng để đánh dấu bài đăng có phải tin nổi bật hay không.
-    @Column(name = "featured", nullable = false, columnDefinition = "boolean default false")
-    private Boolean featured = false;
-
-    // Dùng để sắp xếp độ ưu tiên giữa các tin nổi bật.
-    @Column(name = "featured_priority", nullable = false, columnDefinition = "integer default 0")
-    private Integer featuredPriority = 0;
-
-    // featuredAt
-    @Column(name = "featured_at", nullable = false, columnDefinition = "timestamp default current_timestamp")
-    private LocalDateTime featuredAt;
-
-    // featuredUntil (Cột này cho phép null nên giữ nguyên)
-    @Column(name = "featured_until")
-    private LocalDateTime featuredUntil;
+    @OneToMany(mappedBy = "roomPost", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<RoomInterior> roomInteriors;
     }

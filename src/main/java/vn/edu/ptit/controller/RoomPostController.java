@@ -1,15 +1,20 @@
 package vn.edu.ptit.controller;
 
+import jakarta.servlet.annotation.WebServlet;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import vn.edu.ptit.dto.Request.CreateRoomPostRequest;
+import vn.edu.ptit.dto.Request.InteriorRoomRequest;
 import vn.edu.ptit.dto.Request.RentalRequestDTO;
 import vn.edu.ptit.dto.Response.ApiResponse;
+import vn.edu.ptit.dto.Response.ApiResponseCreateRoomPost;
 import vn.edu.ptit.dto.Response.RoomPostDetailResponse;
 import vn.edu.ptit.dto.Response.RoomPostSummaryResponse;
+import vn.edu.ptit.entity.RoomInterior;
+import vn.edu.ptit.service.InteriorService;
 import vn.edu.ptit.service.RoomPostService;
 
 import java.io.IOException;
@@ -20,13 +25,21 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class RoomPostController {
     private final RoomPostService roomPostService;
-
+    private final InteriorService interiorService;
     @PostMapping("/api/post-room")
     public ResponseEntity<ApiResponse> createNewPostRoom(
             @RequestPart("request") CreateRoomPostRequest createRoomPostRequest,
             @RequestPart(value = "mainImage", required = false) MultipartFile mainImg,
-            @RequestPart(value = "gallery", required = false) List<MultipartFile> images) throws IOException {
-        return ResponseEntity.ok(roomPostService.createNewRoomPost(createRoomPostRequest, mainImg, images));
+            @RequestPart(value = "gallery", required = false) List<MultipartFile> images,
+            @RequestPart(value = "interiors") InteriorRoomRequest  interiorRoomRequest
+            ) throws IOException {
+        ApiResponseCreateRoomPost responseCreateRoomPost = roomPostService.createNewRoomPost(createRoomPostRequest, mainImg, images);
+        interiorRoomRequest.setRoomId(responseCreateRoomPost.getRoomPostId());
+        ApiResponse responseCreateInterior = interiorService.addInteriorRoom(interiorRoomRequest);
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Tạo phòng thành công")
+                .build());
     }
 
     @PostMapping("/api/post-list-room")
@@ -58,13 +71,14 @@ public class RoomPostController {
     }
 
     @GetMapping("/room-detail/{id}")
-    private ResponseEntity<RoomPostDetailResponse> getRoomPostById(@PathVariable Long id) {
-        return ResponseEntity.ok(roomPostService.getRoomPostDetail(id));
+    public ResponseEntity<RoomPostDetailResponse> getRoomPostById(@PathVariable Long id) {
+        RoomPostDetailResponse response = roomPostService.getRoomPostDetail(id);
+        response.setInteriors(interiorService.getInteriorsByRoomId(id));
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/api/landlord/posts")
     public ResponseEntity<List<RoomPostSummaryResponse>> getPostsForLandlord() {
         return ResponseEntity.ok(roomPostService.getPostsForCurrentLandlord());
     }
-
 }

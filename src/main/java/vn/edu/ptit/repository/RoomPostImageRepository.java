@@ -16,5 +16,5 @@ public interface RoomPostImageRepository extends JpaRepository<RoomPostImages, L
     @Modifying
     @Query("DELETE FROM RoomPostImages img WHERE img.roomPost.id = :roomPostId")
     void deleteAllByRoomPostId(@Param("roomPostId") Long roomPostId);
-
+    List<RoomPostImages> getByRoomPostId(@Param("roomPostId") Long roomPostId);
 }
