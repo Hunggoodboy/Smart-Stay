@@ -31,7 +31,6 @@ public class Contracts implements Serializable {
     @Column(name = "end_date")
     private LocalDate endDate;
 
-
     @Column(name = "monthly_rent", nullable = false)
     private Double monthlyRent;
 
@@ -46,7 +45,6 @@ public class Contracts implements Serializable {
 
     @Column(name = "contract_file_url")
     private String contractFileUrl;
-
 
     @Column(name = "num_occupants", nullable = false)
     private Long numOccupants = 1L;
@@ -72,9 +70,6 @@ public class Contracts implements Serializable {
     @Column(name = "cleaning_fee", nullable = false)
     private Double cleaningFee = 0.0;
 
-    @Column(name = "is_expiration", nullable = false)
-    private Boolean isExpiration = true;
-
     @Column(name = "deleted_at", nullable = true)
     private LocalDateTime deletedAt = null;
 
@@ -89,7 +84,6 @@ public class Contracts implements Serializable {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private User landLord;
-
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)

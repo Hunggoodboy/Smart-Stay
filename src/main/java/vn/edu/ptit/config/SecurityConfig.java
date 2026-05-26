@@ -34,12 +34,14 @@ public class SecurityConfig {
 
         private static final String[] LANDLORD_API_URLS = {
                         "/api/post-room/**", "/api/billing/**",
-                        "/api/setBill/**", "/api/landlord/**", "/api/room-management/**"
+                        "/api/setBill/**", "/api/utility-bills/setBill", "/api/utility-bills/api/setBill",
+                        "/api/landlord/**", "/api/room-management/**"
         };
 
         private static final String[] AUTHENTICATED_API_URLS = {
                         "/api/user/me", "/api/user/myid", "/api/user/tenant",
                         "/api/notifications/**", "/api/utility-bills/**",
+                        "/api/payments/vietqr/**",
                         "/api/chat/**", "/api/customer/**", "/api/landlord/requestToLandLord", "/api/contract/**",
                         "/get-my-contracts", "/api/vector/**", "/api/post-list-room", "/api/chat-ai/**",
                         "/api/delete/request", "/api/appointments"

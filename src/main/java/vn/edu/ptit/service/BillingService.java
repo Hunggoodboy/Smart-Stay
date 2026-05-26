@@ -3,6 +3,7 @@ package vn.edu.ptit.service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -30,6 +31,7 @@ public class BillingService {
     private final RentPaymentsRepository rentPaymentsRepository;
     private final AuthService authService;
     private final UserRepository userRepository;
+
     @Transactional(readOnly = true)
     public MonthlyBillResponse previewBill(MonthlyBillRequest request) {
         CalculationResult result = calculate(request);
@@ -48,15 +50,16 @@ public class BillingService {
                     throw new RuntimeException("Phòng đã có hóa đơn điện nước tháng " + result.billingMonth);
                 });
 
-//        Optional<UtilityBills> existingBill =
-//                utilityBillsRepository.findTopByRoom_IdAndBillingMonthOrderByCreatedAtDesc(
-//                        result.room.getId(),
-//                        result.billingMonth
-//                );
-//
-//        if (existingBill.isPresent()) {
-//            throw new RuntimeException("Phòng đã có hóa đơn điện nước tháng " + result.billingMonth);
-//        }
+        // Optional<UtilityBills> existingBill =
+        // utilityBillsRepository.findTopByRoom_IdAndBillingMonthOrderByCreatedAtDesc(
+        // result.room.getId(),
+        // result.billingMonth
+        // );
+        //
+        // if (existingBill.isPresent()) {
+        // throw new RuntimeException("Phòng đã có hóa đơn điện nước tháng " +
+        // result.billingMonth);
+        // }
 
         rentPaymentsRepository
                 .findTopByContract_IdAndBillingMonthOrderByCreatedAtDesc(result.contract.getId(), result.billingMonth)
@@ -64,6 +67,7 @@ public class BillingService {
                     throw new RuntimeException("Hợp đồng đã có hóa đơn tổng tháng " + result.billingMonth);
                 });
 
+        LocalDateTime now = LocalDateTime.now();
 
         UtilityBills utilityBill = new UtilityBills();
         utilityBill.setRoom(result.room);
@@ -90,11 +94,13 @@ public class BillingService {
         utilityBill.setDueDate(result.dueDate);
         utilityBill.setStatus(UtilityBills.Status.UNPAID);
         utilityBill.setNotes(result.notes);
+        utilityBill.setCreatedAt(now);
+        utilityBill.setUpdatedAt(now);
 
         utilityBill = utilityBillsRepository.save(utilityBill);
 
-        User currentCustomer = userRepository.findById(result.contract.getCustomer().getId()).orElseThrow(() -> new RuntimeException("Không tìm thấy customer"));
-
+        User currentCustomer = userRepository.findById(result.contract.getCustomer().getId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy customer"));
 
         RentPayments rentPayment = new RentPayments();
         rentPayment.setContract(result.contract);
@@ -112,6 +118,8 @@ public class BillingService {
         rentPayment.setStatus(RentPayments.Status.valueOf("UNPAID"));
         rentPayment.setNotes(result.notes);
         rentPayment.setRoom(result.room);
+        rentPayment.setCreatedAt(now);
+        rentPayment.setUpdatedAt(now);
 
         rentPayment = rentPaymentsRepository.save(rentPayment);
 
@@ -123,15 +131,16 @@ public class BillingService {
     private CalculationResult calculate(MonthlyBillRequest request) {
         validateRequest(request);
         Rooms room = roomsRepository.findById(request.getRoomId())
-                                    .orElseThrow(() -> new RuntimeException("Không tìm thấy phòng với id = " + request.getRoomId()));
-//        Optional<Rooms> roomot =roomsRepository.findById(request.getRoomId());
-//        Rooms room = new Rooms();
-//        if(roomot.isPresent()) {
-//            room = roomot.get();
-//        }
-//        else{
-//            throw new RuntimeException("Không tìm thấy phòng với id = " + request.getRoomId());
-//        }
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy phòng với id = " + request.getRoomId()));
+        // Optional<Rooms> roomot =roomsRepository.findById(request.getRoomId());
+        // Rooms room = new Rooms();
+        // if(roomot.isPresent()) {
+        // room = roomot.get();
+        // }
+        // else{
+        // throw new RuntimeException("Không tìm thấy phòng với id = " +
+        // request.getRoomId());
+        // }
         Contracts contract = resolveContract(request, room);
         System.out.println(contract.getRoom());
         System.out.println(contract.getContractCode());
@@ -225,7 +234,7 @@ public class BillingService {
             throw new RuntimeException("roomId là bắt buộc");
         }
         if (request.getBillingMonth() == null || request.getBillingMonth()
-                                                        .isBlank()) {
+                .isBlank()) {
             throw new RuntimeException("billingMonth là bắt buộc, định dạng yyyy-MM");
         }
         parseBillingMonth(request.getBillingMonth());
@@ -234,7 +243,8 @@ public class BillingService {
     private Contracts resolveContract(MonthlyBillRequest request, Rooms room) {
         if (request.getContractId() != null) {
             Contracts contract = contractsRepository.findById(request.getContractId())
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy hợp đồng với id = " + request.getContractId()));
+                    .orElseThrow(
+                            () -> new RuntimeException("Không tìm thấy hợp đồng với id = " + request.getContractId()));
             // Kiểm tra contract có thuộc room này không (FK giờ nằm ở Rooms.contract_id)
             Contracts roomContract = room.getContract();
             if (roomContract != null && !roomContract.getId().equals(contract.getId())) {
@@ -251,7 +261,7 @@ public class BillingService {
         List<UtilityBills> bills = utilityBillsRepository.findByRoom_IdOrderByCreatedAtDesc(roomId);
         for (UtilityBills bill : bills) {
             if (bill.getBillingMonth() != null && !bill.getBillingMonth()
-                                                       .equals(billingMonth)) {
+                    .equals(billingMonth)) {
                 return bill;
             }
         }
@@ -267,7 +277,7 @@ public class BillingService {
 
         if (contract != null && contract.getBillingDate() != null) {
             int billingDay = contract.getBillingDate()
-                                     .intValue();
+                    .intValue();
             billingDay = Math.max(1, Math.min(billingDay, yearMonth.lengthOfMonth()));
             return yearMonth.atDay(billingDay);
         }
@@ -304,15 +314,15 @@ public class BillingService {
 
     private double money(double quantity, double unitPrice) {
         return BigDecimal.valueOf(quantity)
-                         .multiply(BigDecimal.valueOf(unitPrice))
-                         .setScale(2, RoundingMode.HALF_UP)
-                         .doubleValue();
+                .multiply(BigDecimal.valueOf(unitPrice))
+                .setScale(2, RoundingMode.HALF_UP)
+                .doubleValue();
     }
 
     private double round(double value) {
         return BigDecimal.valueOf(value)
-                         .setScale(2, RoundingMode.HALF_UP)
-                         .doubleValue();
+                .setScale(2, RoundingMode.HALF_UP)
+                .doubleValue();
     }
 
     private Double toMoney(double value) {
@@ -324,8 +334,7 @@ public class BillingService {
             UtilityBills utilityBill,
             RentPayments rentPayment,
             String status,
-            String message
-    ) {
+            String message) {
         MonthlyBillResponse response = new MonthlyBillResponse();
         response.setUtilityBillId(utilityBill != null ? utilityBill.getId() : null);
         response.setRentPaymentId(rentPayment != null ? rentPayment.getId() : null);
@@ -400,15 +409,15 @@ public class BillingService {
 
     public SuggestionBillingResponse createSuggestionBillingResponse(Long roomId) {
         Rooms currentRoom = roomsRepository.findRoomsById(roomId)
-                                           .orElseThrow(() -> new RuntimeException("Không hiển thị phòng"));
+                .orElseThrow(() -> new RuntimeException("Không hiển thị phòng"));
         SuggestionBillingResponse response = SuggestionBillingResponse.builder()
                 .rentPrice(currentRoom.getRentPrice())
                 .internetFee(currentRoom.getInternetFee())
-               .parkingFee(currentRoom.getParkingFee())
-               .cleaningFee(currentRoom.getCleaningFee())
-               .electricityPricePerKwh(currentRoom.getElectricityPricePerKwh())
-               .waterPricePerM3(currentRoom.getWaterPricePerM3())
-               .build();
+                .parkingFee(currentRoom.getParkingFee())
+                .cleaningFee(currentRoom.getCleaningFee())
+                .electricityPricePerKwh(currentRoom.getElectricityPricePerKwh())
+                .waterPricePerM3(currentRoom.getWaterPricePerM3())
+                .build();
         return response;
     }
 }
