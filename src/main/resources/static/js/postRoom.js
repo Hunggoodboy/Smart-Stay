@@ -13,12 +13,17 @@ const TOTAL_STEPS = 5;
 let mainImageFileObj = null;
 let galleryFilesArray = [];
 
+// State lưu trữ tiện ích nội thất AI nhận diện / người dùng tùy chỉnh
+let detectedInteriorsList = [];
+let roomUtilitiesList = [];
+
 // ─── Entry ────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     bindCharCounters();
     bindPriceListeners();
     bindAddressPreview();
     initDragAndDrop(); // Khởi tạo tính năng kéo/thả ảnh
+    bindAIEvents();    // Khởi tạo các sự kiện AI (định giá & nội thất)
     updateStepUI();
 });
 
@@ -51,33 +56,37 @@ function goToStep(n) {
         scrollToTop();
     }
 }
+
 // Hàm gọi AI Flask
 async function fetchAIAmenities() {
-    const mainImgInput = document.getElementById('mainImageFile');
-    const galleryInput = document.getElementById('galleryFiles');
     const formData = new FormData();
     let hasFiles = false;
 
-    // Lấy ảnh bìa
-    if (mainImgInput.files.length > 0) {
-        formData.append('file', mainImgInput.files[0]);
+    // Lấy ảnh bìa từ biến state thực tế (đã hỗ trợ cả drag-drop)
+    if (mainImageFileObj) {
+        formData.append('file', mainImageFileObj);
         hasFiles = true;
     }
 
-    // Lấy ảnh gallery
-    if (galleryInput.files.length > 0) {
-        for (let i = 0; i < galleryInput.files.length; i++) {
-            formData.append('file', galleryInput.files[i]);
-        }
+    // Lấy ảnh gallery từ biến state thực tế (đã hỗ trợ cả drag-drop)
+    if (galleryFilesArray && galleryFilesArray.length > 0) {
+        galleryFilesArray.forEach(file => {
+            formData.append('file', file);
+        });
         hasFiles = true;
     }
 
-    // Nếu không có ảnh nào, không làm gì cả
-    if (!hasFiles) return;
+    // Nếu không có ảnh nào, hiển thị cảnh báo nhỏ
+    if (!hasFiles) {
+        showToast('⚠️ Vui lòng tải lên ít nhất một hình ảnh để AI nhận diện!', 'warning');
+        return;
+    }
 
-    // Hiển thị UI Đang tải ở Bước 5
-    document.getElementById('ai-loading').style.display = 'block';
-    document.getElementById('ai-results').innerHTML = '';
+    // Hiển thị UI Đang tải
+    const loadingEl = document.getElementById('ai-loading');
+    const resultsContainer = document.getElementById('ai-results');
+    if (loadingEl) loadingEl.style.display = 'block';
+    if (resultsContainer) resultsContainer.innerHTML = '';
 
     try {
         // GỌI SANG CỔNG 5000 CỦA FLASK (sử dụng hostname hiện tại)
@@ -85,36 +94,26 @@ async function fetchAIAmenities() {
         if (host === 'localhost') {
             host = '127.0.0.1';
         }
-        const response = await fetch(`http://${host}:5000/predict`, {
+        const response = await fetch(`http://${host}:5000/predict/image`, {
             method: 'POST',
             body: formData
         });
 
         const data = await response.json();
-        document.getElementById('ai-loading').style.display = 'none';
+        if (loadingEl) loadingEl.style.display = 'none';
 
         if (data.success) {
-            const resultsContainer = document.getElementById('ai-results');
-
-            // Lưu mảng kết quả vào input ẩn để hàm submitForm() lấy dùng
-            document.getElementById('detectedInteriors').value = JSON.stringify(data.detected_amenities);
-
-            if (data.detected_amenities.length === 0) {
-                resultsContainer.innerHTML = '<span style="font-size: 13px; color: #dc3545;">Không tìm thấy nội thất nổi bật.</span>';
-                return;
-            }
-
-            // Render các tag đẹp mắt
-            data.detected_amenities.forEach(item => {
-                const tag = document.createElement('span');
-                tag.style.cssText = 'background: #e2f0fd; color: #007bff; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; border: 1px solid #b8daff;';
-                tag.innerText = "✔️ " + item;
-                resultsContainer.appendChild(tag);
-            });
+            detectedInteriorsList = data.detected_amenities || [];
+            renderInteriorTags();
+            // Tự động gọi dự đoán giá khi có dữ liệu nội thất mới từ AI
+            fetchAIPricePrediction();
+            showToast('🎉 Nhận diện tiện ích nội thất bằng AI thành công!', 'success');
+        } else {
+            if (resultsContainer) resultsContainer.innerHTML = `<span style="color: #dc3545; font-size: 13px;">Lỗi: ${data.error || 'Không nhận diện được.'}</span>`;
         }
     } catch (error) {
-        document.getElementById('ai-loading').style.display = 'none';
-        document.getElementById('ai-results').innerHTML = '<span style="color: #dc3545; font-size: 13px;">Lỗi kết nối AI Server.</span>';
+        if (loadingEl) loadingEl.style.display = 'none';
+        if (resultsContainer) resultsContainer.innerHTML = '<span style="color: #dc3545; font-size: 13px;">Lỗi kết nối AI Server (cổng 5000).</span>';
         console.error("AI Error:", error);
     }
 }
@@ -175,15 +174,15 @@ function validateStep(step) {
     }
 
     if (step === 3) {
-        const rent = parseFloat(val('monthlyRent'));
-        if (!val('monthlyRent') || isNaN(rent) || rent <= 0) {
-            showError('rent-error', 'Giá thuê phải lớn hơn 0'); ok = false; mark('monthlyRent', true);
+        if (!mainImageFileObj && galleryFilesArray.length === 0) {
+            showToast('⚠️ Bạn chưa thêm ảnh nào. Ảnh giúp tăng lượt xem đáng kể!', 'warning');
         }
     }
 
     if (step === 4) {
-        if (!mainImageFileObj && galleryFilesArray.length === 0) {
-            showToast('⚠️ Bạn chưa thêm ảnh nào. Ảnh giúp tăng lượt xem đáng kể!', 'warning');
+        const rent = parseFloat(val('monthlyRent'));
+        if (!val('monthlyRent') || isNaN(rent) || rent <= 0) {
+            showError('rent-error', 'Giá thuê phải lớn hơn 0'); ok = false; mark('monthlyRent', true);
         }
     }
 
@@ -424,6 +423,8 @@ function buildReview() {
       </div>
     </div>`;
 
+    // Khởi chạy dự đoán giá AI cho Step 5 ngay lập tức
+    fetchAIPricePrediction();
 }
 
 /* =============================================
@@ -542,4 +543,311 @@ function showToast(msg, type = '') {
     el.className = `toast ${type}`;
     requestAnimationFrame(() => el.classList.add('show'));
     toastTimer = setTimeout(() => el.classList.remove('show'), 3200);
+}
+
+/* =============================================
+   AI INTERIORS MANAGEMENT & PRICE PREDICTION
+   ============================================= */
+
+function addCustomInterior() {
+    const input = document.getElementById('custom-interior-input');
+    if (!input) return;
+    const value = input.value.trim();
+    if (!value) return;
+    
+    if (!detectedInteriorsList.includes(value)) {
+        detectedInteriorsList.push(value);
+        renderInteriorTags();
+        fetchAIPricePrediction();
+    }
+    input.value = '';
+}
+
+function removeInteriorItem(item) {
+    detectedInteriorsList = detectedInteriorsList.filter(i => i !== item);
+    renderInteriorTags();
+    fetchAIPricePrediction();
+}
+
+function renderInteriorTags() {
+    const resultsContainer = document.getElementById('ai-results');
+    const detectedInput = document.getElementById('detectedInteriors');
+    if (!resultsContainer) return;
+    
+    if (detectedInput) {
+        detectedInput.value = JSON.stringify(detectedInteriorsList);
+    }
+    
+    if (detectedInteriorsList.length === 0) {
+        resultsContainer.innerHTML = '<span style="color: #6c757d; font-style: italic; font-size: 13px;">Chưa có dữ liệu tiện ích nội thất. Hãy nhập thêm ở dưới!</span>';
+        return;
+    }
+    
+    resultsContainer.innerHTML = '';
+    detectedInteriorsList.forEach(item => {
+        const tag = document.createElement('span');
+        tag.style.cssText = 'background: #e2f0fd; color: #007bff; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; border: 1px solid #b8daff; display: inline-flex; align-items: center; gap: 8px;';
+        
+        const label = document.createElement('span');
+        label.innerText = "✔️ " + item;
+        
+        const removeBtn = document.createElement('span');
+        removeBtn.innerHTML = "✕";
+        removeBtn.style.cssText = 'cursor: pointer; font-weight: bold; color: #dc3545; transition: color 0.2s;';
+        removeBtn.addEventListener('mouseenter', () => removeBtn.style.color = '#bd2130');
+        removeBtn.addEventListener('mouseleave', () => removeBtn.style.color = '#dc3545');
+        removeBtn.onclick = () => removeInteriorItem(item);
+        
+        tag.appendChild(label);
+        tag.appendChild(removeBtn);
+        resultsContainer.appendChild(tag);
+    });
+}
+
+async function fetchAIPricePrediction() {
+    const acreage = parseFloat(val('areaM2'));
+    const district = val('district');
+    const city = val('city');
+    const expectPrice = parseFloat(val('monthlyRent'));
+    
+    const infoWidget1 = document.getElementById('ai-price-info-1');
+    const resultsWidget1 = document.getElementById('ai-price-results-1');
+    const infoWidget2 = document.getElementById('ai-price-info-2');
+    const resultsWidget2 = document.getElementById('ai-price-results-2');
+    const loadingWidget1 = document.getElementById('ai-price-loading-1');
+    const loadingWidget2 = document.getElementById('ai-price-loading-2');
+
+    if (!acreage || !city || !expectPrice || isNaN(expectPrice) || expectPrice <= 0) {
+        const guidanceMsg = "Nhập giá thuê, diện tích và địa chỉ để AI dự đoán xác suất thuê & gợi ý giá.";
+        if (infoWidget1) { infoWidget1.style.display = 'block'; infoWidget1.innerText = guidanceMsg; }
+        if (infoWidget2) { infoWidget2.style.display = 'block'; infoWidget2.innerText = guidanceMsg; }
+        if (resultsWidget1) resultsWidget1.style.display = 'none';
+        if (resultsWidget2) resultsWidget2.style.display = 'none';
+        return;
+    }
+
+    if (infoWidget1) infoWidget1.style.display = 'none';
+    if (infoWidget2) infoWidget2.style.display = 'none';
+    if (loadingWidget1) loadingWidget1.style.display = 'flex';
+    if (loadingWidget2) loadingWidget2.style.display = 'flex';
+    if (resultsWidget1) resultsWidget1.style.display = 'none';
+    if (resultsWidget2) resultsWidget2.style.display = 'none';
+
+    try {
+        let host = window.location.hostname;
+        if (host === 'localhost') {
+            host = '127.0.0.1';
+        }
+        
+        const response = await fetch(`http://${host}:5000/predict/price`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                acreage: acreage,
+                district: district || '',
+                city: city,
+                interior: detectedInteriorsList,
+                utilities: roomUtilitiesList,
+                expectPrice: expectPrice
+            })
+        });
+
+        const data = await response.json();
+        
+        if (loadingWidget1) loadingWidget1.style.display = 'none';
+        if (loadingWidget2) loadingWidget2.style.display = 'none';
+
+        if (data.success && data.data) {
+            const predPrice = data.data.predicted_price;
+            const rentProb = data.data.rent_probability;
+            
+            let probPercent = 0;
+            if (rentProb <= 1) {
+                probPercent = Math.round(rentProb * 100);
+            } else {
+                probPercent = Math.round(rentProb);
+            }
+            
+            const suggestedFormatted = fmt(Math.round(predPrice)) + " ₫";
+            
+            let comment = "";
+            const priceDiff = expectPrice - predPrice;
+            const percentDiff = (priceDiff / predPrice) * 100;
+            
+            if (percentDiff > 20) {
+                comment = `⚠️ Mức giá mong muốn (${fmt(expectPrice)} ₫) đang cao hơn hẳn gợi ý AI (${suggestedFormatted}). Xác suất thuê giảm còn ${probPercent}%. Giảm giá giúp tiếp cận khách thuê nhanh hơn.`;
+            } else if (percentDiff > 5) {
+                comment = `💡 Giá mong muốn hơi cao hơn trung bình khu vực. Xác suất cho thuê thành công là ${probPercent}%.`;
+            } else if (percentDiff < -10) {
+                comment = `✨ Giá mong muốn (${fmt(expectPrice)} ₫) đang rất rẻ so với định giá AI (${suggestedFormatted}). Xác suất cho thuê cực cao (${probPercent}%).`;
+            } else {
+                comment = `✅ Mức giá ${fmt(expectPrice)} ₫ cực kỳ hợp lý, sát với định giá tối ưu của AI (${suggestedFormatted}). Xác suất thuê là ${probPercent}%.`;
+            }
+
+            updatePriceWidgetDOM(1, suggestedFormatted, probPercent, comment);
+            updatePriceWidgetDOM(2, suggestedFormatted, probPercent, comment);
+        } else {
+            showPriceError("Không nhận được dữ liệu dự đoán từ AI.");
+        }
+    } catch (e) {
+        console.error("Price Predict Error:", e);
+        if (loadingWidget1) loadingWidget1.style.display = 'none';
+        if (loadingWidget2) loadingWidget2.style.display = 'none';
+        showPriceError("Không kết nối được tới AI Server dự đoán giá (cổng 5000).");
+    }
+}
+
+function updatePriceWidgetDOM(index, suggestedPrice, probPercent, comment) {
+    const resultsWidget = document.getElementById(`ai-price-results-${index}`);
+    const suggestedEl = document.getElementById(`ai-price-suggested-${index}`);
+    const probEl = document.getElementById(`ai-price-prob-${index}`);
+    const probBar = document.getElementById(`ai-price-prob-bar-${index}`);
+    const commentEl = document.getElementById(`ai-price-comment-${index}`);
+    
+    if (resultsWidget) resultsWidget.style.display = 'block';
+    if (suggestedEl) suggestedEl.innerText = suggestedPrice;
+    if (probEl) probEl.innerText = probPercent + "%";
+    
+    if (probBar) {
+        probBar.style.width = probPercent + "%";
+        if (probPercent >= 75) {
+            probBar.style.background = 'linear-gradient(90deg, #28a745, #20c997)';
+        } else if (probPercent >= 45) {
+            probBar.style.background = 'linear-gradient(90deg, #007bff, #17a2b8)';
+        } else {
+            probBar.style.background = 'linear-gradient(90deg, #ffc107, #dc3545)';
+        }
+    }
+    
+    if (commentEl) commentEl.innerText = comment;
+}
+
+function showPriceError(msg) {
+    const resultsWidget1 = document.getElementById('ai-price-results-1');
+    const infoWidget1 = document.getElementById('ai-price-info-1');
+    const resultsWidget2 = document.getElementById('ai-price-results-2');
+    const infoWidget2 = document.getElementById('ai-price-info-2');
+    
+    if (resultsWidget1) resultsWidget1.style.display = 'none';
+    if (infoWidget1) {
+        infoWidget1.style.display = 'block';
+        infoWidget1.innerHTML = `<span style="color: #dc3545; font-size: 13px;">❌ ${msg}</span>`;
+    }
+    
+    if (resultsWidget2) resultsWidget2.style.display = 'none';
+    if (infoWidget2) {
+        infoWidget2.style.display = 'block';
+        infoWidget2.innerHTML = `<span style="color: #dc3545; font-size: 13px;">❌ ${msg}</span>`;
+    }
+}
+
+/* =============================================
+   AI UTILITIES MANAGEMENT
+   ============================================= */
+
+function toggleUtility(val) {
+    if (roomUtilitiesList.includes(val)) {
+        roomUtilitiesList = roomUtilitiesList.filter(u => u !== val);
+    } else {
+        roomUtilitiesList.push(val);
+    }
+    renderUtilityTags();
+    fetchAIPricePrediction();
+}
+
+function addCustomUtility() {
+    const input = document.getElementById('custom-utility-input');
+    if (!input) return;
+    const value = input.value.trim();
+    if (!value) return;
+    
+    if (!roomUtilitiesList.includes(value)) {
+        roomUtilitiesList.push(value);
+        renderUtilityTags();
+        fetchAIPricePrediction();
+    }
+    input.value = '';
+}
+
+function removeUtilityItem(item) {
+    roomUtilitiesList = roomUtilitiesList.filter(u => u !== item);
+    
+    // Uncheck popular checkbox if it was checked
+    const checkboxes = document.querySelectorAll('input[name="utilities-checkbox"]');
+    checkboxes.forEach(cb => {
+        if (cb.value === item) {
+            cb.checked = false;
+        }
+    });
+
+    renderUtilityTags();
+    fetchAIPricePrediction();
+}
+
+function renderUtilityTags() {
+    const container = document.getElementById('utility-tags-container');
+    const inputEl = document.getElementById('roomUtilities');
+    if (!container) return;
+    
+    if (inputEl) {
+        inputEl.value = JSON.stringify(roomUtilitiesList);
+    }
+    
+    if (roomUtilitiesList.length === 0) {
+        container.innerHTML = '<span style="color: #6c757d; font-style: italic; font-size: 13px;">Chưa chọn tiện ích nào.</span>';
+        return;
+    }
+    
+    container.innerHTML = '';
+    roomUtilitiesList.forEach(item => {
+        const tag = document.createElement('span');
+        tag.style.cssText = 'background: #e6fffa; color: #0d9488; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; border: 1px solid #99f6e4; display: inline-flex; align-items: center; gap: 8px;';
+        
+        const label = document.createElement('span');
+        label.innerText = "⚡ " + item;
+        
+        const removeBtn = document.createElement('span');
+        removeBtn.innerHTML = "✕";
+        removeBtn.style.cssText = 'cursor: pointer; font-weight: bold; color: #dc3545; transition: color 0.2s;';
+        removeBtn.addEventListener('mouseenter', () => removeBtn.style.color = '#bd2130');
+        removeBtn.addEventListener('mouseleave', () => removeBtn.style.color = '#dc3545');
+        removeBtn.onclick = () => removeUtilityItem(item);
+        
+        tag.appendChild(label);
+        tag.appendChild(removeBtn);
+        container.appendChild(tag);
+    });
+}
+
+function bindAIEvents() {
+    const customInput = document.getElementById('custom-interior-input');
+    customInput?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addCustomInterior();
+        }
+    });
+
+    const customUtilityInput = document.getElementById('custom-utility-input');
+    customUtilityInput?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addCustomUtility();
+        }
+    });
+
+    let pricePredictTimeout = null;
+    const debouncedPricePrediction = () => {
+        clearTimeout(pricePredictTimeout);
+        pricePredictTimeout = setTimeout(fetchAIPricePrediction, 500);
+    };
+
+    document.getElementById('monthlyRent')?.addEventListener('input', debouncedPricePrediction);
+    
+    ['areaM2', 'district', 'city'].forEach(id => {
+        document.getElementById(id)?.addEventListener('change', debouncedPricePrediction);
+        document.getElementById(id)?.addEventListener('input', debouncedPricePrediction);
+    });
 }
