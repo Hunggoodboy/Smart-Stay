@@ -9,6 +9,7 @@ import vn.edu.ptit.repository.RevenueReportRepository;
 import vn.edu.ptit.service.Authentication.AuthService;
 
 import java.util.List;
+import java.util.Comparator;
 
 @Service
 @AllArgsConstructor
@@ -47,6 +48,41 @@ public class RevenueReportService {
             return emptyReport(year, null);
         }
         return mapToResponse(year, null, reports.get(0));
+    }
+
+    public RevenueReportResponse getHighestMonthReport(Integer year) {
+        return getExtremeMonthReport(year, true);
+    }
+
+    public RevenueReportResponse getLowestMonthReport(Integer year) {
+        return getExtremeMonthReport(year, false);
+    }
+
+    private RevenueReportResponse getExtremeMonthReport(Integer year, boolean highest) {
+        checkYear(year);
+        String yearText = String.valueOf(year);
+        Long landlordId = getLandlordId();
+        List<Object[]> monthlyRevenue = revenueReportRepository.reportMonthlyRevenueByYear(
+                yearText,
+                landlordId,
+                RentPayments.Status.PAID
+        );
+
+        if (monthlyRevenue.isEmpty()) {
+            return emptyReport(year, null);
+        }
+
+        Comparator<Object[]> byRevenue = Comparator.comparing(row -> ((Number) row[1]).doubleValue());
+        Object[] target = highest
+                ? monthlyRevenue.stream().max(byRevenue).orElse(null)
+                : monthlyRevenue.stream().min(byRevenue).orElse(null);
+
+        if (target == null) {
+            return emptyReport(year, null);
+        }
+
+        int month = Integer.parseInt((String) target[0]);
+        return getMonthlyReport(year, month);
     }
 
     private RevenueReportResponse mapToResponse(Integer year, Integer month, Object[] row) {

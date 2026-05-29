@@ -34,6 +34,24 @@ public class RevenueReportController {
         }
     }
 
+    @GetMapping("/highest-month")
+    public ResponseEntity<?> getHighestMonthReport(@RequestParam Integer year) {
+        try {
+            return ResponseEntity.ok(revenueReportService.getHighestMonthReport(year));
+        } catch (RuntimeException e) {
+            return badRequest(e.getMessage());
+        }
+    }
+
+    @GetMapping("/lowest-month")
+    public ResponseEntity<?> getLowestMonthReport(@RequestParam Integer year) {
+        try {
+            return ResponseEntity.ok(revenueReportService.getLowestMonthReport(year));
+        } catch (RuntimeException e) {
+            return badRequest(e.getMessage());
+        }
+    }
+
     private ResponseEntity<ApiResponse> badRequest(String message) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.builder().success(false).message(message).build());

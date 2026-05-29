@@ -125,8 +125,21 @@
         .stat-label { font-size: 0.75rem; font-weight: 800; color: var(--gray-500); text-transform: uppercase; }
         .stat-value { font-size: 1.75rem; font-weight: 900; color: var(--blue-700); }
         .stat-sub { font-size: 0.75rem; color: var(--gray-400); }
+        .year-only { display: none; }
 
         .chart-container { position: relative; height: 400px; width: 100%; }
+        .chart-header {
+            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+            margin-bottom: 1rem; flex-wrap: wrap;
+        }
+        .chart-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+        .btn-chart-action {
+            background: var(--blue-50); color: var(--blue-700); border: 1.5px solid var(--blue-100);
+            padding: 0.55rem 1rem; border-radius: 999px; font-weight: 800; font-size: 0.8rem;
+            font-family: inherit; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-chart-action:hover:not(:disabled) { background: var(--blue-600); color: #fff; transform: translateY(-1px); }
+        .btn-chart-action:disabled { opacity: 0.55; cursor: not-allowed; }
 
         .ss-table-wrap { overflow-x: auto; border: 1.5px solid var(--blue-100); border-radius: 1rem; }
         .ss-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
@@ -236,10 +249,26 @@
                         <div class="stat-value" id="avgRevenue">0 VNĐ</div>
                         <span class="stat-sub">Dựa trên dữ liệu năm</span>
                     </div>
+                    <div class="stat-item year-only">
+                        <span class="stat-label">Doanh thu tháng cao nhất</span>
+                        <div class="stat-value" id="highestRevenue">0 VNĐ</div>
+                        <span class="stat-sub" id="highestRevenueSub">Chưa có dữ liệu</span>
+                    </div>
+                    <div class="stat-item year-only">
+                        <span class="stat-label">Doanh thu tháng thấp nhất</span>
+                        <div class="stat-value" id="lowestRevenue">0 VNĐ</div>
+                        <span class="stat-sub" id="lowestRevenueSub">Chưa có dữ liệu</span>
+                    </div>
                 </div>
 
                 <div class="ss-card" style="padding: 1.5rem;">
-                    <div class="ss-card-title">Biểu đồ doanh thu</div>
+                    <div class="chart-header">
+                        <div class="ss-card-title">Biểu đồ doanh thu</div>
+                        <div class="chart-actions year-only">
+                            <button type="button" class="btn-chart-action" id="btnHighestRevenueMonth">Doanh thu tháng cao nhất</button>
+                            <button type="button" class="btn-chart-action" id="btnLowestRevenueMonth">Doanh thu tháng thấp nhất</button>
+                        </div>
+                    </div>
                     <div class="chart-container">
                         <canvas id="revenueChart"></canvas>
                     </div>
