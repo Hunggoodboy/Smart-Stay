@@ -94,25 +94,25 @@ function formatCurrency(value) {
 function getStatusLabel(status) {
     const normalized = String(status || '').toUpperCase();
     if (normalized === 'PAID') {
-        return 'Da thanh toan';
+        return 'Đã thanh toán';
     }
     if (normalized === 'OVERDUE') {
-        return 'Qua han';
+        return 'Quá hạn';
     }
     if (normalized === 'UNPAID') {
-        return 'Chua thanh toan';
+        return 'Chưa thanh toán';
     }
-    return 'Chua xac dinh';
+    return 'Chưa xác định';
 }
 
 function formatDate(value) {
     if (!value) {
-        return 'Chua xac dinh';
+        return 'Chưa xác định';
     }
 
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) {
-        return 'Chua xac dinh';
+        return 'Chưa xác định';
     }
 
     return date.toLocaleDateString('vi-VN');
@@ -180,7 +180,7 @@ function mergeDashboardData(userData, latestBill) {
         Number(latestBill.otherFee || 0);
     data.serviceAmount = Number.isFinite(rawServiceAmount) ? rawServiceAmount : fallbackServiceAmount;
     if (latestBill.billingMonth !== undefined && latestBill.billingMonth !== null) {
-        data.billingMonth = `thang ${latestBill.billingMonth}`;
+        data.billingMonth = `tháng ${latestBill.billingMonth}`;
     }
 
     return data;
@@ -453,7 +453,11 @@ function renderNotifDropdown(notifications) {
 function renderNotifSidebar(notifications) {
     // Render vào card bên phải của dashboard (giữ nguyên như cũ)
     const list = el.notificationList;
-    if (!list || !notifications.length) return;
+    if (!list) return;
+    if (!notifications.length) {
+        list.innerHTML = '<div style="padding:18px 0;text-align:center;color:#94a3b8;font-size:13px;">Chưa có thông báo mới</div>';
+        return;
+    }
     list.innerHTML = notifications.slice(0, 5).map((item, i) => {
         const s = getNotifIconStyle(item.notificationType);
         const time = relativeTime(item.createdAt);

@@ -28,6 +28,7 @@ public class SecurityConfig {
                         "/api/auth/**", "/room-posted", "/room-detail/**",
                         "/api/user/login", "/api/user/register",
                         "/postRooms", "/MyRentalRequest", "/myHome", "/payment", "/chatMessage", "/registerLandLord",
+                        "/api/payments/payos/webhook",
                         "/error", "/gs-guide-websocket/**", "/contract/create", "/myContracts", "/contractDetail/**",
                         "/revenue-management", "/createRoomManage", "/landlord-view/**", "/room-detail-management/**"
         };

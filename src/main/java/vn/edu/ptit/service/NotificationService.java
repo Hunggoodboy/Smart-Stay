@@ -39,18 +39,17 @@ public class NotificationService {
                 .success(true)
                 .build();
     }
-        public List<NotificationsResponse> getNotificationResponseForUsers () {
-            Long userId = authService.getCurrentUserId();
-            List<Notifications> notificationsList = notificationsRepository.findAllByCustomerId(userId);
-            return notificationsList.stream()
-                                    .map(
-                                            notification -> NotificationsResponse.builder()
-                                                                                 .content(notification.getContent())
-                                                                                 .notificationType(notification.getNotificationType())
-                                                                                 .title(notification.getTitle())
-                                                                                 .createdAt(notification.getCreatedAt())
-                                                                                 .build()
-                                    )
-                                    .toList();
-        }
+
+    public List<NotificationsResponse> getNotificationResponseForUsers() {
+        Long userId = authService.getCurrentUserId();
+        List<Notifications> notificationsList = notificationsRepository.findAllByCustomerId(userId);
+        return notificationsList.stream()
+                .map(notification -> NotificationsResponse.builder()
+                        .content(notification.getContent())
+                        .notificationType(notification.getNotificationType())
+                        .title(notification.getTitle())
+                        .createdAt(notification.getCreatedAt())
+                        .build())
+                .toList();
     }
+}

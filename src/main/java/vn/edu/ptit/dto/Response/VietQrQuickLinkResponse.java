@@ -16,4 +16,9 @@ public class VietQrQuickLinkResponse {
     private String accountName;
     private String bankId;
     private String accountNoMasked;
+    private String checkoutUrl;
+    private String qrCode;
+    private Long orderCode;
+    private String paymentLinkId;
+    private String status;
 }
