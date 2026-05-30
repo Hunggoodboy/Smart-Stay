@@ -43,4 +43,9 @@ public class BillingController {
     public ResponseEntity<?> getSuggestion(@RequestParam Long roomId) {
         return ResponseEntity.ok(billingService.createSuggestionBillingResponse(roomId));
     }
+
+    @GetMapping("/suggestion/before-month")
+    public ResponseEntity<?> getSuggestionBeforeMonth(@RequestParam Long roomId, @RequestParam String month) {
+        return ResponseEntity.ok(billingService.getBillingLastMonthResponse(roomId, month));
+    }
 }

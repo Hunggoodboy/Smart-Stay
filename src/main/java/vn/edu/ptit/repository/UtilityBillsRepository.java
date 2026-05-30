@@ -29,4 +29,5 @@ public interface UtilityBillsRepository extends JpaRepository<UtilityBills, Long
             ORDER BY u.billingMonth DESC, u.createdAt DESC
             """)
     List<UtilityBills> findAllByUserId(@Param(value = "userId") Long userId);
+    Optional<UtilityBills> findByBillingMonth(String billingMonth);
 }

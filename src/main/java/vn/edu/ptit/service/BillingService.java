@@ -3,9 +3,12 @@ package vn.edu.ptit.service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeParseException;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import vn.edu.ptit.dto.Response.SuggestionBillingResponse;
+import vn.edu.ptit.dto.Response.getBillingLastMonthResponse;
 import vn.edu.ptit.entity.*;
 import vn.edu.ptit.dto.Request.MonthlyBillRequest;
 import vn.edu.ptit.dto.Response.MonthlyBillResponse;
@@ -48,15 +52,15 @@ public class BillingService {
                     throw new RuntimeException("Phòng đã có hóa đơn điện nước tháng " + result.billingMonth);
                 });
 
-//        Optional<UtilityBills> existingBill =
-//                utilityBillsRepository.findTopByRoom_IdAndBillingMonthOrderByCreatedAtDesc(
-//                        result.room.getId(),
-//                        result.billingMonth
-//                );
-//
-//        if (existingBill.isPresent()) {
-//            throw new RuntimeException("Phòng đã có hóa đơn điện nước tháng " + result.billingMonth);
-//        }
+        Optional<UtilityBills> existingBill =
+                utilityBillsRepository.findTopByRoom_IdAndBillingMonthOrderByCreatedAtDesc(
+                        result.room.getId(),
+                        result.billingMonth
+                );
+
+        if (existingBill.isPresent()) {
+            throw new RuntimeException("Phòng đã có hóa đơn điện nước tháng " + result.billingMonth);
+        }
 
         rentPaymentsRepository
                 .findTopByContract_IdAndBillingMonthOrderByCreatedAtDesc(result.contract.getId(), result.billingMonth)
@@ -80,7 +84,7 @@ public class BillingService {
         utilityBill.setWaterConsumed(result.waterConsumed);
         utilityBill.setWaterPricePerM3(result.waterPricePerM3);
         utilityBill.setWaterAmount(result.waterAmount);
-
+        utilityBill.setCreatedAt(LocalDateTime.now());
         utilityBill.setInternetFee(result.internetFee);
         utilityBill.setParkingFee(result.parkingFee);
         utilityBill.setCleaningFee(result.cleaningFee);
@@ -410,5 +414,24 @@ public class BillingService {
                .waterPricePerM3(currentRoom.getWaterPricePerM3())
                .build();
         return response;
+    }
+    private String getLastMonth(String currentDate){
+        String[] current = currentDate.split("-");
+        int month =  Integer.parseInt(current[1]);
+        if(month == 1){
+            return String.valueOf(Integer.parseInt(current[0]) - 1) + "-12";
+        }
+        return current[0] + "-" + String.format("%02d", month - 1);
+    }
+    public getBillingLastMonthResponse  getBillingLastMonthResponse(Long roomId, String currentDate) {
+        String lastMonth = getLastMonth(currentDate);
+        UtilityBills utilityBills = utilityBillsRepository.findTopByRoom_IdAndBillingMonthOrderByCreatedAtDesc(roomId, lastMonth).orElse(null);
+        if(utilityBills == null){
+            return null;
+        }
+        return getBillingLastMonthResponse.builder()
+                    .oldElectronic(utilityBills.getElectricityNewIndex())
+                    .oldWater(utilityBills.getWaterNewIndex())
+                    .build();
     }
 }

@@ -488,12 +488,57 @@
         document.getElementById('hero-room-number').textContent = 'Phòng ' + esc(r.roomNumber);
         document.getElementById('hero-room-type-text').textContent = (r.roomType || '').replace(/_/g,' ');
         document.getElementById('hero-price').textContent = r.rentPrice ? Number(r.rentPrice).toLocaleString('vi-VN') : '—';
-        document.getElementById('stat-tenant').textContent = r.userName || 'Chưa có';
-        document.getElementById('d-room-num').textContent = r.roomNumber || '—';
+        document.getElementById('hero-address').textContent = r.address || '—';
 
+        // Điền badge trạng thái và đổi màu chấm tròn loại phòng
+        const badgeEl = document.getElementById('hero-status-badge');
+        if (badgeEl) {
+            let statusLabel = 'Còn trống';
+            let badgeClass = 'badge-active';
+            if (r.status === 'RENTED' || r.status === 'OCCUPIED') {
+                statusLabel = 'Đang thuê';
+                badgeClass = 'badge-rented';
+            } else if (r.status === 'MAINTENANCE') {
+                statusLabel = 'Bảo trì';
+                badgeClass = 'badge-maintenance';
+            }
+            badgeEl.innerHTML = `<span class="badge ${badgeClass}"><span class="badge-dot"></span>${statusLabel}</span>`;
+        }
+
+        const dotEl = document.getElementById('hero-room-type-dot');
+        if (dotEl) {
+            if (r.status === 'RENTED' || r.status === 'OCCUPIED') {
+                dotEl.style.backgroundColor = '#f59e0b';
+            } else if (r.status === 'MAINTENANCE') {
+                dotEl.style.backgroundColor = '#ef4444';
+            } else {
+                dotEl.style.backgroundColor = '#22c55e';
+            }
+        }
+
+        // Điền các ô thống kê nhanh
+        document.getElementById('stat-status').textContent = (r.status === 'RENTED' || r.status === 'OCCUPIED') ? 'Đang thuê' : (r.status === 'MAINTENANCE' ? 'Bảo trì' : 'Còn trống');
+        document.getElementById('stat-tenant').textContent = r.userName || 'Chưa có';
+        document.getElementById('stat-district').textContent = r.district || '—';
+        document.getElementById('stat-city').textContent = r.city || '—';
+
+        // Điền bảng Chi tiết phòng
+        document.getElementById('d-room-num').textContent = r.roomNumber || '—';
+        document.getElementById('d-room-type').textContent = (r.roomType || '').replace(/_/g,' ');
+        document.getElementById('d-price').textContent = r.rentPrice ? Number(r.rentPrice).toLocaleString('vi-VN') + ' đ' : '—';
+        document.getElementById('d-status').textContent = (r.status === 'RENTED' || r.status === 'OCCUPIED') ? 'Đang thuê' : (r.status === 'MAINTENANCE' ? 'Bảo trì' : 'Còn trống');
+        document.getElementById('d-address').textContent = r.address || '—';
+        document.getElementById('d-ward').textContent = r.ward || '—';
+        document.getElementById('d-district').textContent = r.district || '—';
+        document.getElementById('d-city').textContent = r.city || '—';
+
+        // Khách thuê hiện tại
         if (r.userName) {
             document.getElementById('tenant-card-wrap').innerHTML = `<div class="tenant-card"><div class="tenant-avatar">${getInitials(r.userName)}</div><div><div class="tenant-name">${esc(r.userName)}</div><div class="tenant-email">${esc(r.userEmail||'')}</div></div></div>`;
+        } else {
+            document.getElementById('tenant-card-wrap').innerHTML = `<div style="padding:0.75rem 1rem;background:var(--success-bg);border:1.5px solid var(--success-bd);border-radius:0.75rem;font-size:0.8rem;color:var(--success);font-weight:700;">Phòng hiện đang trống — sẵn sàng cho thuê</div>`;
         }
+
         setupChat(r);
 
         // Chuẩn bị cho tab Hóa đơn
@@ -661,8 +706,50 @@
                 document.getElementById('inv-parking').value = sugg.parkingFee || 0;
                 document.getElementById('inv-cleaning').value = sugg.cleaningFee || 0;
             }
+
+            // Gọi API lấy số điện nước cũ tháng trước
+            const currentMonth = document.getElementById('inv-month').value;
+            if (currentMonth) {
+                await loadBillingBeforeMonthSuggestion(roomId, currentMonth);
+            }
         } catch(e) {
             console.error("Lỗi lấy dữ liệu gợi ý hóa đơn", e);
+        }
+    }
+
+    // Lấy số điện nước cũ từ tháng trước dựa trên roomId và tháng hiện tại
+    async function loadBillingBeforeMonthSuggestion(roomId, month) {
+        if (!roomId || !month) return;
+        try {
+            const res = await fetch(`/api/billing/suggestion/before-month?roomId=${roomId}&month=${month}`, { headers: authHeaders() });
+            if (res.ok) {
+                const text = await res.text();
+                if (text && text.trim() !== '' && text.trim() !== 'null') {
+                    try {
+                        const data = JSON.parse(text);
+                        if (data) {
+                            if (data.oldElectronic !== undefined && data.oldElectronic !== null) {
+                                document.getElementById('elec-start').value = data.oldElectronic;
+                            } else {
+                                document.getElementById('elec-start').value = '';
+                            }
+                            if (data.oldWater !== undefined && data.oldWater !== null) {
+                                document.getElementById('water-start').value = data.oldWater;
+                            } else {
+                                document.getElementById('water-start').value = '';
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Error parsing before-month suggestion:", e);
+                    }
+                } else {
+                    // Nếu trả về null hoặc trống thì không suggest và xoá giá trị cũ (hoặc giữ trống)
+                    document.getElementById('elec-start').value = '';
+                    document.getElementById('water-start').value = '';
+                }
+            }
+        } catch (e) {
+            console.error("Lỗi lấy dữ liệu chỉ số điện nước tháng trước", e);
         }
     }
 
@@ -795,6 +882,16 @@
             }
         }
         loadRoomDetail();
+
+        // Lắng nghe sự kiện thay đổi kỳ tháng để cập nhật số điện nước cũ từ tháng trước
+        const handleMonthChange = async () => {
+            if (currentRoom && currentRoom.id) {
+                const month = document.getElementById('inv-month').value;
+                await loadBillingBeforeMonthSuggestion(currentRoom.id, month);
+            }
+        };
+        document.getElementById('inv-month')?.addEventListener('change', handleMonthChange);
+        document.getElementById('inv-month')?.addEventListener('input', handleMonthChange);
     });
 </script>
 
