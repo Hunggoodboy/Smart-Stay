@@ -116,6 +116,11 @@ public class WebController {
         return "revenue_management";
     }
 
+    @GetMapping("/landlord/rent-payments")
+    public String landlordRentPayments() {
+        return "landlord_rent_payments";
+    }
+
     @GetMapping("/my-appointments")
     public String myAppointments() {
         return "appointments";

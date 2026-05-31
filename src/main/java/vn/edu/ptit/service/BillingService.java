@@ -84,7 +84,7 @@ public class BillingService {
         utilityBill.setWaterConsumed(result.waterConsumed);
         utilityBill.setWaterPricePerM3(result.waterPricePerM3);
         utilityBill.setWaterAmount(result.waterAmount);
-        utilityBill.setCreatedAt(LocalDateTime.now());
+
         utilityBill.setInternetFee(result.internetFee);
         utilityBill.setParkingFee(result.parkingFee);
         utilityBill.setCleaningFee(result.cleaningFee);
@@ -414,24 +414,5 @@ public class BillingService {
                .waterPricePerM3(currentRoom.getWaterPricePerM3())
                .build();
         return response;
-    }
-    private String getLastMonth(String currentDate){
-        String[] current = currentDate.split("-");
-        int month =  Integer.parseInt(current[1]);
-        if(month == 1){
-            return String.valueOf(Integer.parseInt(current[0]) - 1) + "-12";
-        }
-        return current[0] + "-" + String.format("%02d", month - 1);
-    }
-    public getBillingLastMonthResponse  getBillingLastMonthResponse(Long roomId, String currentDate) {
-        String lastMonth = getLastMonth(currentDate);
-        UtilityBills utilityBills = utilityBillsRepository.findTopByRoom_IdAndBillingMonthOrderByCreatedAtDesc(roomId, lastMonth).orElse(null);
-        if(utilityBills == null){
-            return null;
-        }
-        return getBillingLastMonthResponse.builder()
-                    .oldElectronic(utilityBills.getElectricityNewIndex())
-                    .oldWater(utilityBills.getWaterNewIndex())
-                    .build();
     }
 }
