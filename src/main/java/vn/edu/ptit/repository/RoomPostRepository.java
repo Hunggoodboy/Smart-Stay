@@ -105,18 +105,8 @@ public interface RoomPostRepository extends JpaRepository<RoomPosts, Long> {
               r.createdAt DESC
             """)
     List<RoomPosts> findAllOrderByFeaturedPriorityAndCreatedAt();
-
-    @Query("""
-            SELECT r FROM RoomPosts r
-            WHERE r.landlord.id != :userId
-            ORDER BY
-              CASE
-                WHEN r.featured = true
-                 AND (r.featuredUntil IS NULL OR r.featuredUntil > CURRENT_TIMESTAMP)
-                THEN 1 ELSE 0
-              END DESC,
-              r.featuredPriority DESC,
-              r.createdAt DESC
-            """)
-    List<RoomPosts> findAllRoomsWithoutMine(@Param("userId") Long userId);
+    @Query("SELECT r FROM RoomPosts r WHERE r.status = 'ACTIVE'")
+    Page<RoomPosts> findAllActiveRooms(Pageable pageable);
+    @Query("SELECT r FROM RoomPosts r WHERE r.status = 'ACTIVE' AND r.landlord.id != :userId")
+    Page<RoomPosts> findAllActiveRoomsWithoutMine(@Param("userId") Long userId, Pageable pageable);
 }

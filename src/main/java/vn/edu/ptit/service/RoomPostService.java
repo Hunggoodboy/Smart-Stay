@@ -2,6 +2,8 @@ package vn.edu.ptit.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -67,27 +69,39 @@ public class RoomPostService {
                 .roomPostId(save.getId()).build();
     }
 
-    public List<RoomPostSummaryResponse> getAllRoomPosts() {
-        Long userId = authService.getCurrentUserIdOrNull(); // An toàn: trả null nếu chưa đăng nhập
-        List<RoomPosts> roomPosts;
-        if (userId == null) {
-            roomPosts = roomPostRepository.findAllOrderByFeaturedPriorityAndCreatedAt();
+    public Page<RoomPostSummaryResponse> getRoomPostsFeed(int page, int size) {
+        Long userId = authService.getCurrentUserIdOrNull();
+
+        // Thêm hàm lấy Role của người dùng hiện tại
+        String role = authService.getUser().getRole().toString();
+
+        Sort sort = Sort.by(Sort.Direction.DESC, "featuredPriority")
+                .and(Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<RoomPosts> roomPostsPage;
+
+        if (userId != null && "LANDLORD".equals(role)) {
+            // Chỉ Landlord mới bị giấu phòng của chính mình
+            roomPostsPage = roomPostRepository.findAllActiveRoomsWithoutMine(userId, pageable);
         } else {
-            roomPosts = roomPostRepository.findAllRoomsWithoutMine(userId);
+            // Customer, Admin hoặc người chưa đăng nhập (Guest) thì xem được toàn bộ
+            roomPostsPage = roomPostRepository.findAllActiveRooms(pageable);
         }
-        return roomPosts.stream().map(post ->
-            RoomPostSummaryResponse.builder()
-                    .id(post.getId())
-                    .title(post.getTitle())
-                    .monthlyRent(post.getMonthlyRent())
-                    .areaM2(post.getAreaM2())
-                    .roomType(post.getRoomType())
-                    .status(post.getStatus())
-                    .thumbnailUrl(post.getMainImageUrl())
-                    .landlordName(post.getLandlord().getFullName())
-                    .publishedAt(post.getCreatedAt())
-                    .build()
-        ).toList();
+
+        return roomPostsPage.map(post ->
+                RoomPostSummaryResponse.builder()
+                        .id(post.getId())
+                        .title(post.getTitle())
+                        .monthlyRent(post.getMonthlyRent())
+                        .areaM2(post.getAreaM2())
+                        .roomType(post.getRoomType())
+                        .status(post.getStatus())
+                        .thumbnailUrl(post.getMainImageUrl())
+                        .landlordName(post.getLandlord().getFullName())
+                        .publishedAt(post.getCreatedAt())
+                        .build()
+        );
     }
 
     public List<RoomPostSummaryResponse> getPostsForCurrentLandlord() {

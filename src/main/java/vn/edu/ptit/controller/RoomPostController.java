@@ -3,6 +3,7 @@ package vn.edu.ptit.controller;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -66,8 +67,12 @@ public class RoomPostController {
 
 
     @GetMapping("/room-posted")
-    private ResponseEntity<List<RoomPostSummaryResponse>> getRoomPosted() {
-        return ResponseEntity.ok(roomPostService.getAllRoomPosts());
+    private ResponseEntity<Page<RoomPostSummaryResponse>> getRoomPosted(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<RoomPostSummaryResponse> response = roomPostService.getRoomPostsFeed(page, size);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/room-detail/{id}")

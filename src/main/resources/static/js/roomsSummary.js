@@ -19,6 +19,8 @@ let currentPage = 1;
 let isListView  = false;
 let searchTerm  = '';
 let filters     = { type: '', price: '', sort: 'newest' };
+let totalPages  = 1;
+let totalElements = 0;
 
 /* ─── DOM ─── */
 const $       = id => document.getElementById(id);
@@ -85,11 +87,17 @@ async function loadRooms() {
         const headers = {};
         if (token) headers['Authorization'] = `Bearer ${token}`;
 
-        const res = await fetch(API_URL, { headers });
+        // Page ở backend là 0-indexed
+        const pageParam = currentPage - 1;
+        const res = await fetch(`${API_URL}?page=${pageParam}&size=${PAGE_SIZE}`, { headers });
         if (!res.ok) throw new Error(`Server trả về lỗi: ${res.status}`);
-        allRooms = await res.json();
+        
+        const pageData = await res.json();
+        allRooms = pageData.content || [];
+        totalPages = pageData.totalPages || 0;
+        totalElements = pageData.totalElements || 0;
 
-        heroCount.textContent = `${allRooms.length}+ phòng đang cho thuê`;
+        heroCount.textContent = `${totalElements}+ phòng đang cho thuê`;
         applyFilters();
     } catch (err) {
         showError(err.message);
@@ -120,7 +128,6 @@ function applyFilters() {
     if (filters.sort === 'price_desc') filtered.sort((a, b) => Number(b.monthlyRent) - Number(a.monthlyRent));
     if (filters.sort === 'newest')     filtered.sort((a, b) => new Date(b.publishedAt || 0) - new Date(a.publishedAt || 0));
 
-    currentPage = 1;
     renderPage();
     renderPager();
     renderCounter();
@@ -132,9 +139,8 @@ function applyFilters() {
    ═══════════════════════════════════════════ */
 function renderPage() {
     if (filtered.length === 0) { showEmpty(); return; }
-    const slice = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
     grid.className = isListView ? 'room-grid list-view' : 'room-grid';
-    grid.innerHTML = slice.map(buildCard).join('');
+    grid.innerHTML = filtered.map(buildCard).join('');
 }
 
 // Đã fix lỗi copy đè và cập nhật link "/rooms/${r.id}"
@@ -178,10 +184,9 @@ function buildCard(r) {
 
 /* ─── Pagination ─── */
 function renderPager() {
-    const total = Math.ceil(filtered.length / PAGE_SIZE);
-    if (total <= 1) { pager.innerHTML = ''; return; }
+    if (totalPages <= 1) { pager.innerHTML = ''; return; }
 
-    const range = getRange(currentPage, total);
+    const range = getRange(currentPage, totalPages);
     let html = `<button class="page-btn" onclick="goPage(${currentPage - 1})"
     ${currentPage === 1 ? 'disabled' : ''}>${icoChevL()}</button>`;
 
@@ -193,7 +198,7 @@ function renderPager() {
     });
 
     html += `<button class="page-btn" onclick="goPage(${currentPage + 1})"
-    ${currentPage === total ? 'disabled' : ''}>${icoChevR()}</button>`;
+    ${currentPage === totalPages ? 'disabled' : ''}>${icoChevR()}</button>`;
 
     pager.innerHTML = html;
 }
@@ -205,21 +210,19 @@ function getRange(cur, total) {
     return [1, '…', cur - 1, cur, cur + 1, '…', total];
 }
 
-window.goPage = p => {
-    const total = Math.ceil(filtered.length / PAGE_SIZE);
-    if (p < 1 || p > total) return;
+window.goPage = async p => {
+    if (p < 1 || p > totalPages) return;
     currentPage = p;
-    renderPage();
-    renderPager();
+    await loadRooms();
     document.querySelector('.results-header').scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
 /* ─── Counter ─── */
 function renderCounter() {
-    if (filtered.length === 0) { counter.textContent = 'Không tìm thấy phòng nào'; return; }
+    if (totalElements === 0) { counter.textContent = 'Không tìm thấy phòng nào'; return; }
     const s = (currentPage - 1) * PAGE_SIZE + 1;
-    const e = Math.min(currentPage * PAGE_SIZE, filtered.length);
-    counter.innerHTML = `Hiển thị <strong>${s}–${e}</strong> / <strong>${filtered.length}</strong> phòng`;
+    const e = Math.min(currentPage * PAGE_SIZE, totalElements);
+    counter.innerHTML = `Hiển thị <strong>${s}–${e}</strong> / <strong>${totalElements}</strong> phòng`;
 }
 
 /* ─── Active tags ─── */
@@ -304,7 +307,8 @@ window.resetAll = () => {
     $('filterType').value  = '';
     $('filterPrice').value = '';
     $('filterSort').value  = 'newest';
-    applyFilters();
+    currentPage = 1;
+    loadRooms();
 };
 
 const debouncedSearch = debounce(v => { searchTerm = v; applyFilters(); }, 280);
