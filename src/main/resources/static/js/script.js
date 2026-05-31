@@ -94,28 +94,47 @@ function formatCurrency(value) {
 function getStatusLabel(status) {
     const normalized = String(status || '').toUpperCase();
     if (normalized === 'PAID') {
-        return 'Da thanh toan';
+        return 'Đã thanh toán';
     }
     if (normalized === 'OVERDUE') {
-        return 'Qua han';
+        return 'Quá hạn';
     }
     if (normalized === 'UNPAID') {
-        return 'Chua thanh toan';
+        return 'Chưa thanh toán';
     }
-    return 'Chua xac dinh';
+    return 'Chưa xác định';
 }
 
 function formatDate(value) {
     if (!value) {
-        return 'Chua xac dinh';
+        return 'Chưa xác định';
     }
 
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) {
-        return 'Chua xac dinh';
+        return 'Chưa xác định';
     }
 
     return date.toLocaleDateString('vi-VN');
+}
+
+function parseBillingMonth(value) {
+    if (value === null || value === undefined) {
+        return 0;
+    }
+
+    const raw = String(value).trim();
+    const parts = raw.split('-');
+    if (parts.length === 2) {
+        const year = Number(parts[0]);
+        const month = Number(parts[1]);
+        if (!Number.isNaN(year) && !Number.isNaN(month)) {
+            return (year * 100) + month;
+        }
+    }
+
+    const numeric = Number(raw);
+    return Number.isNaN(numeric) ? 0 : numeric;
 }
 
 function pickLatestBill(bills) {
@@ -126,8 +145,8 @@ function pickLatestBill(bills) {
     return bills
         .slice()
         .sort(function (a, b) {
-            const monthA = Number((a && a.billingMonth) || 0);
-            const monthB = Number((b && b.billingMonth) || 0);
+            const monthA = parseBillingMonth(a && a.billingMonth);
+            const monthB = parseBillingMonth(b && b.billingMonth);
             if (monthA !== monthB) {
                 return monthB - monthA;
             }
@@ -153,8 +172,15 @@ function mergeDashboardData(userData, latestBill) {
     data.waterConsumed = latestBill.waterConsumed ?? latestBill.water_consumed;
     data.electricityAmount = latestBill.electricityAmount;
     data.waterAmount = latestBill.waterAmount;
+    const rawServiceAmount = Number(latestBill.serviceAmount);
+    const fallbackServiceAmount =
+        Number(latestBill.internetFee || 0) +
+        Number(latestBill.parkingFee || 0) +
+        Number(latestBill.cleaningFee || 0) +
+        Number(latestBill.otherFee || 0);
+    data.serviceAmount = Number.isFinite(rawServiceAmount) ? rawServiceAmount : fallbackServiceAmount;
     if (latestBill.billingMonth !== undefined && latestBill.billingMonth !== null) {
-        data.billingMonth = `thang ${latestBill.billingMonth}`;
+        data.billingMonth = `tháng ${latestBill.billingMonth}`;
     }
 
     return data;
@@ -291,7 +317,7 @@ function renderUserMenu(isLoggedIn, data) {
         let roleLabel = 'Khách thuê';
         if (data.role === 'ADMIN') roleLabel = 'Quản trị viên';
         else if (data.role === 'LANDLORD') roleLabel = 'Chủ nhà';
-        
+
         const avatarUrl = data.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=eff6ff&color=1d4ed8`;
 
         if (el.userAvatar) el.userAvatar.src = avatarUrl;
@@ -307,13 +333,18 @@ async function loadDashboard() {
         const [userResponse, billsResponse] = await Promise.all([
             fetch('/api/user/tenant', {
                 method: 'GET',
-                headers: { 'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`},
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 credentials: 'include'
             }),
             fetch('/api/utility-bills', {
                 method: 'GET',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token ? `Bearer ${token}` : ''
+                },
                 credentials: 'include'
             }).catch(function () {
                 return null;
@@ -422,7 +453,11 @@ function renderNotifDropdown(notifications) {
 function renderNotifSidebar(notifications) {
     // Render vào card bên phải của dashboard (giữ nguyên như cũ)
     const list = el.notificationList;
-    if (!list || !notifications.length) return;
+    if (!list) return;
+    if (!notifications.length) {
+        list.innerHTML = '<div style="padding:18px 0;text-align:center;color:#94a3b8;font-size:13px;">Chưa có thông báo mới</div>';
+        return;
+    }
     list.innerHTML = notifications.slice(0, 5).map((item, i) => {
         const s = getNotifIconStyle(item.notificationType);
         const time = relativeTime(item.createdAt);
@@ -444,11 +479,11 @@ function renderNotifSidebar(notifications) {
 async function loadNotifications() {
     try {
         const token = localStorage.getItem('smartstay_token');
-        const res = await fetch('/api/notifications', { 
+        const res = await fetch('/api/notifications', {
             headers: {
                 'Authorization': `Bearer ${token}`
             },
-            credentials: 'include' 
+            credentials: 'include'
         });
         if (!res.ok) return;
         const notifications = await res.json();
@@ -693,9 +728,9 @@ async function initChatWidget() {
     setChatStatus('Đang kết nối...');
     try {
         const token = localStorage.getItem('smartstay_token');
-        const res = await fetch('/api/user/myid', { 
+        const res = await fetch('/api/user/myid', {
             headers: { 'Authorization': `Bearer ${token}` },
-            credentials: 'include' 
+            credentials: 'include'
         });
         if (!res.ok) { setChatStatus('Lỗi xác thực'); return; }
         chatCurrentUserId = await res.json();
@@ -723,9 +758,9 @@ async function initChatWidget() {
             if (!window._chatPartnerId) {
                 try {
                     const token = localStorage.getItem('smartstay_token');
-                    const res = await fetch('/api/user/landlord-id', { 
+                    const res = await fetch('/api/user/landlord-id', {
                         headers: { 'Authorization': `Bearer ${token}` },
-                        credentials: 'include' 
+                        credentials: 'include'
                     });
                     if (res.ok) {
                         window._chatPartnerId = await res.json();

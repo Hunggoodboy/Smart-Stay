@@ -1,8 +1,8 @@
 package vn.edu.ptit.service;
 
-
 import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import vn.edu.ptit.dto.Request.UtilityBillsRequest;
@@ -25,94 +25,117 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @AllArgsConstructor
 public class PaymentService {
-    private final AuthService authService;
-    private final UtilityBillsRepository utilityBillsRepository;
-    private final ContractsRepository contractsRepository;
-    private final RoomsRepository roomsRepository;
-    private final LandLordRepository landLordRepository;
-    private final RentPaymentsRepository rentPaymentsRepository;
-    private final CustomerRepository customerRepository;
+        private final AuthService authService;
+        private final UtilityBillsRepository utilityBillsRepository;
+        private final ContractsRepository contractsRepository;
+        private final RoomsRepository roomsRepository;
+        private final LandLordRepository landLordRepository;
+        private final RentPaymentsRepository rentPaymentsRepository;
+        private final CustomerRepository customerRepository;
 
-    @Transactional(readOnly = true)
-    public UtilityBillsResponse getNewestBillsResponse() {
-        UtilityBills newBill = utilityBillsRepository.findNewestByCustomerId(authService.getCurrentUserId()).orElseThrow(() -> new RuntimeException("Hiện tại bạn chưa có hoá đơn"));
+        @Transactional(readOnly = true)
+        public UtilityBillsResponse getNewestBillsResponse() {
+                List<UtilityBills> bills = utilityBillsRepository.findNewestByCustomerId(
+                                authService.getCurrentUserId(),
+                                PageRequest.of(0, 1));
+                UtilityBills newBill = bills.stream()
+                                .findFirst()
+                                .orElseThrow(() -> new RuntimeException("Hiện tại bạn chưa có hoá đơn"));
 
-        return new UtilityBillsResponse().fromEntity(newBill);
-    }
+                return new UtilityBillsResponse().fromEntity(newBill);
+        }
 
-    @Transactional(readOnly = true)
-    public List<UtilityBillsResponse> getAllBillsByCurrentUser() {
-        UserDTO userDTO = authService.getCurrentUser();
-        List<UtilityBills> utilityBills = utilityBillsRepository.findAllByUserId(userDTO.getId());
-        List<UtilityBillsResponse> utilityBillsResponses = utilityBills.stream()
-                .map(UtilityBills -> new UtilityBillsResponse().fromEntity(UtilityBills))
-                .toList();
-        return utilityBillsResponses;
-    }
+        @Transactional(readOnly = true)
+        public List<UtilityBillsResponse> getAllBillsByCurrentUser() {
+                UserDTO userDTO = authService.getCurrentUser();
+                List<UtilityBills> utilityBills = utilityBillsRepository.findAllByUserId(userDTO.getId());
+                List<UtilityBillsResponse> utilityBillsResponses = utilityBills.stream()
+                                .map(UtilityBills -> new UtilityBillsResponse().fromEntity(UtilityBills))
+                                .toList();
+                return utilityBillsResponses;
+        }
 
-    public ApiResponse setBillForCurrentUser(UtilityBillsRequest request) {
-        System.out.println("Room ID nhận được từ API: " + request.getRoomId());
-        Contracts contract = contractsRepository.findContractsByRoomId(request.getRoomId()).orElseThrow(() -> new RuntimeException("Phòng này chưa có hợp đồng"));
-        UtilityBills utilityBills = new UtilityBills();
-        BeanUtils.copyProperties(request, utilityBills);
-        utilityBills.setContract(contract);
-        utilityBills.setRoom(roomsRepository.findRoomsById(request.getRoomId()).orElseThrow());
-        utilityBills.setLandLord(landLordRepository.findLandLordById(authService.getCurrentUserId()).orElseThrow());
-        utilityBills.setElectricityOldIndex(request.getElectricityOldIndex());
-        utilityBills.setElectricityNewIndex(request.getElectricityNewIndex());
-        utilityBills.setElectricityConsumed(request.getElectricityNewIndex() - request.getElectricityOldIndex());
-        utilityBills.setElectricityAmount(contract.getElectricityPricePerKwh() * utilityBills.getElectricityConsumed());
-        utilityBills.setWaterOldIndex(request.getWaterOldIndex());
-        utilityBills.setWaterNewIndex(request.getWaterNewIndex());
-        utilityBills.setWaterConsumed(request.getWaterNewIndex() - request.getWaterOldIndex());
-        utilityBills.setWaterAmount(contract.getWaterPricePerM3() * utilityBills.getWaterConsumed());
-        utilityBills.setParkingFee(contract.getParkingFee());
-        utilityBills.setCleaningFee(contract.getCleaningFee());
-        utilityBills.setInternetFee(contract.getInternetFee());
-        utilityBills.setBillingMonth(request.getBillingMonth());
-        utilityBills.setCreatedAt(LocalDateTime.now());
-        utilityBills.setTotalAmount(utilityBills.getElectricityAmount() + utilityBills.getWaterAmount() +  utilityBills.getCleaningFee() +  utilityBills.getInternetFee() + utilityBills.getParkingFee());
-        utilityBillsRepository.save(utilityBills);
-        setRentalPaymentForUser(utilityBills);
-        return ApiResponse.builder()
-                .success(true)
-                .message("Bạn đã thêm hoá đơn thành công")
-                .build();
-    }
+        public ApiResponse setBillForCurrentUser(UtilityBillsRequest request) {
+                System.out.println("Room ID nhận được từ API: " + request.getRoomId());
+                Contracts contract = contractsRepository.findContractsByRoomId(request.getRoomId())
+                                .orElseThrow(() -> new RuntimeException("Phòng này chưa có hợp đồng"));
+                UtilityBills utilityBills = new UtilityBills();
+                BeanUtils.copyProperties(request, utilityBills);
+                utilityBills.setContract(contract);
+                utilityBills.setRoom(roomsRepository.findRoomsById(request.getRoomId()).orElseThrow());
+                utilityBills.setLandLord(
+                                landLordRepository.findLandLordById(authService.getCurrentUserId()).orElseThrow());
+                utilityBills.setElectricityOldIndex(request.getElectricityOldIndex());
+                utilityBills.setElectricityNewIndex(request.getElectricityNewIndex());
+                utilityBills.setElectricityConsumed(
+                                request.getElectricityNewIndex() - request.getElectricityOldIndex());
+                utilityBills.setElectricityAmount(
+                                contract.getElectricityPricePerKwh() * utilityBills.getElectricityConsumed());
+                utilityBills.setWaterOldIndex(request.getWaterOldIndex());
+                utilityBills.setWaterNewIndex(request.getWaterNewIndex());
+                utilityBills.setWaterConsumed(request.getWaterNewIndex() - request.getWaterOldIndex());
+                utilityBills.setWaterAmount(contract.getWaterPricePerM3() * utilityBills.getWaterConsumed());
+                utilityBills.setParkingFee(contract.getParkingFee());
+                utilityBills.setCleaningFee(contract.getCleaningFee());
+                utilityBills.setInternetFee(contract.getInternetFee());
+                utilityBills.setBillingMonth(request.getBillingMonth());
+                utilityBills.setCreatedAt(LocalDateTime.now());
+                utilityBills.setUpdatedAt(LocalDateTime.now());
 
-    public void setRentalPaymentForUser(UtilityBills utilityBills) {
-        RentPayments rentPayments = new RentPayments();
+                if (utilityBills.getDueDate() == null) {
+                        utilityBills.setDueDate(LocalDate.now().plusDays(5));
+                }
+                utilityBills.setStatus(UtilityBills.Status.UNPAID);
+                utilityBills.setTotalAmount(utilityBills.getElectricityAmount() + utilityBills.getWaterAmount()
+                                + utilityBills.getCleaningFee() + utilityBills.getInternetFee()
+                                + utilityBills.getParkingFee());
+                utilityBillsRepository.save(utilityBills);
+                setRentalPaymentForUser(utilityBills);
+                return ApiResponse.builder()
+                                .success(true)
+                                .message("Bạn đã thêm hoá đơn thành công")
+                                .build();
+        }
 
-        // Lấy thông tin Hợp đồng từ Hóa đơn điện nước
-        Contracts contract = utilityBills.getContract();
+        public void setRentalPaymentForUser(UtilityBills utilityBills) {
+                RentPayments rentPayments = new RentPayments();
 
-        // 1. Set các mối quan hệ (Foreign Keys)
-        rentPayments.setContract(contract);
-        rentPayments.setRoom(utilityBills.getRoom());
-        Customer customer = customerRepository.findById(contract.getCustomer().getId()).orElseThrow(() -> new RuntimeException("Không tìm thấy khách thuê"));
-        rentPayments.setCustomer(customer); // Khách thuê lấy từ hợp đồng
-        rentPayments.setUtilityBill(utilityBills);
+                // Lấy thông tin Hợp đồng từ Hóa đơn điện nước
+                Contracts contract = utilityBills.getContract();
 
-        // 2. Set thông tin kỳ thanh toán
-        rentPayments.setBillingMonth(utilityBills.getBillingMonth());
-        rentPayments.setStatus(RentPayments.Status.UNPAID);
-        rentPayments.setCreatedAt(LocalDateTime.now());
+                // 1. Set các mối quan hệ (Foreign Keys)
+                rentPayments.setContract(contract);
+                rentPayments.setRoom(utilityBills.getRoom());
+                Customer customer = customerRepository.findById(contract.getCustomer().getId())
+                                .orElseThrow(() -> new RuntimeException("Không tìm thấy khách thuê"));
+                rentPayments.setCustomer(customer); // Khách thuê lấy từ hợp đồng
+                rentPayments.setUtilityBill(utilityBills);
 
-        // Hạn nộp: Cài mặc định là 5 ngày sau khi xuất hóa đơn
-        rentPayments.setDueDate(LocalDate.now().plusDays(5));
+                // 2. Set thông tin kỳ thanh toán
+                rentPayments.setBillingMonth(utilityBills.getBillingMonth());
+                rentPayments.setStatus(RentPayments.Status.UNPAID);
+                rentPayments.setCreatedAt(LocalDateTime.now());
 
-        Double rentAmount = contract.getMonthlyRent();
-        rentPayments.setRentAmount(rentAmount != null ? rentAmount : 0.0);
+                LocalDate dueDate = utilityBills.getDueDate() != null
+                                ? utilityBills.getDueDate()
+                                : LocalDate.now().plusDays(5);
+                utilityBills.setDueDate(dueDate);
+                rentPayments.setDueDate(dueDate);
 
-        Double utilityAmount = utilityBills.getTotalAmount();
-        rentPayments.setUtilityAmount(utilityAmount != null ? utilityAmount : 0.0);
+                Double rentAmount = contract.getMonthlyRent();
+                rentPayments.setRentAmount(rentAmount != null ? rentAmount : 0.0);
 
-        rentPayments.setLateFee(0.0);
+                Double utilityAmount = utilityBills.getTotalAmount();
+                rentPayments.setUtilityAmount(utilityAmount != null ? utilityAmount : 0.0);
 
-        Double totalAmount = rentPayments.getRentAmount() + rentPayments.getUtilityAmount() + rentPayments.getLateFee();
-        rentPayments.setTotalAmount(totalAmount);
+                rentPayments.setLateFee(0.0);
 
-        // 4. Lưu vào Database
-        rentPaymentsRepository.save(rentPayments);
-    }
+                Double totalAmount = rentPayments.getRentAmount() + rentPayments.getUtilityAmount()
+                                + rentPayments.getLateFee();
+                rentPayments.setTotalAmount(totalAmount);
+
+                // 4. Lưu vào Database
+                rentPaymentsRepository.save(rentPayments);
+                utilityBills.setRentPayment(rentPayments);
+        }
 }

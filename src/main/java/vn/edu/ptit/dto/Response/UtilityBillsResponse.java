@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 //Response gửi cho người thuê
 @Data
 public class UtilityBillsResponse {
+    private Long utilityBillId;
+    private Long rentPaymentId;
     private String billingMonth;
     private Double electricityOldIndex;
     private Double electricityNewIndex;
@@ -25,6 +27,7 @@ public class UtilityBillsResponse {
     private Double parkingFee = 0.0;
     private Double cleaningFee = 0.0;
     private Double otherFee = 0.0;
+    private Double serviceAmount;
     private Double rentPrice;
     private String otherFeeNote;
     private Double totalAmount;
@@ -36,6 +39,10 @@ public class UtilityBillsResponse {
 
     public UtilityBillsResponse fromEntity(UtilityBills entity) {
         UtilityBillsResponse detailResponse = new UtilityBillsResponse();
+        detailResponse.setUtilityBillId(entity.getId());
+        if (entity.getRentPayment() != null) {
+            detailResponse.setRentPaymentId(entity.getRentPayment().getId());
+        }
         detailResponse.setBillingMonth(entity.getBillingMonth());
         detailResponse.setElectricityOldIndex(entity.getElectricityOldIndex());
         detailResponse.setElectricityNewIndex(entity.getElectricityNewIndex());
@@ -51,6 +58,12 @@ public class UtilityBillsResponse {
         detailResponse.setParkingFee(entity.getParkingFee());
         detailResponse.setCleaningFee(entity.getCleaningFee());
         detailResponse.setOtherFee(entity.getOtherFee());
+
+        double internetFee = entity.getInternetFee() != null ? entity.getInternetFee() : 0.0;
+        double parkingFee = entity.getParkingFee() != null ? entity.getParkingFee() : 0.0;
+        double cleaningFee = entity.getCleaningFee() != null ? entity.getCleaningFee() : 0.0;
+        double otherFee = entity.getOtherFee() != null ? entity.getOtherFee() : 0.0;
+        detailResponse.setServiceAmount(internetFee + parkingFee + cleaningFee + otherFee);
         detailResponse.setOtherFeeNote(entity.getOtherFeeNote());
 
         Double rent = 0.0;
@@ -62,7 +75,11 @@ public class UtilityBillsResponse {
         detailResponse.setRentPrice(rent);
 
         Double utilTotal = entity.getTotalAmount() != null ? entity.getTotalAmount() : 0.0;
-        detailResponse.setTotalAmount(utilTotal + rent);
+        Double totalAmount = utilTotal + rent;
+        if (entity.getRentPayment() != null && entity.getRentPayment().getTotalAmount() != null) {
+            totalAmount = entity.getRentPayment().getTotalAmount();
+        }
+        detailResponse.setTotalAmount(totalAmount);
 
         detailResponse.setCreatedAt(entity.getCreatedAt());
         detailResponse.setDueDate(entity.getDueDate());

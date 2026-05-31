@@ -8,6 +8,7 @@ import vn.edu.ptit.dto.Response.ApiResponse;
 import vn.edu.ptit.dto.Response.RentPaymentResponse;
 import vn.edu.ptit.entity.RentPayments;
 import vn.edu.ptit.repository.LandlordRentPaymentRepository;
+import vn.edu.ptit.repository.UtilityBillsRepository;
 import vn.edu.ptit.service.Authentication.AuthService;
 
 import java.time.LocalDate;
@@ -20,14 +21,14 @@ import java.util.List;
 public class LandlordRentPaymentService {
     private final AuthService authService;
     private final LandlordRentPaymentRepository landlordRentPaymentRepository;
+    private final UtilityBillsRepository utilityBillsRepository;
 
     @Transactional(readOnly = true)
     public List<RentPaymentResponse> getPaymentsForCurrentLandlord(RentPayments.Status status) {
         Long landlordId = authService.getCurrentLandLord().getId();
         List<RentPayments> payments = landlordRentPaymentRepository.findAllForLandlord(
                 landlordId,
-                status != null ? status.name() : null
-        );
+                status != null ? status.name() : null);
 
         List<RentPaymentResponse> responses = new ArrayList<>();
         for (RentPayments payment : payments) {
@@ -43,8 +44,7 @@ public class LandlordRentPaymentService {
         Long landlordId = authService.getCurrentLandLord().getId();
         List<RentPayments> payments = landlordRentPaymentRepository.findUnpaidForLandlord(
                 landlordId,
-                RentPayments.Status.PAID.name()
-        );
+                RentPayments.Status.PAID.name());
 
         List<RentPaymentResponse> responses = new ArrayList<>();
         for (RentPayments payment : payments) {
@@ -77,6 +77,13 @@ public class LandlordRentPaymentService {
 
         payment.setPaidDate(paidDate);
         payment.setUpdatedAt(LocalDateTime.now());
+
+        if (payment.getUtilityBill() != null) {
+            payment.getUtilityBill().setStatus(vn.edu.ptit.entity.UtilityBills.Status.PAID);
+            payment.getUtilityBill().setPaidDate(paidDate);
+            payment.getUtilityBill().setUpdatedAt(LocalDateTime.now());
+            utilityBillsRepository.save(payment.getUtilityBill());
+        }
 
         if (request != null) {
             String paymentMethod = request.getPaymentMethod();
