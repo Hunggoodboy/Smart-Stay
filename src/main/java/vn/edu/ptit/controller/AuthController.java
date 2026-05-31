@@ -5,7 +5,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import vn.edu.ptit.dto.Request.ChangePasswordRequest;
 import vn.edu.ptit.dto.Request.UpgradeCustomerRequest;
+import vn.edu.ptit.dto.Request.UpdateProfileRequest;
 import vn.edu.ptit.dto.Response.ApiResponse;
 import vn.edu.ptit.dto.Response.AuthResponse;
 import vn.edu.ptit.dto.Request.LoginRequest;
@@ -49,6 +51,20 @@ public class AuthController {
     @GetMapping("/tenant")
     public ResponseEntity<?> getTenant() {
         return ResponseEntity.ok(authService.getCurrentUser());
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(@RequestBody UpdateProfileRequest request) {
+        return ResponseEntity.ok(authService.updateCurrentUser(request));
+    }
+
+    @PutMapping("/password")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request) {
+        ApiResponse response = authService.changePassword(request);
+        if (!response.isSuccess()) {
+            return ResponseEntity.badRequest().body(response);
+        }
+        return ResponseEntity.ok(response);
     }
 
 

@@ -46,7 +46,7 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* ─────────── HEADER ─────────── */
+        /* HEADER */
         .ss-header {
             position: fixed; top: 0; left: 0; right: 0; z-index: 100;
             background: rgba(255,255,255,0.95);
@@ -94,12 +94,32 @@
         .ss-avatar-img { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--blue-200); }
         .ss-user-name { font-size: 0.8rem; font-weight: 700; color: var(--gray-700); }
         .ss-user-role { font-size: 0.7rem; color: var(--gray-400); }
+        .ss-user-dropdown {
+            position: absolute; right: 0; top: calc(100% + 0.5rem);
+            width: 240px; overflow: hidden; z-index: 300;
+            border: 1px solid var(--gray-100); border-radius: 14px;
+            background: #fff; box-shadow: 0 18px 48px rgba(15,23,42,0.14);
+        }
+        .ss-user-dropdown.hidden { display: none; }
+        .ss-user-dropdown-head { padding: 0.9rem 1rem 0.75rem; border-bottom: 1px solid var(--gray-100); }
+        .ss-dropdown-name { color: var(--gray-800); font-size: 0.86rem; font-weight: 800; line-height: 1.35; }
+        .ss-dropdown-role { margin-top: 0.2rem; color: var(--gray-400); font-size: 0.74rem; font-weight: 700; }
+        .ss-dropdown-item,
+        .ss-dropdown-logout {
+            display: flex; align-items: center; gap: 0.65rem; width: 100%;
+            padding: 0.78rem 1rem; border: 0; background: #fff;
+            color: var(--gray-700); font: inherit; font-size: 0.84rem; font-weight: 700;
+            text-align: left; text-decoration: none; cursor: pointer;
+        }
+        .ss-dropdown-item:hover { background: var(--gray-100); }
+        .ss-dropdown-logout { color: #dc2626; border-top: 1px solid var(--gray-100); }
+        .ss-dropdown-logout:hover { background: #fef2f2; }
 
-        /* ─────────── LAYOUT ─────────── */
+        /* LAYOUT */
         .ss-body { padding-top: 64px; }
         .ss-main { max-width: 1280px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
 
-        /* ─────────── HERO SECTION ─────────── */
+        /* HERO SECTION */
         .ss-hero {
             background: linear-gradient(130deg, var(--navy) 0%, var(--blue-700) 50%, var(--ocean) 100%);
             border-radius: 1.5rem;
@@ -169,12 +189,12 @@
         .ss-stat-value { font-size: 2.2rem; font-weight: 900; line-height: 1.1; margin: 0.2rem 0 0.15rem; }
         .ss-stat-sub { font-size: 0.68rem; color: rgba(186,230,253,0.7); }
 
-        /* ─────────── SECTION GRID ─────────── */
+        /* SECTION GRID */
         .ss-grid { display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem; align-items: start; }
         .ss-left { display: flex; flex-direction: column; gap: 1.5rem; }
         .ss-right { display: flex; flex-direction: column; gap: 1.5rem; }
 
-        /* ─────────── CARD ─────────── */
+        /* CARD */
         .ss-card {
             background: var(--white);
             border: 1.5px solid var(--blue-100);
@@ -209,7 +229,7 @@
         }
         .ss-btn-blue:hover { background: var(--blue-700); }
 
-        /* ─────────── POSTS CARDS ─────────── */
+        /* POSTS CARDS */
         #landlord-posts-list { min-height: 60px; }
         .posts-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); gap: 1rem; }
         .post-card {
@@ -242,7 +262,7 @@
         .btn-copy { background: var(--gray-100); color: var(--gray-700); }
         .btn-copy:hover { background: var(--gray-200); }
 
-        /* ─────────── FILTER BAR ─────────── */
+        /* FILTER BAR */
         .ss-filters { display: grid; grid-template-columns: 1.4fr 0.7fr 0.7fr; gap: 0.75rem; margin-bottom: 1rem; }
         .ss-input-wrap {
             display: flex; align-items: center; gap: 0.5rem;
@@ -266,7 +286,7 @@
         }
         .ss-select:focus { border-color: var(--blue-400); box-shadow: 0 0 0 3px rgba(96,165,250,0.15); }
 
-        /* ─────────── TABLE ─────────── */
+        /* TABLE */
         .ss-table-wrap { overflow-x: auto; border: 1.5px solid var(--blue-100); border-radius: 1rem; }
         .ss-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
         .ss-table thead { background: linear-gradient(90deg, var(--blue-50) 0%, #f0f9ff 100%); }
@@ -314,11 +334,11 @@
         }
         .tbl-btn-copy:hover { background: var(--gray-200); }
 
-        /* ─────────── ROOM MANAGEMENT TABLE ─────────── */
+        /* ROOM MANAGEMENT TABLE */
         .room-room-name { font-weight: 700; color: var(--navy); }
         .room-room-sub { font-size: 0.72rem; color: var(--gray-400); margin-top: 1px; }
 
-        /* ─────────── MESSAGES CARD ─────────── */
+        /* MESSAGES CARD */
         .msg-item {
             display: flex; align-items: flex-start; gap: 0.75rem;
             padding: 0.75rem 0.9rem; border-radius: 0.85rem;
@@ -338,14 +358,14 @@
         .msg-time { font-size: 0.68rem; color: var(--gray-400); margin-top: 3px; font-weight: 600; }
         .msg-badge { background: #fee2e2; color: #dc2626; border-radius: 100px; padding: 0.1rem 0.45rem; font-size: 0.65rem; font-weight: 800; margin-left: auto; flex-shrink: 0; }
 
-        /* ─────────── COUNT BADGE ─────────── */
+        /* COUNT BADGE */
         .count-badge {
             background: var(--blue-50); color: var(--blue-700);
             border-radius: 100px; padding: 0.2rem 0.65rem;
             font-size: 0.72rem; font-weight: 800; border: 1px solid var(--blue-100);
         }
 
-        /* ─────────── EMPTY STATE ─────────── */
+        /* EMPTY STATE */
         .ss-empty {
             text-align: center; padding: 2.5rem 1rem;
             border: 2px dashed var(--blue-100); border-radius: 1rem;
@@ -353,7 +373,7 @@
         }
         .ss-empty p { font-size: 0.85rem; margin-top: 0.5rem; }
 
-        /* ─────────── LOADING ─────────── */
+        /* LOADING */
         .ss-loading { display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 2rem; color: var(--gray-400); font-size: 0.85rem; }
         .ss-spinner {
             width: 18px; height: 18px; border-radius: 50%;
@@ -363,10 +383,10 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ─────────── DIVIDER ─────────── */
+        /* DIVIDER */
         .ss-divider { height: 1px; background: linear-gradient(90deg, var(--blue-100) 0%, transparent 100%); margin: 1rem 0; }
 
-        /* ─────────── SECTION TABS (for house management) ─────────── */
+        /* SECTION TABS (for house management) */
         .ss-tabs { display: flex; gap: 0.4rem; margin-bottom: 1.1rem; }
         .ss-tab {
             padding: 0.4rem 1rem; border-radius: 8px;
@@ -376,7 +396,7 @@
         }
         .ss-tab.active { background: var(--blue-600); color: #fff; border-color: var(--blue-600); }
 
-        /* ─────────── ROOM DETAIL MODAL ─────────── */
+        /* ROOM DETAIL MODAL */
         .modal-overlay {
             display: none; position: fixed; inset: 0; z-index: 200;
             background: rgba(15,23,42,0.55); backdrop-filter: blur(4px);
@@ -399,7 +419,60 @@
         .modal-key { color: var(--gray-500); font-weight: 600; }
         .modal-val { font-weight: 700; color: var(--navy); text-align: right; }
 
-        /* ─────────── RESPONSIVE ─────────── */
+        .profile-modal {
+            position: fixed; inset: 0; z-index: 260; display: none;
+            align-items: center; justify-content: center; padding: 24px;
+            background: rgba(15,23,42,0.45); backdrop-filter: blur(4px);
+        }
+        .profile-modal-card {
+            width: min(720px, 100%); max-height: calc(100vh - 48px);
+            overflow: auto; border-radius: 16px; background: #fff;
+            box-shadow: 0 24px 80px rgba(15,23,42,0.24);
+        }
+        .password-modal-card { width: min(520px, 100%); }
+        .profile-modal-header {
+            display: flex; align-items: center; justify-content: space-between; gap: 16px;
+            padding: 20px 24px; border-bottom: 1px solid var(--gray-200);
+        }
+        .profile-modal-header h2 { margin: 0; color: var(--gray-800); font-size: 20px; font-weight: 900; }
+        .profile-modal-header p { margin: 4px 0 0; color: var(--gray-500); font-size: 14px; font-weight: 600; }
+        .profile-close-btn {
+            display: grid; width: 36px; height: 36px; place-items: center; flex-shrink: 0;
+            border: 0; border-radius: 999px; background: var(--gray-100);
+            color: var(--gray-500); cursor: pointer;
+        }
+        .profile-close-btn:hover { background: var(--gray-200); }
+        .profile-form { display: grid; gap: 16px; padding: 20px 24px 24px; }
+        .profile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+        .profile-field { display: block; min-width: 0; }
+        .profile-field span {
+            display: block; margin-bottom: 6px; color: var(--gray-700);
+            font-size: 14px; font-weight: 800;
+        }
+        .profile-input {
+            width: 100%; border: 1px solid #dbe3ef; border-radius: 12px;
+            padding: 12px 14px; color: var(--gray-800); font: inherit; outline: none;
+        }
+        .profile-input:focus { border-color: var(--blue-600); box-shadow: 0 0 0 3px rgba(37,99,235,0.14); }
+        .profile-message { border-radius: 10px; padding: 12px 14px; font-size: 14px; font-weight: 800; }
+        .profile-message.error { display: block; background: #fef2f2; color: #b91c1c; }
+        .profile-message.success { display: block; background: #ecfdf5; color: #047857; }
+        .profile-actions {
+            display: flex; justify-content: flex-end; gap: 12px;
+            padding-top: 16px; border-top: 1px solid var(--gray-200);
+        }
+        .profile-secondary-btn,
+        .profile-primary-btn {
+            border-radius: 12px; padding: 11px 18px; font: inherit;
+            font-size: 14px; font-weight: 800; cursor: pointer;
+        }
+        .profile-secondary-btn { border: 1px solid #dbe3ef; background: #fff; color: var(--gray-700); }
+        .profile-secondary-btn:hover { background: var(--gray-50); }
+        .profile-primary-btn { border: 0; background: var(--blue-600); color: #fff; }
+        .profile-primary-btn:hover { background: var(--blue-700); }
+        .profile-primary-btn:disabled { cursor: wait; opacity: 0.7; }
+
+        /* RESPONSIVE */
         @media (max-width: 1100px) {
             .ss-grid { grid-template-columns: 1fr; }
             .ss-right { order: -1; flex-direction: row; flex-wrap: wrap; }
@@ -413,9 +486,12 @@
         @media (max-width: 480px) {
             .ss-hero-stats { grid-template-columns: 1fr; }
             .ss-main { padding: 1.25rem 1rem 3rem; }
+            .profile-grid { grid-template-columns: 1fr; }
+            .profile-actions { flex-direction: column-reverse; }
+            .profile-secondary-btn, .profile-primary-btn { width: 100%; }
         }
 
-        /* ─────────── PAGE ENTRANCE ANIMATION ─────────── */
+        /* PAGE ENTRANCE ANIMATION */
         .fade-in { animation: fadeIn 0.4s ease both; }
         @keyframes fadeIn { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform: translateY(0); } }
         .delay-1 { animation-delay: 0.08s; }
@@ -425,7 +501,7 @@
     </style>
 </head>
 <body>
-<!-- ═══════════ HEADER ═══════════ -->
+<!-- HEADER -->
 <header class="ss-header">
     <div class="ss-header-inner">
         <!-- Brand -->
@@ -444,7 +520,7 @@
             <a href="/landlord-view#house-management">Quản lý chi tiết nhà</a>
             <a href="/revenue-management">Doanh thu</a>
             <a href="/myContracts">Hợp đồng</a>
-            <a href="/createRoomManage">➕ Tạo phòng quản lý</a>
+            <a href="/createRoomManage">+ Tạo phòng quản lý</a>
         </nav>
 
         <!-- User -->
@@ -454,38 +530,56 @@
                     <img src="https://ui-avatars.com/api/?name=Ch%E1%BB%A7%20nh%C3%A0&background=dbeafe&color=1d4ed8"
                          alt="Avatar" id="user-avatar" class="ss-avatar-img" />
                     <div class="hidden sm:block" style="text-align:left;">
-                        <div id="user-name-label" class="ss-user-name">Chủ nhà</div>
-                        <div id="user-role-label" class="ss-user-role">Landlord</div>
+                        <div id="user-room-label" class="ss-user-name">Chủ nhà</div>
+                        <div id="user-role-label" class="ss-user-role">Chủ nhà</div>
                     </div>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:#94a3b8;margin-left:2px;"><polyline points="6 9 12 15 18 9"/></svg>
                 </button>
+                <div id="user-dropdown" class="ss-user-dropdown hidden">
+                    <div class="ss-user-dropdown-head">
+                        <div id="dropdown-user-name" class="ss-dropdown-name">Chủ nhà</div>
+                        <div id="dropdown-user-role" class="ss-dropdown-role">Chủ nhà</div>
+                    </div>
+                    <a href="#" id="profile-edit-link" class="ss-dropdown-item">
+                        <span>👤</span>
+                        <span>Thông tin cá nhân</span>
+                    </a>
+                    <a href="#" id="change-password-link" class="ss-dropdown-item">
+                        <span>***</span>
+                        <span>Đổi mật khẩu</span>
+                    </a>
+                    <form action="/logout" method="post">
+                        <button type="submit" class="ss-dropdown-logout">
+                            <span>↪</span>
+                            <span>Đăng xuất</span>
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </header>
 
-<!-- ═══════════ BODY ═══════════ -->
+<!-- BODY -->
 <div class="ss-body">
     <main class="ss-main" id="landlord-dashboard" data-endpoint="/api/dashboard/landlord">
 
-        <!-- ── HERO ── -->
+        <!-- HERO -->
         <section class="ss-hero fade-in">
             <div class="ss-hero-inner">
                 <!-- Top: text + buttons -->
                 <div class="ss-hero-top">
                     <div>
                         <div class="ss-hero-badge"><span></span>Landlord Workspace</div>
-                        <h1 id="welcome-message">Xin chào, Chủ nhà! 👋</h1>
+                        <h1 id="welcome-message">Xin chào, Chủ nhà!</h1>
                         <p id="landlord-summary">Quản lý nhà trọ, bài đăng, yêu cầu thuê và hợp đồng ngay trên một màn hình.</p>
                         <div class="ss-hero-btns">
                             <a href="/postRooms" class="ss-btn-primary">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                                Đăng nhà mới
-                            </a>
+                                Đăng nhà mới</a>
                             <a href="/landlord/contracts" class="ss-btn-ghost">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                                Hợp đồng
-                            </a>
+                                Hợp đồng</a>
                         </div>
                     </div>
                 </div>
@@ -493,29 +587,29 @@
                 <div class="ss-hero-stats">
                     <div class="ss-stat-card" onclick="document.getElementById('house-management').scrollIntoView({behavior:'smooth'})">
                         <div class="ss-stat-label">Tổng số phòng</div>
-                        <div class="ss-stat-value" id="postsCount">—</div>
+                        <div class="ss-stat-value" id="postsCount">-</div>
                         <div class="ss-stat-sub">Tất cả phòng đang quản lý</div>
                     </div>
                     <div class="ss-stat-card" onclick="filterRoomsByStatus('AVAILABLE')">
                         <div class="ss-stat-label">Phòng trống</div>
-                        <div class="ss-stat-value" id="activePostsCount">—</div>
+                        <div class="ss-stat-value" id="activePostsCount">-</div>
                         <div class="ss-stat-sub">Sẵn sàng cho thuê</div>
                     </div>
                     <div class="ss-stat-card" onclick="filterRoomsByStatus('RENTED')">
                         <div class="ss-stat-label">Đã cho thuê</div>
-                        <div class="ss-stat-value" id="rentedPostsCount">—</div>
+                        <div class="ss-stat-value" id="rentedPostsCount">-</div>
                         <div class="ss-stat-sub">Đang có người ở</div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- ── MAIN GRID ── -->
+        <!-- MAIN GRID -->
         <div class="ss-grid">
             <!-- LEFT COLUMN -->
             <div class="ss-left">
 
-                <!-- ── QUẢN LÝ BÀI ĐĂNG ── -->
+                <!-- QUẢN LÝ BÀI ĐĂNG -->
                 <section class="ss-card fade-in delay-1">
                     <div class="ss-card-header">
                         <div class="ss-card-title-wrap">
@@ -535,7 +629,7 @@
                     </div>
                 </section>
 
-                <!-- ── QUẢN LÝ CHI TIẾT NHÀ ── -->
+                <!-- QUẢN LÝ CHI TIẾT NHÀ -->
                 <section class="ss-card fade-in delay-2" id="house-management">
                     <div class="ss-card-header">
                         <div class="ss-card-title-wrap">
@@ -546,7 +640,7 @@
                             <div class="ss-card-sub">Theo dõi trạng thái, lọc và quản lý từng phòng thực tế</div>
                         </div>
                         <div style="display:flex;align-items:center;gap:0.6rem;">
-                            <span class="count-badge" id="houseCountLabel">0 nhà</span>
+                            <span class="count-badge" id="houseCountLabel">0 phòng</span>
                             <a href="/postRooms" class="ss-btn-dark">+ Thêm nhà</a>
                         </div>
                     </div>
@@ -637,8 +731,7 @@
                         </a>
                         <a href="/chatMessage" style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:0.75rem;text-decoration:none;transition:all 0.15s;font-size:0.82rem;font-weight:700;color:var(--gray-700);" onmouseover="this.style.background='var(--gray-100)'" onmouseout="this.style.background='var(--gray-50)'">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                            Nhắn tin khách thuê
-                        </a>
+                            Nhắn tin khách thuê</a>
                     </div>
                 </div>
             </div><!-- /RIGHT -->
@@ -647,12 +740,106 @@
     </main>
 </div>
 
-<!-- ═══════════ ROOM DETAIL MODAL ═══════════ -->
+<div id="profile-modal" class="profile-modal" style="display:none;">
+    <div class="profile-modal-card">
+        <div class="profile-modal-header">
+            <div>
+                <h2>Thông tin cá nhân</h2>
+                <p>Cập nhật thông tin từ hồ sơ chủ nhà hiện tại</p>
+            </div>
+            <button type="button" onclick="closeProfileModal()" class="profile-close-btn">×</button>
+        </div>
+
+        <form id="profile-form" class="profile-form">
+            <div id="profile-message" class="profile-message" style="display:none;"></div>
+            <div class="profile-grid">
+                <label class="profile-field">
+                    <span>Họ tên</span>
+                    <input id="profile-full-name" name="fullName" type="text" required class="profile-input">
+                </label>
+                <label class="profile-field">
+                    <span>Email</span>
+                    <input id="profile-email" name="email" type="email" required class="profile-input">
+                </label>
+                <label class="profile-field">
+                    <span>Số điện thoại</span>
+                    <input id="profile-phone" name="phoneNumber" type="tel" class="profile-input">
+                </label>
+                <label class="profile-field">
+                    <span>Giới tính</span>
+                    <select id="profile-gender" name="gender" class="profile-input">
+                        <option value="">Chưa cập nhật</option>
+                        <option value="MALE">Nam</option>
+                        <option value="FEMALE">N?</option>
+                        <option value="OTHER">Khác</option>
+                    </select>
+                </label>
+                <label class="profile-field">
+                    <span>Ngày sinh</span>
+                    <input id="profile-date-of-birth" name="dateOfBirth" type="date" class="profile-input">
+                </label>
+                <label class="profile-field">
+                    <span>CCCD/CMND</span>
+                    <input id="profile-id-card" name="idCardNumber" type="text" class="profile-input">
+                </label>
+            </div>
+            <label class="profile-field">
+                <span>Địa chỉ</span>
+                <input id="profile-address" name="address" type="text" class="profile-input">
+            </label>
+            <label class="profile-field">
+                <span>Ảnh đại diện URL</span>
+                <input id="profile-avatar-url" name="avatarUrl" type="url" class="profile-input">
+            </label>
+            <div class="profile-actions">
+                <button type="button" onclick="closeProfileModal()" class="profile-secondary-btn">Hủy</button>
+                <button id="profile-submit" type="submit" class="profile-primary-btn">Lưu thay đổi</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="password-modal" class="profile-modal" style="display:none;">
+    <div class="profile-modal-card password-modal-card">
+        <div class="profile-modal-header">
+            <div>
+                <h2>Đổi mật khẩu</h2>
+                <p>Nhập mật khẩu hiện tại trước khi đặt mật khẩu mới</p>
+            </div>
+            <button type="button" onclick="closePasswordModal()" class="profile-close-btn">×</button>
+        </div>
+
+        <form id="password-form" class="profile-form">
+            <div id="password-message" class="profile-message" style="display:none;"></div>
+            <label class="profile-field">
+                <span>Mật khẩu hiện tại</span>
+                <input id="current-password" name="currentPassword" type="password" class="profile-input"
+                       autocomplete="current-password" required>
+            </label>
+            <label class="profile-field">
+                <span>Mật khẩu mới</span>
+                <input id="new-password" name="newPassword" type="password" class="profile-input"
+                       autocomplete="new-password" minlength="6" required>
+            </label>
+            <label class="profile-field">
+                <span>Xác nhận mật khẩu mới</span>
+                <input id="confirm-password" name="confirmPassword" type="password" class="profile-input"
+                       autocomplete="new-password" minlength="6" required>
+            </label>
+            <div class="profile-actions">
+                <button type="button" onclick="closePasswordModal()" class="profile-secondary-btn">Hủy</button>
+                <button id="password-submit" type="submit" class="profile-primary-btn">Đổi mật khẩu</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ROOM DETAIL MODAL -->
 <div class="modal-overlay" id="room-detail-modal">
     <div class="modal-box">
         <div class="modal-header">
             <div class="modal-title" id="modal-room-title">Chi tiết phòng</div>
-            <button class="modal-close" onclick="closeRoomModal()">✕</button>
+            <button class="modal-close" onclick="closeRoomModal()">×</button>
         </div>
         <div id="modal-room-body">
             <div class="ss-loading"><div class="ss-spinner"></div> Đang tải chi tiết...</div>
@@ -660,256 +847,10 @@
     </div>
 </div>
 
-<!-- ═══════════ SCRIPTS ═══════════ -->
+<!-- SCRIPTS -->
 <script th:src="@{/js/script.js}" src="../static/js/script.js"></script>
 
-<script>
-    /* ═══ ROOM MANAGEMENT — uses /api/room-management/room-summary ═══ */
-    let cachedRooms = [];
-
-    const roomFilterEls = {
-        search: document.getElementById('houseSearchInput'),
-        status: document.getElementById('houseStatusFilter'),
-        sort:   document.getElementById('houseSortSelect'),
-        count:  document.getElementById('houseCountLabel'),
-        tbody:  document.getElementById('house-management-body')
-    };
-
-    // Map status values from real API (RENTED, AVAILABLE, etc.)
-    function getStatusBadge(status) {
-        const s = String(status || '').toUpperCase();
-        const map = {
-            AVAILABLE: { cls: 'badge-active',   label: 'Còn trống'   },
-            RENTED:    { cls: 'badge-rented',   label: 'Đã cho thuê' },
-            OCCUPIED:  { cls: 'badge-rented',   label: 'Đã cho thuê' },
-            ACTIVE:    { cls: 'badge-active',   label: 'Đang hoạt động' },
-            DRAFT:     { cls: 'badge-draft',    label: 'Nháp'         },
-            INACTIVE:  { cls: 'badge-inactive', label: 'Tạm ẩn'       },
-        };
-        return map[s] || { cls: 'badge-unknown', label: s || 'Không rõ' };
-    }
-
-    function fmtMoney(v) {
-        if (v == null) return '—';
-        return Number(v).toLocaleString('vi-VN') + ' VNĐ';
-    }
-
-    function fmtArea(v) { return v ? `${v} m²` : '—'; }
-
-    function esc(str) {
-        return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    }
-
-    // Helper to get a room's display name from real API fields
-    function getRoomDisplayName(r) {
-        return r.roomNumber || r.roomName || r.title || r.name || 'Phòng chưa đặt tên';
-    }
-
-    async function loadRoomsSummary() {
-        const token = localStorage.getItem('smartstay_token');
-        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-        try {
-            const res = await fetch('/api/room-management/room-summary', { headers, credentials: 'include' });
-            if (!res.ok) throw new Error('API error');
-            const data = await res.json();
-            cachedRooms = Array.isArray(data) ? data : (data.rooms || data.data || []);
-
-            // ─── Update hero stats from this API ───
-            const total    = cachedRooms.length;
-            const rented   = cachedRooms.filter(r => String(r.status||'').toUpperCase() === 'RENTED' || String(r.status||'').toUpperCase() === 'OCCUPIED').length;
-            const available = cachedRooms.filter(r => String(r.status||'').toUpperCase() === 'AVAILABLE').length;
-            const pEl = document.getElementById('postsCount');
-            const aEl = document.getElementById('activePostsCount');
-            const rEl = document.getElementById('rentedPostsCount');
-            if (pEl) pEl.textContent = total;
-            if (aEl) aEl.textContent = available;
-            if (rEl) rEl.textContent = rented;
-            const cntBadge = document.getElementById('houseCountLabel');
-            if (cntBadge) cntBadge.textContent = `${total} phòng`;
-
-            applyRoomFilters();
-        } catch (e) {
-            console.error('loadRoomsSummary error:', e);
-            if (roomFilterEls.tbody) {
-                roomFilterEls.tbody.innerHTML = `<tr><td colspan="5"><div style="padding:1.5rem;color:#dc2626;font-size:0.82rem;">Không thể tải dữ liệu phòng. Vui lòng thử lại.</div></td></tr>`;
-            }
-        }
-    }
-
-    // Allow hero stat cards to filter table
-    function filterRoomsByStatus(status) {
-        if (roomFilterEls.status) roomFilterEls.status.value = status;
-        applyRoomFilters();
-        document.getElementById('house-management')?.scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function getFilteredRooms() {
-        let list = cachedRooms.slice();
-        const q = (roomFilterEls.search?.value || '').toLowerCase().trim();
-        if (q) {
-            list = list.filter(r => {
-                const name = String(r.roomNumber || r.roomName || r.title || r.name || '').toLowerCase();
-                const addr = String(r.address || r.shortAddress || '').toLowerCase();
-                const type = String(r.roomType || '').toLowerCase();
-                return name.includes(q) || addr.includes(q) || type.includes(q);
-            });
-        }
-        const sf = roomFilterEls.status?.value || 'all';
-        if (sf !== 'all') list = list.filter(r => String(r.status || '').toUpperCase() === sf);
-
-        const sv = roomFilterEls.sort?.value || 'newest';
-        if (sv === 'priceAsc')   list.sort((a,b) => Number(a.rentPrice||a.monthlyRent||0) - Number(b.rentPrice||b.monthlyRent||0));
-        else if (sv === 'priceDesc') list.sort((a,b) => Number(b.rentPrice||b.monthlyRent||0) - Number(a.rentPrice||a.monthlyRent||0));
-        else list.sort((a,b) => new Date(b.createdAt||0) - new Date(a.createdAt||0));
-        return list;
-    }
-
-    function renderRoomsTable(rooms) {
-        if (!roomFilterEls.tbody) return;
-        if (!rooms.length) {
-            roomFilterEls.tbody.innerHTML = `<tr><td colspan="5"><div class="ss-empty"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><p>Không tìm thấy phòng nào phù hợp.</p></div></td></tr>`;
-            return;
-        }
-        roomFilterEls.tbody.innerHTML = rooms.map(r => {
-            const badge = getStatusBadge(r.status);
-            const name  = esc(getRoomDisplayName(r));
-            const type  = esc((r.roomType || '').replace(/_/g,' '));
-            const price = fmtMoney(r.rentPrice ?? r.monthlyRent);
-            const area  = fmtArea(r.areaM2 || r.area);
-            const rid   = r.id || r.roomId || '';
-            const postId = r.postId || r.id || '';
-
-            // Show tenant name if rented
-            const tenantInfo = r.userName
-                ? `<div style="font-size:0.7rem;color:#2563eb;margin-top:2px;">👤 ${esc(r.userName)}</div>`
-                : '';
-
-            return `<tr style="cursor:pointer;" onclick="openRoomDetail(${rid})" title="Xem chi tiết phòng">
-          <td>
-            <div class="room-room-name">${name}</div>
-            ${type ? `<div class="room-room-sub">${type}</div>` : ''}
-            ${tenantInfo}
-          </td>
-          <td class="ss-table-price">${price}</td>
-          <td style="color:#64748b;font-weight:600;">${area}</td>
-          <td>
-            <span class="badge ${badge.cls}">
-              <span class="badge-dot"></span>${badge.label}
-            </span>
-          </td>
-          <td onclick="event.stopPropagation()">
-            <div style="display:flex;gap:0.4rem;">
-              <button class="tbl-btn-copy" onclick="openRoomDetail(${rid})">Chi tiết</button>
-              ${postId ? `<a href="/room-detail-management/${postId}" class="tbl-btn-view">Xem</a>` : ''}
-            </div>
-          </td>
-        </tr>`;
-        }).join('');
-    }
-
-    function applyRoomFilters() {
-        const filtered = getFilteredRooms();
-        renderRoomsTable(filtered);
-        if (roomFilterEls.count) roomFilterEls.count.textContent = `${filtered.length} phòng`;
-    }
-
-    /* ─── Room Detail Modal — GET /api/room-management/room-detail-management (body: roomId) ─── */
-    async function openRoomDetail(roomId) {
-        if (!roomId) return;
-        const modal = document.getElementById('room-detail-modal');
-        const body  = document.getElementById('modal-room-body');
-        const title = document.getElementById('modal-room-title');
-        modal.classList.add('open');
-        body.innerHTML = `<div class="ss-loading"><div class="ss-spinner"></div> Đang tải chi tiết phòng...</div>`;
-
-        // First try from cache for instant display
-        const cached = cachedRooms.find(r => (r.id || r.roomId) == roomId);
-        if (cached) title.textContent = `Phòng ${getRoomDisplayName(cached)}`;
-
-        const token = localStorage.getItem('smartstay_token');
-        const headers = {
-            'Content-Type': 'application/json',
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        };
-        try {
-            const res = await fetch('/api/room-management/room-detail-management', {
-                method: 'GET',
-                headers,
-                credentials: 'include',
-                // body: JSON.stringify(roomId)
-            });
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const raw = await res.json();
-            const room = raw.data || raw.body || raw;
-
-            title.textContent = `Phòng ${esc(room.roomNumber || room.roomName || room.title || '')}`;
-
-            // Build detail rows
-            const statusBadge = getStatusBadge(room.status);
-            const badgeHtml = `<span class="badge ${statusBadge.cls}" style="font-size:0.75rem;"><span class="badge-dot"></span>${statusBadge.label}</span>`;
-
-            body.innerHTML = `
-          <div style="display:grid;gap:0.2rem;">
-            ${modalRow('Số phòng', esc(room.roomNumber || '—'))}
-            ${modalRow('Loại phòng', esc((room.roomType||'—').replace(/_/g,' ')))}
-            ${modalRow('Giá thuê/tháng', fmtMoney(room.rentPrice ?? room.monthlyRent))}
-            ${modalRow('Diện tích', fmtArea(room.areaM2 || room.area))}
-            ${modalRowHtml('Trạng thái', badgeHtml)}
-            ${room.userName ? modalRow('Khách đang thuê', esc(room.userName)) : ''}
-            ${room.userEmail ? modalRow('Email khách thuê', esc(room.userEmail)) : ''}
-            ${room.address ? modalRow('Địa chỉ', esc(room.address)) : ''}
-            ${room.description ? modalRow('Mô tả', esc(room.description)) : ''}
-            ${room.createdAt ? modalRow('Ngày tạo', new Date(room.createdAt).toLocaleDateString('vi-VN')) : ''}
-          </div>
-          ${!room.userName ? `
-          <div style="margin-top:1.1rem;padding:0.85rem 1rem;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:0.75rem;font-size:0.8rem;color:#16a34a;font-weight:700;display:flex;align-items:center;gap:0.5rem;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            Phòng hiện đang trống — sẵn sàng cho thuê
-          </div>` : ''}`;
-        } catch (e) {
-            // Fallback: hiển thị dữ liệu từ cache nếu API lỗi
-            if (cached) {
-                const statusBadge = getStatusBadge(cached.status);
-                body.innerHTML = `
-            <div style="margin-bottom:0.75rem;padding:0.5rem 0.75rem;background:#fef3c7;border-radius:0.5rem;font-size:0.75rem;color:#92400e;">⚠️ Hiển thị dữ liệu tóm tắt (không tải được chi tiết đầy đủ)</div>
-            <div style="display:grid;gap:0.2rem;">
-              ${modalRow('Số phòng', esc(cached.roomNumber || '—'))}
-              ${modalRow('Loại phòng', esc((cached.roomType||'—').replace(/_/g,' ')))}
-              ${modalRow('Giá thuê/tháng', fmtMoney(cached.rentPrice ?? cached.monthlyRent))}
-              ${modalRowHtml('Trạng thái', `<span class="badge ${statusBadge.cls}"><span class="badge-dot"></span>${statusBadge.label}</span>`)}
-              ${cached.userName ? modalRow('Khách đang thuê', esc(cached.userName)) : ''}
-              ${cached.userEmail ? modalRow('Email', esc(cached.userEmail)) : ''}
-            </div>`;
-            } else {
-                body.innerHTML = `<div style="color:#dc2626;font-size:0.82rem;padding:1rem;">Không thể tải chi tiết phòng.</div>`;
-            }
-            console.error('openRoomDetail error:', e);
-        }
-    }
-
-    function modalRow(key, val) {
-        return `<div class="modal-row"><span class="modal-key">${key}</span><span class="modal-val">${val}</span></div>`;
-    }
-    function modalRowHtml(key, html) {
-        return `<div class="modal-row"><span class="modal-key">${key}</span><div>${html}</div></div>`;
-    }
-
-    function closeRoomModal() {
-        document.getElementById('room-detail-modal').classList.remove('open');
-    }
-    document.getElementById('room-detail-modal').addEventListener('click', function(e) {
-        if (e.target === this) closeRoomModal();
-    });
-
-    /* Filter events */
-    ['houseSearchInput','houseStatusFilter','houseSortSelect'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', applyRoomFilters);
-    });
-
-    /* Init room management */
-    document.addEventListener('DOMContentLoaded', loadRoomsSummary);
-</script>
+<script th:src="@{/js/landlordRoomManagement.js}" src="../static/js/landlordRoomManagement.js"></script>
 
 <!-- Keep original landlordPosts.js -->
 <script th:src="@{/js/landlordPosts.js}" src="../static/js/landlordPosts.js"></script>
