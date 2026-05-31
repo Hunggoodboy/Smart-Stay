@@ -48,16 +48,6 @@ public class BillingService {
                     throw new RuntimeException("Phòng đã có hóa đơn điện nước tháng " + result.billingMonth);
                 });
 
-//        Optional<UtilityBills> existingBill =
-//                utilityBillsRepository.findTopByRoom_IdAndBillingMonthOrderByCreatedAtDesc(
-//                        result.room.getId(),
-//                        result.billingMonth
-//                );
-//
-//        if (existingBill.isPresent()) {
-//            throw new RuntimeException("Phòng đã có hóa đơn điện nước tháng " + result.billingMonth);
-//        }
-
         rentPaymentsRepository
                 .findTopByContract_IdAndBillingMonthOrderByCreatedAtDesc(result.contract.getId(), result.billingMonth)
                 .ifPresent(existing -> {
@@ -132,9 +122,11 @@ public class BillingService {
 //        else{
 //            throw new RuntimeException("Không tìm thấy phòng với id = " + request.getRoomId());
 //        }
+        //  tìm hợp đồng thuê của phòng đang lập hóa đơn.
         Contracts contract = resolveContract(request, room);
         System.out.println(contract.getRoom());
         System.out.println(contract.getContractCode());
+        //tìm hóa đơn trước đó để lấy chỉ số điện/nước cũ.
         UtilityBills previousBill = resolvePreviousBill(room.getId(), request.getBillingMonth());
 
         double electricityOldIndex = request.getElectricityOldIndex() != null
