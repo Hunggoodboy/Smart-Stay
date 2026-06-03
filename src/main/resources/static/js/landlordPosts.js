@@ -4,8 +4,6 @@ const PUBLIC_API_URL = '/room-posted';
 const getToken = () => localStorage.getItem('smartstay_token');
 
 let cachedPosts = [];
-
-// --- BIẾN QUẢN LÝ TRẠNG THÁI HIỂN THỊ ---
 let currentPostPage = 1;
 let visiblePostsCount = 6;
 const POSTS_PER_PAGE = 12;
@@ -75,6 +73,7 @@ function formatRelativeTime(value) {
 async function loadLandlordPosts() {
     const listEl = document.getElementById('landlord-posts-list');
     if (!listEl) return;
+
     listEl.innerHTML = '<div class="text-sm text-gray-500">Đang tải...</div>';
     try {
         const token = getToken();
@@ -84,7 +83,6 @@ async function loadLandlordPosts() {
         if (!res.ok) throw new Error('Fetch error');
         const posts = await res.json();
         cachedPosts = Array.isArray(posts) ? posts : [];
-
         renderPostCards(cachedPosts);
         // applyManagementFilters();
     } catch (err) {
@@ -93,7 +91,6 @@ async function loadLandlordPosts() {
     }
 }
 
-// --- HÀM VẼ CARD ĐÃ TÍCH HỢP PHÂN TRANG ---
 function renderPostCards(posts) {
     const listEl = document.getElementById('landlord-posts-list');
     if (!listEl) return;
@@ -168,7 +165,7 @@ function renderPostCards(posts) {
     }
 
     if (totalPages > 1) {
-        html += `<div class="mt-8 flex items-center justify-center gap-2">`;
+        html += '<div class="mt-8 flex items-center justify-center gap-2">';
         for (let i = 1; i <= totalPages; i++) {
             if (i === currentPostPage) {
                 html += `<button class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white shadow-sm">${i}</button>`;
@@ -176,13 +173,12 @@ function renderPostCards(posts) {
                 html += `<button onclick="goToPostPage(${i})" class="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-sm font-bold text-gray-600 transition hover:bg-gray-50 cursor-pointer">${i}</button>`;
             }
         }
-        html += `</div>`;
+        html += '</div>';
     }
 
     listEl.innerHTML = html;
 }
 
-// Các hàm cho sự kiện ở nút bấm
 window.showMorePostsOnPage = function() {
     visiblePostsCount = POSTS_PER_PAGE;
     renderPostCards(cachedPosts);
@@ -239,7 +235,7 @@ window.copyPostLink = function(id, btn) {
 // function renderManagementTable(posts) {
 //     if (!filterEls.tableBody) return;
 //     if (!Array.isArray(posts) || posts.length === 0) {
-//         filterEls.tableBody.innerHTML = `<tr><td class="px-5 py-6 text-sm text-gray-500" colspan="4">Không có nhà nào khớp bộ lọc.</td></tr>`;
+//         filterEls.tableBody.innerHTML = '<tr><td class="px-5 py-6 text-sm text-gray-500" colspan="4">Không có nhà nào khớp bộ lọc.</td></tr>';
 //         return;
 //     }
 //     const rows = posts.map(post => {
@@ -297,12 +293,14 @@ async function loadUnreadMessages() {
     const listEl = document.getElementById('unreadMessageList');
     const countEl = document.getElementById('unreadMessageCount');
     if (!listEl || !countEl) return;
+
     const token = getToken();
     if (!token) {
         countEl.textContent = '0';
         listEl.innerHTML = '<div class="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-5 text-sm text-gray-500">Đăng nhập để xem tin nhắn.</div>';
         return;
     }
+
     listEl.innerHTML = '<div class="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-5 text-sm text-gray-500">Đang tải tin nhắn...</div>';
     try {
         const res = await fetch('/api/chat/conversations', { headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include' });
@@ -311,10 +309,12 @@ async function loadUnreadMessages() {
         const unreadConversations = Array.isArray(conversations) ? conversations.filter(conv => (conv.unreadCount || 0) > 0) : [];
         const totalUnread = unreadConversations.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0);
         countEl.textContent = String(totalUnread);
+
         if (!unreadConversations.length) {
             listEl.innerHTML = '<div class="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-5 text-sm text-gray-500">Không có tin nhắn chưa đọc.</div>';
             return;
         }
+
         listEl.innerHTML = unreadConversations.slice(0, 3).map(conv => {
             const name = escapeHtml(conv.partnerName || 'Khách thuê');
             const avatar = (conv.partnerName || 'K').charAt(0).toUpperCase();
@@ -348,10 +348,9 @@ function escapeHtml(str) {
 
 function formatMoney(val) {
     if (val == null) return '';
-    try {
-        const n = Number(val);
-        return n.toLocaleString('vi-VN') + ' VNĐ';
-    } catch (e) { return val; }
+    const n = Number(val);
+    if (!Number.isFinite(n)) return String(val);
+    return n.toLocaleString('vi-VN') + ' VNĐ';
 }
 
 document.addEventListener('DOMContentLoaded', function () {

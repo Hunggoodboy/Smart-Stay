@@ -15,6 +15,10 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import vn.edu.ptit.dto.Request.ChangePasswordRequest;
+import vn.edu.ptit.dto.Request.UpdateProfileRequest;
 import vn.edu.ptit.dto.Request.UpgradeCustomerRequest;
 import vn.edu.ptit.dto.Response.ApiResponse;
 import vn.edu.ptit.dto.Response.AuthResponse;
@@ -24,6 +28,7 @@ import vn.edu.ptit.dto.Response.UserResponse;
 import vn.edu.ptit.dto.UserDTO;
 import vn.edu.ptit.entity.LandLord;
 import vn.edu.ptit.entity.User;
+import vn.edu.ptit.entity.Customer;
 import vn.edu.ptit.repository.LandLordRepository;
 import vn.edu.ptit.repository.UserRepository;
 import vn.edu.ptit.service.JWT.jwtService;
@@ -114,6 +119,91 @@ public class AuthService {
         Long userId = getCurrentUserId();
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         return UserDTO.fromEntity(user);
+    }
+
+    @Transactional
+    public UserDTO updateCurrentUser(UpdateProfileRequest request) {
+        Long userId = getCurrentUserId();
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (StringUtils.hasText(request.getFullName())) {
+            user.setFullName(request.getFullName().trim());
+        }
+        if (StringUtils.hasText(request.getEmail())) {
+            user.setEmail(request.getEmail().trim());
+        }
+        if (request.getPhoneNumber() != null) {
+            user.setPhoneNumber(request.getPhoneNumber().trim());
+        }
+        if (request.getGender() != null) {
+            user.setGender(request.getGender().trim());
+        }
+        user.setDateOfBirth(request.getDateOfBirth());
+        if (request.getAvatarUrl() != null) {
+            user.setAvatarUrl(request.getAvatarUrl().trim());
+        }
+        if (user instanceof Customer customer) {
+            if (request.getIdCardNumber() != null) {
+                customer.setIdCardNumber(request.getIdCardNumber().trim());
+            }
+            if (request.getAddress() != null) {
+                customer.setAddress(request.getAddress().trim());
+            }
+        } else if (user instanceof LandLord landLord) {
+            if (request.getIdCardNumber() != null) {
+                landLord.setIdCardNumber(request.getIdCardNumber().trim());
+            }
+            if (request.getAddress() != null) {
+                landLord.setAddress(request.getAddress().trim());
+            }
+        }
+        user.setUpdatedAt(LocalDateTime.now());
+
+        return UserDTO.fromEntity(userRepository.save(user));
+    }
+
+    @Transactional
+    public ApiResponse changePassword(ChangePasswordRequest request) {
+        if (!StringUtils.hasText(request.getCurrentPassword())
+                || !StringUtils.hasText(request.getNewPassword())
+                || !StringUtils.hasText(request.getConfirmPassword())) {
+            return ApiResponse.builder()
+                    .success(false)
+                    .message("Vui lòng nhập đầy đủ thông tin")
+                    .build();
+        }
+
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            return ApiResponse.builder()
+                    .success(false)
+                    .message("Mật khẩu mới và xác nhận mật khẩu không khớp")
+                    .build();
+        }
+
+        if (request.getNewPassword().length() < 6) {
+            return ApiResponse.builder()
+                    .success(false)
+                    .message("Mật khẩu mới phải có ít nhất 6 ký tự")
+                    .build();
+        }
+
+        Long userId = getCurrentUserId();
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            return ApiResponse.builder()
+                    .success(false)
+                    .message("Mật khẩu hiện tại không chính xác")
+                    .build();
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        return ApiResponse.builder()
+                .success(true)
+                .message("Đổi mật khẩu thành công")
+                .build();
     }
 
     public User getUser() {

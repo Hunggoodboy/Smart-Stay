@@ -157,12 +157,12 @@
                                 </p>
                                 <p id="dropdown-user-role" class="m-0 mt-1 text-xs text-gray-500">Khách thuê</p>
                             </div>
-                            <a href="#"
+                            <a href="#" id="profile-edit-link" onclick="openProfileModal(event)"
                                class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 no-underline hover:no-underline">
                                 <div class="i-material-symbols-person text-lg text-gray-500"></div>
                                 <span>Thông tin cá nhân</span>
                             </a>
-                            <a href="#"
+                            <a href="#" id="change-password-link" onclick="openPasswordModal(event)"
                                class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 no-underline hover:no-underline">
                                 <div class="i-material-symbols-password text-lg text-gray-500"></div>
                                 <span>Đổi mật khẩu</span>
@@ -354,6 +354,117 @@
     </main>
 </div>
 
+<div id="profile-modal" class="profile-modal" style="display:none;">
+    <div class="profile-modal-card">
+        <div class="profile-modal-header">
+            <div>
+                <h2>Thông tin cá nhân</h2>
+                <p>Cập nhật thông tin từ hồ sơ tài khoản hiện tại</p>
+            </div>
+            <button type="button" onclick="closeProfileModal()" class="profile-close-btn">
+                <div class="i-mdi-close text-xl"></div>
+            </button>
+        </div>
+
+        <form id="profile-form" class="profile-form">
+            <div id="profile-message" class="profile-message" style="display:none;"></div>
+            <div class="profile-grid">
+                <label class="profile-field">
+                    <span>Họ tên</span>
+                    <input id="profile-full-name" name="fullName" type="text" required
+                           class="profile-input">
+                </label>
+                <label class="profile-field">
+                    <span>Email</span>
+                    <input id="profile-email" name="email" type="email" required
+                           class="profile-input">
+                </label>
+                <label class="profile-field">
+                    <span>Số điện thoại</span>
+                    <input id="profile-phone" name="phoneNumber" type="tel"
+                           class="profile-input">
+                </label>
+                <label class="profile-field">
+                    <span>Giới tính</span>
+                    <select id="profile-gender" name="gender" class="profile-input">
+                        <option value="">Chưa cập nhật</option>
+                        <option value="MALE">Nam</option>
+                        <option value="FEMALE">Nữ</option>
+                        <option value="OTHER">Khác</option>
+                    </select>
+                </label>
+                <label class="profile-field">
+                    <span>Ngày sinh</span>
+                    <input id="profile-date-of-birth" name="dateOfBirth" type="date"
+                           class="profile-input">
+                </label>
+                <label class="profile-field">
+                    <span>CCCD/CMND</span>
+                    <input id="profile-id-card" name="idCardNumber" type="text"
+                           class="profile-input">
+                </label>
+            </div>
+            <label class="profile-field">
+                <span>Địa chỉ</span>
+                <input id="profile-address" name="address" type="text" class="profile-input">
+            </label>
+            <label class="profile-field">
+                <span>Ảnh đại diện URL</span>
+                <input id="profile-avatar-url" name="avatarUrl" type="url" class="profile-input">
+            </label>
+            <div class="profile-actions">
+                <button type="button" onclick="closeProfileModal()" class="profile-secondary-btn">
+                    Hủy
+                </button>
+                <button id="profile-submit" type="submit" class="profile-primary-btn">
+                    Lưu thay đổi
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="password-modal" class="profile-modal" style="display:none;">
+    <div class="profile-modal-card password-modal-card">
+        <div class="profile-modal-header">
+            <div>
+                <h2>Đổi mật khẩu</h2>
+                <p>Nhập mật khẩu hiện tại trước khi đặt mật khẩu mới</p>
+            </div>
+            <button type="button" onclick="closePasswordModal()" class="profile-close-btn">
+                <div class="i-mdi-close text-xl"></div>
+            </button>
+        </div>
+
+        <form id="password-form" class="profile-form">
+            <div id="password-message" class="profile-message" style="display:none;"></div>
+            <label class="profile-field">
+                <span>Mật khẩu hiện tại</span>
+                <input id="current-password" name="currentPassword" type="password" class="profile-input"
+                       autocomplete="current-password" required>
+            </label>
+            <label class="profile-field">
+                <span>Mật khẩu mới</span>
+                <input id="new-password" name="newPassword" type="password" class="profile-input"
+                       autocomplete="new-password" minlength="6" required>
+            </label>
+            <label class="profile-field">
+                <span>Xác nhận mật khẩu mới</span>
+                <input id="confirm-password" name="confirmPassword" type="password" class="profile-input"
+                       autocomplete="new-password" minlength="6" required>
+            </label>
+            <div class="profile-actions">
+                <button type="button" onclick="closePasswordModal()" class="profile-secondary-btn">
+                    Hủy
+                </button>
+                <button id="password-submit" type="submit" class="profile-primary-btn">
+                    Đổi mật khẩu
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div id="chat-widget"
      style="position:fixed;bottom:24px;right:110px;z-index:9999;font-family:'Be Vietnam Pro',sans-serif;">
 
@@ -422,6 +533,190 @@
 </div>
 
 <style>
+    .profile-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 10000;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: rgba(15, 23, 42, 0.45);
+    }
+
+    .profile-modal-card {
+        width: min(720px, 100%);
+        max-height: calc(100vh - 48px);
+        overflow: auto;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 24px 80px rgba(15, 23, 42, 0.24);
+    }
+
+    .password-modal-card {
+        width: min(520px, 100%);
+    }
+
+    .profile-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 20px 24px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .profile-modal-header h2 {
+        margin: 0;
+        color: #1f2937;
+        font-size: 20px;
+        font-weight: 800;
+    }
+
+    .profile-modal-header p {
+        margin: 4px 0 0;
+        color: #64748b;
+        font-size: 14px;
+    }
+
+    .profile-close-btn {
+        display: grid;
+        width: 36px;
+        height: 36px;
+        place-items: center;
+        flex-shrink: 0;
+        border: 0;
+        border-radius: 999px;
+        background: #f1f5f9;
+        color: #64748b;
+        cursor: pointer;
+    }
+
+    .profile-close-btn:hover {
+        background: #e2e8f0;
+    }
+
+    .profile-form {
+        display: grid;
+        gap: 16px;
+        padding: 20px 24px 24px;
+    }
+
+    .profile-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .profile-field {
+        display: block;
+        min-width: 0;
+    }
+
+    .profile-field span {
+        display: block;
+        margin-bottom: 6px;
+        color: #334155;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .profile-input {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #dbe3ef;
+        border-radius: 12px;
+        padding: 12px 14px;
+        color: #1f2937;
+        font: inherit;
+        outline: none;
+    }
+
+    .profile-input:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+    }
+
+    .profile-message {
+        border-radius: 10px;
+        padding: 12px 14px;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .profile-message.error {
+        display: block;
+        background: #fef2f2;
+        color: #b91c1c;
+    }
+
+    .profile-message.success {
+        display: block;
+        background: #ecfdf5;
+        color: #047857;
+    }
+
+    .profile-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        padding-top: 16px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .profile-secondary-btn,
+    .profile-primary-btn {
+        border-radius: 12px;
+        padding: 11px 18px;
+        font: inherit;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .profile-secondary-btn {
+        border: 1px solid #dbe3ef;
+        background: #fff;
+        color: #334155;
+    }
+
+    .profile-secondary-btn:hover {
+        background: #f8fafc;
+    }
+
+    .profile-primary-btn {
+        border: 0;
+        background: #2563eb;
+        color: #fff;
+    }
+
+    .profile-primary-btn:hover {
+        background: #1d4ed8;
+    }
+
+    .profile-primary-btn:disabled {
+        cursor: wait;
+        opacity: 0.7;
+    }
+
+    @media (max-width: 640px) {
+        .profile-modal {
+            padding: 12px;
+        }
+
+        .profile-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-actions {
+            flex-direction: column-reverse;
+        }
+
+        .profile-secondary-btn,
+        .profile-primary-btn {
+            width: 100%;
+        }
+    }
+
     @keyframes notifDrop {
         from {
             opacity: 0;

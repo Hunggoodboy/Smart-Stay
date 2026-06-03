@@ -2,6 +2,7 @@ const wrapper = document.getElementById('user-menu');
 const dropdown = document.getElementById('user-dropdown');
 const menuButton = document.getElementById('user-menu-button');
 const dashboardRoot = document.getElementById('tenant-dashboard');
+let currentProfileData = null;
 
 function byId() {
     for (let i = 0; i < arguments.length; i += 1) {
@@ -69,6 +70,8 @@ window.addEventListener('click', function (e) {
 window.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
         setUserMenuState(false);
+        closeProfileModal();
+        closePasswordModal();
     }
 });
 
@@ -103,6 +106,233 @@ function getStatusLabel(status) {
         return 'Chưa thanh toán';
     }
     return 'Chưa xác định';
+}
+
+function showProfileMessage(message, isError) {
+    const box = document.getElementById('profile-message');
+    if (!box) return;
+    showInlineMessage(box, message, isError);
+}
+
+function showInlineMessage(box, message, isError) {
+    box.textContent = message;
+    box.style.display = 'block';
+    box.classList.remove('error', 'success');
+    box.classList.add(isError ? 'error' : 'success');
+}
+
+function resetInlineMessage(id) {
+    const box = document.getElementById(id);
+    if (!box) return;
+    box.style.display = 'none';
+    box.classList.remove('error', 'success');
+    box.textContent = '';
+}
+
+function setProfileFormValue(id, value) {
+    const node = document.getElementById(id);
+    if (node) node.value = value || '';
+}
+
+function fillProfileForm(data) {
+    setProfileFormValue('profile-full-name', data.fullName);
+    setProfileFormValue('profile-email', data.email);
+    setProfileFormValue('profile-phone', data.phoneNumber);
+    setProfileFormValue('profile-gender', data.gender);
+    setProfileFormValue('profile-date-of-birth', data.dateOfBirth);
+    setProfileFormValue('profile-id-card', data.idCardNumber);
+    setProfileFormValue('profile-address', data.address);
+    setProfileFormValue('profile-avatar-url', data.avatarUrl);
+}
+
+async function fetchCurrentProfile() {
+    const token = localStorage.getItem('smartstay_token');
+    const res = await fetch('/api/user/tenant', {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token ? `Bearer ${token}` : ''
+        },
+        credentials: 'include'
+    });
+    if (!res.ok) {
+        throw new Error('Không thể tải thông tin cá nhân');
+    }
+    const raw = await res.json();
+    currentProfileData = raw.body ? raw.body : raw;
+    return currentProfileData;
+}
+
+async function openProfileModal(event) {
+    if (event) event.preventDefault();
+    const modal = document.getElementById('profile-modal');
+    const message = document.getElementById('profile-message');
+    if (!modal) return;
+    if (message) {
+        message.style.display = 'none';
+        message.classList.remove('error', 'success');
+    }
+    modal.style.display = 'flex';
+    try {
+        const data = currentProfileData || await fetchCurrentProfile();
+        fillProfileForm(data);
+    } catch (error) {
+        showProfileMessage(error.message || 'Không thể tải thông tin cá nhân', true);
+    }
+}
+
+function closeProfileModal() {
+    const modal = document.getElementById('profile-modal');
+    if (!modal) return;
+    modal.style.display = 'none';
+}
+
+function openPasswordModal(event) {
+    if (event) event.preventDefault();
+    const modal = document.getElementById('password-modal');
+    const form = document.getElementById('password-form');
+    if (!modal) return;
+    if (form) form.reset();
+    resetInlineMessage('password-message');
+    modal.style.display = 'flex';
+}
+
+function closePasswordModal() {
+    const modal = document.getElementById('password-modal');
+    if (!modal) return;
+    modal.style.display = 'none';
+}
+
+window.openProfileModal = openProfileModal;
+window.closeProfileModal = closeProfileModal;
+window.openPasswordModal = openPasswordModal;
+window.closePasswordModal = closePasswordModal;
+
+async function submitPasswordForm(event) {
+    event.preventDefault();
+    const messageBox = document.getElementById('password-message');
+    const submitButton = document.getElementById('password-submit');
+    const currentPassword = document.getElementById('current-password')?.value || '';
+    const newPassword = document.getElementById('new-password')?.value || '';
+    const confirmPassword = document.getElementById('confirm-password')?.value || '';
+
+    if (newPassword !== confirmPassword) {
+        if (messageBox) showInlineMessage(messageBox, 'Mật khẩu mới và xác nhận mật khẩu không khớp', true);
+        return;
+    }
+    if (newPassword.length < 6) {
+        if (messageBox) showInlineMessage(messageBox, 'Mật khẩu mới phải có ít nhất 6 ký tự', true);
+        return;
+    }
+
+    if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = 'Đang lưu...';
+    }
+
+    try {
+        const token = localStorage.getItem('smartstay_token');
+        const res = await fetch('/api/user/password', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token ? `Bearer ${token}` : ''
+            },
+            credentials: 'include',
+            body: JSON.stringify({ currentPassword, newPassword, confirmPassword })
+        });
+        const data = await res.json().catch(() => null);
+        if (!res.ok || (data && data.success === false)) {
+            throw new Error((data && data.message) || 'Không thể đổi mật khẩu');
+        }
+        if (messageBox) showInlineMessage(messageBox, (data && data.message) || 'Đổi mật khẩu thành công', false);
+        setTimeout(closePasswordModal, 800);
+    } catch (error) {
+        if (messageBox) showInlineMessage(messageBox, error.message || 'Không thể đổi mật khẩu', true);
+    } finally {
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = 'Đổi mật khẩu';
+        }
+    }
+}
+
+async function submitProfileForm(event) {
+    event.preventDefault();
+    const submitButton = document.getElementById('profile-submit');
+    const token = localStorage.getItem('smartstay_token');
+    const payload = {
+        fullName: document.getElementById('profile-full-name')?.value.trim(),
+        email: document.getElementById('profile-email')?.value.trim(),
+        phoneNumber: document.getElementById('profile-phone')?.value.trim(),
+        gender: document.getElementById('profile-gender')?.value,
+        dateOfBirth: document.getElementById('profile-date-of-birth')?.value || null,
+        idCardNumber: document.getElementById('profile-id-card')?.value.trim(),
+        address: document.getElementById('profile-address')?.value.trim(),
+        avatarUrl: document.getElementById('profile-avatar-url')?.value.trim()
+    };
+
+    if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = 'Đang lưu...';
+    }
+
+    try {
+        const res = await fetch('/api/user/profile', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token ? `Bearer ${token}` : ''
+            },
+            credentials: 'include',
+            body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+            throw new Error('Không thể cập nhật thông tin cá nhân');
+        }
+        currentProfileData = await res.json();
+        localStorage.setItem('smartstay_user', JSON.stringify(currentProfileData));
+        renderUserMenu(true, currentProfileData);
+        applyDashboardData(currentProfileData);
+        showProfileMessage('Đã cập nhật thông tin cá nhân', false);
+        setTimeout(closeProfileModal, 700);
+    } catch (error) {
+        showProfileMessage(error.message || 'Không thể cập nhật thông tin cá nhân', true);
+    } finally {
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = 'Lưu thay đổi';
+        }
+    }
+}
+
+const profileForm = document.getElementById('profile-form');
+if (profileForm) {
+    profileForm.addEventListener('submit', submitProfileForm);
+}
+
+const passwordForm = document.getElementById('password-form');
+if (passwordForm) {
+    passwordForm.addEventListener('submit', submitPasswordForm);
+}
+
+const changePasswordLink = document.getElementById('change-password-link');
+if (changePasswordLink) {
+    changePasswordLink.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        setUserMenuState(false);
+        openPasswordModal();
+    });
+}
+
+const profileEditLink = document.getElementById('profile-edit-link');
+if (profileEditLink) {
+    profileEditLink.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        setUserMenuState(false);
+        openProfileModal();
+    });
 }
 
 function formatDate(value) {
@@ -231,7 +461,12 @@ function applyDashboardData(data) {
     }
 
     const displayName = data.displayName || data.fullName || 'Khách thuê';
-    const roleLabel = data.roleLabel || 'Khách thuê';
+    let roleLabel = data.roleLabel || 'Khách thuê';
+    if (!data.roleLabel) {
+        if (data.role === 'ADMIN') roleLabel = 'Quản trị viên';
+        else if (data.role === 'LANDLORD') roleLabel = 'Chủ nhà';
+        else if (data.role === 'CUSTOMER') roleLabel = 'Khách thuê';
+    }
 
     setText(el.userRoleLabel, roleLabel);
     setText(el.welcomeMessage, `Xin chào, ${displayName}! 👋`);
@@ -361,6 +596,7 @@ async function loadDashboard() {
         const rawData = await userResponse.json();
 
         const userData = rawData.body ? rawData.body : rawData;
+        currentProfileData = userData;
         renderUserMenu(true, userData);
 
         let latestBill = null;
