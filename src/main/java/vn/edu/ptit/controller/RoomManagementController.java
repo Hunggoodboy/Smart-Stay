@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.ptit.dto.Request.CreateRoomManageRequest;
 import vn.edu.ptit.dto.Response.ApiResponse;
-import vn.edu.ptit.service.RoomService;
+import vn.edu.ptit.service.room.RoomService;
 
 @RestController
 @RequestMapping("/api/room-management")

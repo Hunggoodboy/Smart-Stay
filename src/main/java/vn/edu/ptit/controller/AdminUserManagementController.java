@@ -9,7 +9,7 @@ import vn.edu.ptit.dto.Response.AdminDashboardCountResponse;
 import vn.edu.ptit.dto.Response.AdminUserResponse;
 import vn.edu.ptit.dto.Response.ApiResponse;
 import vn.edu.ptit.entity.User;
-import vn.edu.ptit.service.AdminUserManagementService;
+import vn.edu.ptit.service.admin.AdminUserManagementService;
 
 import java.util.List;
 

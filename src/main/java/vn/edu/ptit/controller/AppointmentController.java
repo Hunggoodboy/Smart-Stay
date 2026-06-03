@@ -10,7 +10,7 @@ import vn.edu.ptit.dto.Request.AppointmentRequest;
 import vn.edu.ptit.dto.Response.ApiResponse;
 import vn.edu.ptit.dto.Response.AppointmentResponse;
 import vn.edu.ptit.dto.Response.AppointmentSummaryResponse;
-import vn.edu.ptit.service.AppointmentService;
+import vn.edu.ptit.service.room.AppointmentService;
 import vn.edu.ptit.service.Authentication.AuthService;
 
 import java.util.List;

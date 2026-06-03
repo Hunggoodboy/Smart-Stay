@@ -1,9 +1,8 @@
-package vn.edu.ptit.service;
+package vn.edu.ptit.service.room;
 
 import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import vn.edu.ptit.dto.Request.UtilityBillsRequest;
 import vn.edu.ptit.dto.Response.ApiResponse;

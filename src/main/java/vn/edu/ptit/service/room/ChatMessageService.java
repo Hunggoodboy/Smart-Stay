@@ -1,4 +1,4 @@
-package vn.edu.ptit.service;
+package vn.edu.ptit.service.room;
 
 
 import lombok.AllArgsConstructor;
@@ -13,7 +13,6 @@ import vn.edu.ptit.entity.User;
 import vn.edu.ptit.repository.*;
 import vn.edu.ptit.service.Authentication.AuthService;
 
-import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;

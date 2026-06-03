@@ -9,13 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import vn.edu.ptit.dto.Request.ChatMessageRequest;
 import vn.edu.ptit.dto.Response.ChatMessagesSummaryResponse;
 import vn.edu.ptit.dto.Response.ConversationResponse;
-import vn.edu.ptit.entity.ChatMessages;
-import vn.edu.ptit.entity.User;
-import vn.edu.ptit.repository.UserRepository;
-import vn.edu.ptit.service.Authentication.AuthService;
-import vn.edu.ptit.service.ChatMessageService;
+import vn.edu.ptit.service.room.ChatMessageService;
 
-import java.security.Principal;
 import java.util.List;
 
 @Controller

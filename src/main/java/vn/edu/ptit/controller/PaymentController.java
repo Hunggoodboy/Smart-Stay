@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import vn.edu.ptit.dto.Request.UtilityBillsRequest;
 import vn.edu.ptit.dto.Response.ApiResponse;
 import vn.edu.ptit.dto.Response.UtilityBillsResponse;
-import vn.edu.ptit.service.PaymentService;
+import vn.edu.ptit.service.room.PaymentService;
 
 import java.util.List;
 

@@ -7,10 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import vn.edu.ptit.dto.Request.ContractCreationRequest;
 import vn.edu.ptit.dto.Response.ApiResponse;
 import vn.edu.ptit.dto.Response.ContractSuggestionResponse;
-import vn.edu.ptit.entity.Contracts;
-import vn.edu.ptit.service.ContractService;
-
-import java.util.List;
+import vn.edu.ptit.service.room.ContractService;
 
 @RestController
 @RequestMapping("/api/contract")

@@ -1,11 +1,10 @@
-package vn.edu.ptit.service;
+package vn.edu.ptit.service.room;
 
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import vn.edu.ptit.dto.Request.CreateRoomManageRequest;
 import vn.edu.ptit.dto.Response.ApiResponse;
-import vn.edu.ptit.dto.Response.RoomManageDetailResponse;
 import vn.edu.ptit.dto.Response.RoomManageSummaryResponse;
 import vn.edu.ptit.entity.Contracts;
 import vn.edu.ptit.entity.RoomPosts;
@@ -19,8 +18,6 @@ import vn.edu.ptit.service.Authentication.AuthService;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
-import static vn.edu.ptit.entity.Rooms.Status.AVAILABLE;
 
 @Service
 @AllArgsConstructor

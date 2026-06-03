@@ -1,9 +1,8 @@
-package vn.edu.ptit.service;
+package vn.edu.ptit.service.roomManagement;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
-import vn.edu.ptit.dto.Request.CreateRentalRequestRequest;
 import vn.edu.ptit.dto.Request.CreateRoomManageRequest;
 import vn.edu.ptit.dto.Request.RentalRequestDTO;
 import vn.edu.ptit.dto.Response.ApiResponse;
@@ -13,7 +12,6 @@ import vn.edu.ptit.repository.*;
 import vn.edu.ptit.service.Authentication.AuthService;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;

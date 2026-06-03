@@ -1,6 +1,5 @@
 package vn.edu.ptit.controller;
 
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -9,14 +8,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import vn.edu.ptit.dto.Request.CreateRoomPostRequest;
 import vn.edu.ptit.dto.Request.InteriorRoomRequest;
-import vn.edu.ptit.dto.Request.RentalRequestDTO;
 import vn.edu.ptit.dto.Response.ApiResponse;
 import vn.edu.ptit.dto.Response.ApiResponseCreateRoomPost;
 import vn.edu.ptit.dto.Response.RoomPostDetailResponse;
 import vn.edu.ptit.dto.Response.RoomPostSummaryResponse;
-import vn.edu.ptit.entity.RoomInterior;
-import vn.edu.ptit.service.InteriorService;
-import vn.edu.ptit.service.RoomPostService;
+import vn.edu.ptit.service.room.InteriorService;
+import vn.edu.ptit.service.room.RoomPostService;
 
 import java.io.IOException;
 import java.util.List;

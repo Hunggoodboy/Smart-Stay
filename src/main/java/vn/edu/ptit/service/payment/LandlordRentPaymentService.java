@@ -1,4 +1,4 @@
-package vn.edu.ptit.service;
+package vn.edu.ptit.service.payment;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;

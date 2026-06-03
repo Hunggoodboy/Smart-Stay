@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import vn.edu.ptit.dto.Request.MonthlyBillRequest;
 import vn.edu.ptit.dto.Response.MonthlyBillResponse;
-import vn.edu.ptit.service.BillingService;
+import vn.edu.ptit.service.room.BillingService;
 
 @RestController
 @RequestMapping("/api/billing")

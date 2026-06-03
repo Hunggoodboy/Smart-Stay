@@ -1,4 +1,4 @@
-package vn.edu.ptit.service;
+package vn.edu.ptit.service.room;
 
 import lombok.AllArgsConstructor;
 import org.apache.coyote.BadRequestException;
@@ -14,7 +14,6 @@ import vn.edu.ptit.entity.User;
 import vn.edu.ptit.repository.AppointmentRepository;
 import vn.edu.ptit.repository.RentalRequestRepository;
 import vn.edu.ptit.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

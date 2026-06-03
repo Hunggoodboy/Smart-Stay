@@ -1,22 +1,18 @@
-package vn.edu.ptit.service;
+package vn.edu.ptit.service.room;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeParseException;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import vn.edu.ptit.dto.Response.SuggestionBillingResponse;
-import vn.edu.ptit.dto.Response.getBillingLastMonthResponse;
 import vn.edu.ptit.entity.*;
 import vn.edu.ptit.dto.Request.MonthlyBillRequest;
 import vn.edu.ptit.dto.Response.MonthlyBillResponse;

@@ -10,7 +10,7 @@ import vn.edu.ptit.dto.Request.AdminRoomStatusRequest;
 import vn.edu.ptit.dto.Request.UpdateRoomPostRequest;
 import vn.edu.ptit.entity.RoomPosts;
 import vn.edu.ptit.entity.Rooms;
-import vn.edu.ptit.service.AdminRoomPostManagementService;
+import vn.edu.ptit.service.admin.AdminRoomPostManagementService;
 
 @RestController
 @RequiredArgsConstructor

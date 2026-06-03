@@ -1,4 +1,4 @@
-package vn.edu.ptit.service;
+package vn.edu.ptit.service.admin;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

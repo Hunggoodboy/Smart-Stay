@@ -1,4 +1,4 @@
-package vn.edu.ptit.service;
+package vn.edu.ptit.service.room;
 
 import lombok.AllArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -13,12 +13,10 @@ import vn.edu.ptit.repository.*;
 import vn.edu.ptit.service.Authentication.AuthService;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static vn.edu.ptit.dto.Response.UserResponseDTO.mapToUserResponse;
-import static vn.edu.ptit.entity.RentalRequests.Status.PENDING;
 
 @Service
 @AllArgsConstructor

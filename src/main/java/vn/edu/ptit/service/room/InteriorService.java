@@ -1,12 +1,8 @@
-package vn.edu.ptit.service;
+package vn.edu.ptit.service.room;
 
-import jakarta.annotation.PostConstruct;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
@@ -16,7 +12,6 @@ import vn.edu.ptit.dto.Request.InteriorRoomRequest;
 import vn.edu.ptit.dto.Response.ApiResponse;
 import vn.edu.ptit.entity.Interior;
 import vn.edu.ptit.entity.RoomInterior;
-import vn.edu.ptit.entity.RoomPostImages;
 import vn.edu.ptit.entity.RoomPosts;
 import vn.edu.ptit.repository.InteriorRepository;
 import vn.edu.ptit.repository.RoomInteriorRepository;

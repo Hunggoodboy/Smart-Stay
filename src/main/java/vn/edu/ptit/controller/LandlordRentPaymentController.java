@@ -7,7 +7,7 @@ import vn.edu.ptit.dto.Request.ConfirmRentPaymentRequest;
 import vn.edu.ptit.dto.Response.ApiResponse;
 import vn.edu.ptit.dto.Response.RentPaymentResponse;
 import vn.edu.ptit.entity.RentPayments;
-import vn.edu.ptit.service.LandlordRentPaymentService;
+import vn.edu.ptit.service.payment.LandlordRentPaymentService;
 
 import java.util.List;
 

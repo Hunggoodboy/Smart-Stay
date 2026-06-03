@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import vn.edu.ptit.dto.Response.ApiResponse;
 import vn.edu.ptit.dto.Response.VietQrQuickLinkResponse;
-import vn.edu.ptit.service.VietQrQuickLinkService;
+import vn.edu.ptit.service.payment.VietQrQuickLinkService;
 
 @RestController
 @RequestMapping("/api/payments/vietqr")

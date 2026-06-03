@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Description;
 import vn.edu.ptit.dto.Request.AiRentalRequest;
 import vn.edu.ptit.dto.Request.RentalRequestDTO;
 import vn.edu.ptit.dto.Response.ApiResponse;
-import vn.edu.ptit.service.RentalRequestService;
+import vn.edu.ptit.service.roomManagement.RentalRequestService;
 
 import java.util.function.Function;
 

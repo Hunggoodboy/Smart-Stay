@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import vn.edu.ptit.dto.Response.ApiResponse;
-import vn.edu.ptit.service.RevenueReportService;
+import vn.edu.ptit.service.roomManagement.RevenueReportService;
 
 @RestController
 @RequestMapping("/api/revenue-report")

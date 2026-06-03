@@ -1,4 +1,4 @@
-package vn.edu.ptit.service;
+package vn.edu.ptit.service.room;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import vn.edu.ptit.dto.LandlordInfo;
 import vn.edu.ptit.dto.Request.CreateRoomPostRequest;
-import vn.edu.ptit.dto.Response.ApiResponse;
 import vn.edu.ptit.dto.Response.ApiResponseCreateRoomPost;
 import vn.edu.ptit.dto.Response.RoomPostDetailResponse;
 import vn.edu.ptit.dto.Response.RoomPostSummaryResponse;
@@ -17,7 +16,6 @@ import vn.edu.ptit.entity.LandLord;
 import vn.edu.ptit.entity.RoomPostImages;
 import vn.edu.ptit.entity.RoomPosts;
 import vn.edu.ptit.entity.User;
-import vn.edu.ptit.repository.LandLordRepository;
 import vn.edu.ptit.repository.RoomPostRepository;
 import vn.edu.ptit.service.AI.VectorService;
 import vn.edu.ptit.service.Authentication.AuthService;

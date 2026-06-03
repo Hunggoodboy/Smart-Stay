@@ -5,7 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.ptit.dto.Request.CreateNotificationRequest;
 import vn.edu.ptit.dto.Response.NotificationsResponse;
-import vn.edu.ptit.service.NotificationService;
+import vn.edu.ptit.service.roomManagement.NotificationService;
 
 import java.util.List;
 
