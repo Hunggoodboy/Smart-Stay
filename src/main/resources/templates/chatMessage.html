@@ -178,12 +178,14 @@
     <div class="chat-area" id="chatArea" style="display: none;">
         <div class="chat-header">
             <button class="btn-back" onclick="closeChatMobile()">←</button>
-            <div class="avatar" id="headerAvatar">?</div>
-            <div>
-                <div style="font-weight: 700; font-size: 16px; color: #0f172a;" id="headerName">...</div>
-                <div style="font-size: 12px; color: #64748b; margin-top: 2px;">
-                    <span class="status-dot" id="statusDot"></span>
-                    <span id="statusText">Đang tải</span>
+            <div id="partnerInfoLink" class="flex items-center gap-4 cursor-pointer hover:opacity-85 transition-opacity">
+                <div class="avatar" id="headerAvatar">?</div>
+                <div>
+                    <div style="font-weight: 700; font-size: 16px; color: #0f172a;" id="headerName">...</div>
+                    <div style="font-size: 12px; color: #64748b; margin-top: 2px;">
+                        <span class="status-dot" id="statusDot"></span>
+                        <span id="statusText">Đang tải</span>
+                    </div>
                 </div>
             </div>
         </div>

@@ -588,6 +588,10 @@ async function loadDashboard() {
 
         if (userResponse.status === 401 || userResponse.status === 403) {
             renderUserMenu(false, null);
+            localStorage.removeItem('smartstay_token');
+            localStorage.removeItem('smartstay_user');
+            document.cookie = 'smartstay_token=; Max-Age=0; path=/';
+            window.location.href = '/login';
             return;
         }
 

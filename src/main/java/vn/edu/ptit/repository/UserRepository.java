@@ -17,12 +17,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
     String findFullNameById(@Param("id") Long id);
     Optional<User> findByEmail(String email);
 
-    @Modifying
+
+    @Modifying(clearAutomatically = true)
     @Transactional
     @Query(value = "UPDATE users SET user_type = :userType where id = :userId", nativeQuery = true)
     void updateUserType(@Param("userType") String userType, @Param("userId") Long userId);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Transactional
     @Query(value = "insert into customers(user_id, address,id_card_number,is_verified) values (:userId, :address, :idCardNumber, true)", nativeQuery = true)
     void insertIntoCustomer(@Param("userId") Long userId, @Param("address") String address, @Param("idCardNumber") String idCardNumber);

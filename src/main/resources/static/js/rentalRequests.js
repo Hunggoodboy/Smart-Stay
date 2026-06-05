@@ -226,41 +226,73 @@ function renderLandlordActions(req) {
     } else if (req.status === 'APPROVED') {
 
         if (req.contractId) {
-            // ✅ ĐÃ CÓ HỢP ĐỒNG → hiển thị badge + nút tạo phòng quản lý
-            actions.innerHTML = `
-                <div class="w-full flex flex-col gap-4">
-
-                    <!-- Badge: đã có hợp đồng -->
-                    <div class="w-full flex items-center gap-3 bg-indigo-50 border border-indigo-200 rounded-2xl px-5 py-4">
-                        <span class="flex-shrink-0 w-9 h-9 rounded-xl bg-indigo-100 flex items-center justify-center">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                <polyline points="14 2 14 8 20 8"></polyline>
-                                <polyline points="9 15 11 17 15 13"></polyline>
-                            </svg>
-                        </span>
-                        <div class="flex-1">
-                            <p class="text-sm font-bold text-indigo-700">Đã có hợp đồng</p>
-                            <p class="text-xs text-indigo-500 mt-0.5">Hợp đồng #${req.contractId} đã được tạo cho yêu cầu này</p>
+            if (req.contractStatus === 'PENDING') {
+                // ⏳ HỢP ĐỒNG ĐÃ TẠO NHƯNG CHỜ KÝ → hiển thị badge chờ ký + nút disabled
+                actions.innerHTML = `
+                    <div class="w-full flex flex-col gap-4">
+                        <!-- Badge: đã có hợp đồng nhưng chờ ký -->
+                        <div class="w-full flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4">
+                            <span class="flex-shrink-0 w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                            </span>
+                            <div class="flex-1">
+                                <p class="text-sm font-bold text-amber-700">Đã có hợp đồng</p>
+                                <p class="text-xs text-amber-500 mt-0.5">Hợp đồng #${req.contractId} đang chờ khách thuê ký xác nhận</p>
+                            </div>
+                            <a href="/contractDetail/${req.contractId}"
+                               class="flex-shrink-0 text-xs font-bold text-amber-600 bg-amber-100 hover:bg-amber-200 transition px-3 py-1.5 rounded-xl no-underline">
+                                Xem →
+                            </a>
                         </div>
-                        <a href="/contractDetail/${req.contractId}"
-                           class="flex-shrink-0 text-xs font-bold text-indigo-600 bg-indigo-100 hover:bg-indigo-200 transition px-3 py-1.5 rounded-xl no-underline">
-                            Xem →
-                        </a>
+
+                        <!-- Nút bị khóa chờ ký -->
+                        <button class="w-full btn-modern text-base cursor-not-allowed opacity-60 flex items-center justify-center gap-2" style="background:#cbd5e1; color:#475569;" disabled>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                            </svg>
+                            Chờ khách thuê ký hợp đồng
+                        </button>
                     </div>
+                `;
+            } else {
+                // ✅ ĐÃ CÓ HỢP ĐỒNG & ĐÃ KÝ (ACTIVE) → hiển thị badge + nút tạo phòng quản lý
+                actions.innerHTML = `
+                    <div class="w-full flex flex-col gap-4">
 
-                    <!-- Nút tạo phòng quản lý -->
-                    <button onclick="openRoomManageForm(${req.id}, ${req.customer?.id}, ${req.roomPost?.roomId || req.roomPost?.id})"
-                            class="w-full btn-modern btn-room-manage text-base">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                        </svg>
-                        Tạo phòng quản lý cho khách này
-                    </button>
+                        <!-- Badge: đã có hợp đồng -->
+                        <div class="w-full flex items-center gap-3 bg-indigo-50 border border-indigo-200 rounded-2xl px-5 py-4">
+                            <span class="flex-shrink-0 w-9 h-9 rounded-xl bg-indigo-100 flex items-center justify-center">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                    <polyline points="9 15 11 17 15 13"></polyline>
+                                </svg>
+                            </span>
+                            <div class="flex-1">
+                                <p class="text-sm font-bold text-indigo-700">Đã ký hợp đồng</p>
+                                <p class="text-xs text-indigo-500 mt-0.5">Hợp đồng #${req.contractId} đã được ký và có hiệu lực</p>
+                            </div>
+                            <a href="/contractDetail/${req.contractId}"
+                               class="flex-shrink-0 text-xs font-bold text-indigo-600 bg-indigo-100 hover:bg-indigo-200 transition px-3 py-1.5 rounded-xl no-underline">
+                                Xem →
+                            </a>
+                        </div>
 
-                </div>
-            `;
+                        <!-- Nút tạo phòng quản lý -->
+                        <button onclick="openRoomManageForm(${req.id}, ${req.customer?.id}, ${req.roomPost?.roomId || req.roomPost?.id})"
+                                class="w-full btn-modern btn-room-manage text-base">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                            </svg>
+                            Tạo phòng quản lý cho khách này
+                        </button>
+
+                    </div>
+                `;
+            }
 
         } else {
             // ⏳ ĐƯỢC DUYỆT nhưng chưa có hợp đồng → tiến hành làm hợp đồng
@@ -331,12 +363,39 @@ function renderCustomerActions(req) {
             </div>
         `;
     } else if (req.status === 'APPROVED') {
-        actions.innerHTML = `<div class="w-full text-center bg-emerald-50 py-4 rounded-2xl border border-emerald-100 text-emerald-600 font-bold text-sm flex items-center justify-center gap-2">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
-            Yêu cầu đã được CHẤP NHẬN – Chủ nhà sẽ liên hệ với bạn
-        </div>`;
+        if (req.contractId) {
+            if (req.contractStatus === 'PENDING') {
+                actions.innerHTML = `
+                    <div class="w-full flex flex-col gap-3">
+                        <div class="w-full text-center bg-amber-50 py-3 rounded-2xl border border-amber-100 text-amber-700 font-semibold text-sm flex items-center justify-center gap-2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                            </svg>
+                            Chủ nhà đã tạo hợp đồng – Vui lòng ký xác nhận
+                        </div>
+                        <a href="/contractDetail/${req.contractId}" class="w-full btn-modern btn-contract text-center no-underline text-base justify-center">
+                            Đi tới ký hợp đồng
+                        </a>
+                    </div>
+                `;
+            } else {
+                actions.innerHTML = `
+                    <div class="w-full text-center bg-emerald-50 py-4 rounded-2xl border border-emerald-100 text-emerald-600 font-bold text-sm flex items-center justify-center gap-2">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                        Hợp đồng đã được ký – Chúc mừng bạn đã thuê phòng!
+                    </div>
+                `;
+            }
+        } else {
+            actions.innerHTML = `<div class="w-full text-center bg-emerald-50 py-4 rounded-2xl border border-emerald-100 text-emerald-600 font-bold text-sm flex items-center justify-center gap-2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                Yêu cầu đã được CHẤP NHẬN – Đang chờ chủ nhà làm hợp đồng
+            </div>`;
+        }
     } else {
         actions.innerHTML = `
             <div class="w-full flex flex-col gap-3">

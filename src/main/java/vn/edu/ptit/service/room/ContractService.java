@@ -139,6 +139,7 @@ public class ContractService {
                                 // Mapping thông tin 2 bên A và B
                                 .landLord(mapToUserResponse(contract.getLandLord()))
                                 .customer(mapToUserResponse(contract.getCustomer()))
+                                .customerName(contract.getCustomer() != null ? contract.getCustomer().getFullName() : null)
                                 // Lấy địa chỉ phòng (null-safe)
                                 .roomAddress(contract.getRoom() != null ? contract.getRoom().getAddress() : "N/A")
                                 .build()).collect(Collectors.toList());
@@ -165,9 +166,65 @@ public class ContractService {
                                 // Mapping thông tin 2 bên A và B
                                 .landLord(mapToUserResponse(contract.getLandLord()))
                                 .customer(mapToUserResponse(contract.getCustomer()))
+                                .customerName(contract.getCustomer() != null ? contract.getCustomer().getFullName() : null)
                                 // Lấy địa chỉ phòng (null-safe)
                                 .roomAddress(contract.getRoom() != null ? contract.getRoom().getAddress() : "N/A")
                                 .build()).collect(Collectors.toList());
 
+        }
+
+        public ContractResponseDTO getContractDetail(Long id) {
+                Contracts contract = contractsRepository.findById(id)
+                                .orElseThrow(() -> new RuntimeException("Không tìm thấy hợp đồng với id: " + id));
+
+                // Phân quyền: Người dùng hiện tại phải là Chủ nhà hoặc Khách thuê của hợp đồng này
+                Long currentUserId = authService.getCurrentUser().getId();
+                if (!contract.getLandLord().getId().equals(currentUserId) && !contract.getCustomer().getId().equals(currentUserId)) {
+                        throw new RuntimeException("Bạn không có quyền xem chi tiết hợp đồng này");
+                }
+
+                return ContractResponseDTO.builder()
+                                .id(contract.getId())
+                                .contractCode(contract.getContractCode())
+                                .startDate(contract.getStartDate())
+                                .endDate(contract.getEndDate())
+                                .monthlyRent(contract.getMonthlyRent())
+                                .depositAmount(contract.getDepositAmount())
+                                .billingDate(contract.getBillingDate())
+                                .status(contract.getStatus())
+                                .electricityPricePerKwh(contract.getElectricityPricePerKwh())
+                                .waterPricePerM3(contract.getWaterPricePerM3())
+                                .internetFee(contract.getInternetFee())
+                                .parkingFee(contract.getParkingFee())
+                                .cleaningFee(contract.getCleaningFee())
+                                .customerName(contract.getCustomer() != null ? contract.getCustomer().getFullName() : null)
+                                .landLord(mapToUserResponse(contract.getLandLord()))
+                                .customer(mapToUserResponse(contract.getCustomer()))
+                                .roomAddress(contract.getRoom() != null ? contract.getRoom().getAddress() : "N/A")
+                                .build();
+        }
+
+        @Transactional
+        public ApiResponse signContract(Long id) {
+                Contracts contract = contractsRepository.findById(id)
+                                .orElseThrow(() -> new RuntimeException("Không tìm thấy hợp đồng với id: " + id));
+
+                // Xác thực: Người ký phải là khách thuê trong hợp đồng
+                Long currentUserId = authService.getCurrentUser().getId();
+                if (!contract.getCustomer().getId().equals(currentUserId)) {
+                        throw new RuntimeException("Bạn không có quyền ký xác nhận hợp đồng này");
+                }
+
+                if (!"PENDING".equals(contract.getStatus())) {
+                        throw new RuntimeException("Hợp đồng này không ở trạng thái chờ ký");
+                }
+
+                contract.setStatus("ACTIVE");
+                contractsRepository.save(contract);
+
+                return ApiResponse.builder()
+                                .success(true)
+                                .message("Ký xác nhận hợp đồng thành công!")
+                                .build();
         }
 }

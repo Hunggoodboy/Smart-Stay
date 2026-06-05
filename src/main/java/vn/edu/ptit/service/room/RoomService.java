@@ -39,6 +39,11 @@ public class RoomService {
             throw new RuntimeException("Ấp đồng này không thuộc về chủ nhà hiện tại");
         }
 
+        // Kiểm tra hợp đồng đã được khách thuê ký nhận chưa (status phải là ACTIVE)
+        if (!"ACTIVE".equals(contract.getStatus())) {
+            throw new RuntimeException("Hợp đồng chưa được khách hàng ký xác nhận");
+        }
+
         // Kiểm tra phòng đã được tạo chưa
         if (roomsRepository.findByContractId(contract.getId()).isPresent()) {
             throw new RuntimeException("Đã có phòng quản lý cho hợp đồng này");

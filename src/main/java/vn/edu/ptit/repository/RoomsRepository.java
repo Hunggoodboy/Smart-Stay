@@ -3,6 +3,7 @@ package vn.edu.ptit.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import vn.edu.ptit.entity.ChatRoom;
 import vn.edu.ptit.entity.Contracts;
@@ -35,4 +36,7 @@ public interface RoomsRepository extends JpaRepository<Rooms, Long> {
     List<Rooms> findRoomsIsDeletedByLandLordId(Long landLordId);
 
     List<Rooms> findRoomsByLandLordIdAndDeletedAt(Long id, LocalDateTime deletedAt);
+
+    @Query("SELECT COUNT(r) > 0 FROM Rooms r WHERE r.customer.id = :customerId AND r.deletedAt IS NULL")
+    boolean existsActiveRentalByCustomerId(@Param("customerId") Long customerId);
 }

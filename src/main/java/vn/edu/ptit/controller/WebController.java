@@ -5,11 +5,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import vn.edu.ptit.service.Authentication.AuthService;
+import vn.edu.ptit.repository.RoomsRepository;
+import org.springframework.ui.Model;
 
 @Controller
 @AllArgsConstructor
 public class WebController {
     private final AuthService authService;
+    private final RoomsRepository roomsRepository;
 
     @GetMapping("login")
     public String login() {
@@ -22,22 +25,47 @@ public class WebController {
     }
 
     @GetMapping("/myHome")
-    public String myHome() {
+    public String myHome(Model model) {
+        try {
+            Long userId = authService.getCurrentUserId();
+            boolean isRenting = roomsRepository.existsActiveRentalByCustomerId(userId);
+            if (!isRenting) {
+                System.out.println("Người dùng với id " + userId + " chưa thuê phòng");
+                model.addAttribute("noRoomRented", true);
+            }
+        } catch (Exception e) {
+            return "redirect:/login";
+        }
         return "index";
     }
 
     @GetMapping("/payment")
     public String payment() {
+        try {
+            authService.getCurrentUserId();
+        } catch (Exception e) {
+            return "redirect:/login";
+        }
         return "payment";
     }
 
     @GetMapping("/chatMessage")
     public String chatMessage() {
+        try {
+            authService.getCurrentUserId();
+        } catch (Exception e) {
+            return "redirect:/login";
+        }
         return "chatMessage";
     }
 
     @GetMapping("/postRooms")
     public String postNewRoom() {
+        try {
+            authService.getCurrentUserId();
+        } catch (Exception e) {
+            return "redirect:/login";
+        }
         return "postNewRoom";
     }
 
@@ -51,6 +79,16 @@ public class WebController {
         return "roomDetail";
     }
 
+    @GetMapping("/users/{id}")
+    public String userDetail(@PathVariable Long id) {
+        try {
+            authService.getCurrentUserId();
+        } catch (Exception e) {
+            return "redirect:/login";
+        }
+        return "userDetail";
+    }
+
     @GetMapping("/room-detail-management/{id}")
     public String roomDetailManagement(@PathVariable Long id) {
         return "roomDetailManagement";
@@ -58,6 +96,11 @@ public class WebController {
 
     @GetMapping("/MyRentalRequest")
     public String rentalRequest() {
+        try {
+            authService.getCurrentUserId();
+        } catch (Exception e) {
+            return "redirect:/login";
+        }
         return "rentalRequests";
     }
 
@@ -83,6 +126,11 @@ public class WebController {
 
     @GetMapping("/registerLandLord")
     public String registerLandLord() {
+        try {
+            authService.getCurrentUserId();
+        } catch (Exception e) {
+            return "redirect:/login";
+        }
         return "registerLandlord";
     }
 
@@ -98,6 +146,11 @@ public class WebController {
 
     @GetMapping("/myContracts")
     public String myContracts() {
+        try {
+            authService.getCurrentUserId();
+        } catch (Exception e) {
+            return "redirect:/login";
+        }
         return "myContracts";
     }
 
@@ -123,6 +176,11 @@ public class WebController {
 
     @GetMapping("/my-appointments")
     public String myAppointments() {
+        try {
+            authService.getCurrentUserId();
+        } catch (Exception e) {
+            return "redirect:/login";
+        }
         return "appointments";
     }
 }

@@ -82,4 +82,23 @@ public class AuthController {
         }
         return ResponseEntity.badRequest().body("Landlord not found");
     }
+
+    @GetMapping("/has-room")
+    public ResponseEntity<Boolean> hasRoom() {
+        try {
+            Long userId = authService.getCurrentUserId();
+            return ResponseEntity.ok(roomsRepository.existsActiveRentalByCustomerId(userId));
+        } catch (Exception e) {
+            return ResponseEntity.ok(false);
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getUserById(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(authService.getUserById(id));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

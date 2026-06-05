@@ -25,6 +25,7 @@ public class RentalRequestResponse {
     private UserInfo customer;
     private UserInfo landlord;
     private Long contractId; // Trả về ID để FE tiện điều hướng
+    private String contractStatus; // Trạng thái hợp đồng (PENDING, ACTIVE, vv)
 
     // ==================== INNER CLASSES ====================
 

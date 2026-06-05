@@ -76,6 +76,12 @@ public class RentalRequestService {
         LandLord landlordRef = rentalRequests.getLandlord();
         Contracts contractRef = contractsRepository.findByCustomerIdAndLandLordId(customerRef.getId(), landlordRef.getId())
                                                    .orElseThrow(() -> new RuntimeException("Bạn chưa làm hợp đồng, vui lòng tiến hành làm hợp đồng trước"));
+        
+        // Kiểm tra hợp đồng đã được khách thuê ký nhận chưa
+        if (!"ACTIVE".equals(contractRef.getStatus())) {
+            throw new RuntimeException("Hợp đồng chưa được khách hàng ký xác nhận. Vui lòng chờ khách hàng ký trước khi tạo phòng quản lý.");
+        }
+
         return CreateRoomManageRequest.builder()
                     .roomNumber(null)
                     .roomType(roomPost.getRoomType())
@@ -123,14 +129,17 @@ public class RentalRequestService {
                                      Long customerId = (Long) row[2];
                                      Contracts contract = contractsRepository.findByRentalRequestId(rentalRequests.getId()).orElse(null);
                                      Long contractId = null;
+                                     String contractStatus = null;
                                      if(contract != null) {
                                          contractId = contract.getId();
+                                         contractStatus = contract.getStatus();
                                      }
                                      return RentalRequestResponse.builder()
                                                                  .id(rentalRequests.getId())
                                                                  .status(rentalRequests.getStatus())
                                                                  .createdAt(rentalRequests.getCreatedAt())
                                                                  .contractId(contractId)
+                                                                 .contractStatus(contractStatus)
                                                                  .roomPost(RentalRequestResponse.RoomPostInfo.builder()
                                                                                                              .id(rentalRequests.getRoomPost()
                                                                                                                                .getId())

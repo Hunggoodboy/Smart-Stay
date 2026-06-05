@@ -253,4 +253,9 @@ public class AuthService {
             return null;
         }
     }
+
+    public UserDTO getUserById(Long id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        return UserDTO.fromEntity(user);
+    }
 }

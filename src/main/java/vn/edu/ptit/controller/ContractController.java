@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import vn.edu.ptit.dto.Request.ContractCreationRequest;
 import vn.edu.ptit.dto.Response.ApiResponse;
 import vn.edu.ptit.dto.Response.ContractSuggestionResponse;
+import vn.edu.ptit.dto.Response.ContractResponseDTO;
 import vn.edu.ptit.service.room.ContractService;
 
 @RestController
@@ -35,5 +36,15 @@ public class ContractController {
     @GetMapping("/expired")
     public ResponseEntity<?> getContractExpired(){
         return ResponseEntity.ok(contractService.getMyContractsExpired());
+    }
+
+    @GetMapping("/detail/{id}")
+    public ResponseEntity<ContractResponseDTO> getContractDetail(@PathVariable Long id) {
+        return ResponseEntity.ok(contractService.getContractDetail(id));
+    }
+
+    @PostMapping("/sign/{id}")
+    public ResponseEntity<ApiResponse> signContract(@PathVariable Long id) {
+        return ResponseEntity.ok(contractService.signContract(id));
     }
 }

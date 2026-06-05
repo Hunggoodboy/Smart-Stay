@@ -16,6 +16,7 @@ import vn.edu.ptit.dto.Response.SuggestionBillingResponse;
 import vn.edu.ptit.entity.*;
 import vn.edu.ptit.dto.Request.MonthlyBillRequest;
 import vn.edu.ptit.dto.Response.MonthlyBillResponse;
+import vn.edu.ptit.dto.Response.getBillingLastMonthResponse;
 import vn.edu.ptit.repository.*;
 import vn.edu.ptit.service.Authentication.AuthService;
 
@@ -410,5 +411,20 @@ public class BillingService {
                .waterPricePerM3(currentRoom.getWaterPricePerM3())
                .build();
         return response;
+    }
+
+    @Transactional(readOnly = true)
+    public getBillingLastMonthResponse getBillingLastMonthResponse(Long roomId, String month) {
+        UtilityBills previousBill = resolvePreviousBill(roomId, month);
+        if (previousBill == null) {
+            return getBillingLastMonthResponse.builder()
+                    .oldElectronic(0.0)
+                    .oldWater(0.0)
+                    .build();
+        }
+        return getBillingLastMonthResponse.builder()
+                .oldElectronic(previousBill.getElectricityNewIndex())
+                .oldWater(previousBill.getWaterNewIndex())
+                .build();
     }
 }

@@ -29,8 +29,7 @@ async function initChat() {
 
         // Nếu có sẵn receiverId (từ trang khác chuyển sang), mở luôn
         if (currentReceiverId) {
-            // Cần lấy tên của receiverId từ list nếu có, nếu không thì để mặc định
-            openChat(currentReceiverId, "Đối tác #" + currentReceiverId);
+            fetchPartnerName(currentReceiverId);
         }
     } catch (error) {
         alert("Lỗi xác thực người dùng");
@@ -100,6 +99,26 @@ function renderSummaries(summaries) {
         `;
         listContainer.insertAdjacentHTML('beforeend', html);
     });
+}
+
+async function fetchPartnerName(id) {
+    // Hiển thị trạng thái tải tạm thời
+    openChat(id, "Đang tải...");
+    try {
+        const res = await fetch(`/api/user/${id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+            const user = await res.json();
+            const partnerName = user.fullName || `Người dùng #${id}`;
+            openChat(id, partnerName);
+        } else {
+            openChat(id, `Người dùng #${id}`);
+        }
+    } catch (error) {
+        console.error("Lỗi lấy thông tin đối tác:", error);
+        openChat(id, `Người dùng #${id}`);
+    }
 }
 
 function openChat(partnerId, partnerName) {
@@ -263,3 +282,13 @@ document.getElementById('messageInput').addEventListener('keydown', (e) => {
 
 // Khởi chạy khi vào trang
 document.addEventListener('DOMContentLoaded', initChat);
+
+// Click header để xem thông tin đối tác
+const partnerInfoLink = document.getElementById('partnerInfoLink');
+if (partnerInfoLink) {
+    partnerInfoLink.addEventListener('click', () => {
+        if (currentReceiverId) {
+            window.location.href = `/users/${currentReceiverId}`;
+        }
+    });
+}

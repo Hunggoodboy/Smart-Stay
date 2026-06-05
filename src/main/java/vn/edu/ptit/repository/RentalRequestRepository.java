@@ -25,4 +25,14 @@ public interface RentalRequestRepository extends JpaRepository<RentalRequests, L
 
     Optional<RentalRequests> findByRoomPostIdAndCustomerId(@Param("roomId") Long roomId, @Param("customerId") Long customerId);
 
+    @Query("SELECT r FROM RentalRequests r " +
+           "LEFT JOIN FETCH r.roomPost " +
+           "LEFT JOIN FETCH r.customer " +
+           "LEFT JOIN FETCH r.landlord " +
+           "WHERE (r.landlord.id = :userId OR r.customer.id = :userId) " +
+           "AND CAST(r.createdAt AS date) = CURRENT_DATE " +
+           "AND r.deletedAt IS NULL " +
+           "ORDER BY r.createdAt DESC")
+    List<RentalRequests> findTodayRequestsByUserId(@Param("userId") Long userId);
+
 }

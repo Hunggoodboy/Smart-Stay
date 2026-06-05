@@ -15,6 +15,8 @@ import vn.edu.ptit.entity.User;
 import vn.edu.ptit.repository.ChatAiHistoryRepository;
 import vn.edu.ptit.service.Authentication.AuthService;
 import org.springframework.ai.chat.messages.Message;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.ai.openai.OpenAiChatOptions;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,13 +26,19 @@ import java.util.stream.Collectors;
 @Service
 public class ChatAiService {
 
+    @Value("${app.ai.primary-model:gemini-2.5-flash}")
+    private String primaryModel;
+
+    @Value("${app.ai.fallback-model:gemini-3.1-flash-lite}")
+    private String fallbackModel;
+
     private final ChatClient chatClient;
     private final VectorStore vectorStore;
     private final ChatAiHistoryRepository chatAiHistoryRepository;
     private final AuthService  authService;
     public ChatAiService(ChatClient.Builder chatClient,  VectorStore vectorStore, ChatAiHistoryRepository chatAiHistoryRepository, AuthService authService) {
         this.chatClient = chatClient
-                .defaultToolNames("createRequestRentalForAi")
+                .defaultToolNames("createRequestRentalForAi", "scheduleAppointmentForAi", "getTodayRentalRequestsForAi", "approveRentalRequestForAi")
                 .build();
         this.vectorStore = vectorStore;
         this.chatAiHistoryRepository = chatAiHistoryRepository;
@@ -44,10 +52,10 @@ public class ChatAiService {
         String ragContext = findAnswer(optimizedQuestion);
         String currentQuestionWithRag = "Người dùng hỏi: " + chatAIRequest.getQuestion() +
                 "\nThông tin tham khảo để trả lời (nhớ biến link thành thẻ a): \n" + ragContext;
-        String answer = chatClient.prompt()
-                .messages(getListMessages(thisConversationId, currentQuestionWithRag))
-                .call()
-                .content();
+        String answer = callChatModel(getListMessages(thisConversationId, currentQuestionWithRag), true);
+        if (answer == null || answer.isBlank()) {
+            answer = "Yêu cầu của bạn đã được xử lý thành công!";
+        }
         ChatAiHistory chatAiHistoryUser = ChatAiHistory.builder()
                 .conversationId(thisConversationId)
                 .messageType("USER")
@@ -67,6 +75,32 @@ public class ChatAiService {
         return ChatAIResponse.builder()
                 .answer(answer)
                 .build();
+    }
+
+    private String callChatModel(List<Message> messages, boolean useTools) {
+        try {
+            var requestSpec = chatClient.prompt()
+                    .messages(messages)
+                    .options(OpenAiChatOptions.builder().model(primaryModel).build());
+            if (useTools) {
+                requestSpec.toolNames("createRequestRentalForAi");
+            }
+            return requestSpec.call().content();
+        } catch (Exception e) {
+            System.err.println("Primary model error (" + primaryModel + "): " + e.getMessage() + ". Switching to fallback model: " + fallbackModel);
+            try {
+                var requestSpec = chatClient.prompt()
+                        .messages(messages)
+                        .options(OpenAiChatOptions.builder().model(fallbackModel).build());
+                if (useTools) {
+                    requestSpec.toolNames("createRequestRentalForAi");
+                }
+                return requestSpec.call().content();
+            } catch (Exception ex) {
+                System.err.println("Fallback model error (" + fallbackModel + "): " + ex.getMessage());
+                throw ex;
+            }
+        }
     }
 
         private List<Message> getListMessages(String conversationId, String currentQuestionWithRag) {
@@ -93,14 +127,23 @@ public class ChatAiService {
         rewriteMessages.add(new SystemMessage(systemPrompt));
         rewriteMessages.addAll(MessageBaseHistory);
         rewriteMessages.add(new UserMessage("Câu hỏi cần viết lại: " + question));
-        String rewrittenQuery = chatClient.prompt()
-                                          .messages(rewriteMessages)
-                                          .call()
-                                          .content();
-        System.out.println("=== CÂU HỎI GỐC: " + question);
-        System.out.println("=== CÂU ĐÃ ĐƯỢC AI DỊCH: " + rewrittenQuery);
+        try {
+            String rewrittenQuery = callChatModel(rewriteMessages, false);
 
-        return rewrittenQuery;
+            // ✅ Guard null — nếu AI trả null thì dùng câu gốc
+            if (rewrittenQuery == null || rewrittenQuery.isBlank()) {
+                System.out.println("=== rewriteQuestion trả null, dùng câu gốc");
+                return question;
+            }
+
+            System.out.println("=== CÂU HỎI GỐC: " + question);
+            System.out.println("=== CÂU ĐÃ ĐƯỢC AI DỊCH: " + rewrittenQuery);
+            return rewrittenQuery;
+
+        } catch (Exception e) {
+            System.out.println("=== rewriteQuestion lỗi, dùng câu gốc: " + e.getMessage());
+            return question; // ✅ fallback về câu gốc
+        }
     }
 
     private List<Message> addMessageBaseHistory(String conversationId){

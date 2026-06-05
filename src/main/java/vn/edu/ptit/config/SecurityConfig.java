@@ -41,7 +41,7 @@ public class SecurityConfig {
 
         private static final String[] AUTHENTICATED_API_URLS = {
                         "/api/user/me", "/api/user/myid", "/api/user/tenant", "/api/user/profile",
-                        "/api/user/password",
+                        "/api/user/password", "/api/user/has-room", "/api/user/*",
                         "/api/notifications/**", "/api/utility-bills/**",
                         "/api/payments/vietqr/**",
                         "/api/chat/**", "/api/customer/**", "/api/landlord/requestToLandLord", "/api/contract/**",

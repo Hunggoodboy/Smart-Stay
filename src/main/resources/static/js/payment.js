@@ -1,4 +1,4 @@
-﻿let authToken = null;
+let authToken = null;
 
     function openQuickLinkModal() {
         const modal = document.getElementById('quicklink-modal');
@@ -64,6 +64,37 @@
 
     document.addEventListener("DOMContentLoaded", function () {
         authToken = localStorage.getItem('smartstay_token');
+        if (!authToken) {
+            window.location.href = '/login';
+            return;
+        }
+
+        // Check if user is renting a room
+        fetch('/api/user/has-room', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            }
+        })
+        .then(response => {
+            if (response.status === 401 || response.status === 403) {
+                localStorage.removeItem('smartstay_token');
+                localStorage.removeItem('smartstay_user');
+                document.cookie = 'smartstay_token=; Max-Age=0; path=/';
+                window.location.href = '/login';
+                return null;
+            }
+            return response.json();
+        })
+        .then(hasRoom => {
+            if (hasRoom === null) return;
+            if (hasRoom === false) {
+                window.location.href = '/myHome';
+            }
+        })
+        .catch(err => console.error('Lỗi khi kiểm tra thuê phòng:', err));
+
         const paymentReturn = getPayOsReturnState();
         if (paymentReturn.paid && paymentReturn.orderCode) {
             localStorage.setItem('smartstay_paid_order_code', String(paymentReturn.orderCode));

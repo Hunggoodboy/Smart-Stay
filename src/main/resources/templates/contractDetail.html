@@ -10,11 +10,12 @@
             background-color: #f1f5f9;
             background-image: radial-gradient(#cbd5e1 1px, transparent 0);
             background-size: 20px 20px;
+            padding-bottom: 120px;
         }
         
         .a4-paper {
             width: 210mm; min-height: 297mm; margin: 40px auto;
-            background: #fffdf9; /* Slightly warm paper color */
+            background: #fffdf9;
             padding: 20mm 25mm;
             box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25), 0 0 10px rgba(0,0,0,0.05);
             font-family: 'Times New Roman', serif; font-size: 17px; line-height: 1.6;
@@ -79,15 +80,114 @@
             margin: -20px auto 0;
         }
 
+        /* THANH ĐIỀU KHIỂN - dùng inline style để đảm bảo hiển thị */
+        .bottom-control-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 16px 24px;
+            background: rgba(255,255,255,0.9);
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            z-index: 9999;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.08);
+        }
+
+        .btn-back {
+            padding: 14px 24px;
+            background: #f1f5f9;
+            color: #475569;
+            border-radius: 16px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        .btn-back:hover { background: #e2e8f0; }
+
+        .btn-sign {
+            padding: 14px 32px;
+            background: linear-gradient(135deg, #2563eb, #4f46e5);
+            color: white;
+            border-radius: 16px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.35);
+            transition: all 0.2s;
+        }
+        .btn-sign:hover {
+            box-shadow: 0 14px 40px rgba(37, 99, 235, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-print {
+            padding: 14px 32px;
+            background: #1e293b;
+            color: white;
+            border-radius: 16px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            transition: all 0.2s;
+        }
+        .btn-print:hover { background: #0f172a; }
+
+        .info-badge {
+            padding: 14px 24px;
+            background: #fffbeb;
+            color: #b45309;
+            border: 1px solid #fde68a;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .loading-badge {
+            padding: 14px 32px;
+            background: #dbeafe;
+            color: #1d4ed8;
+            border-radius: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .animate-spin { animation: spin 1s linear infinite; }
+
         @media print { 
-            body { background: none; }
-            .no-print { display: none !important; } 
+            body { background: none; padding-bottom: 0; }
+            .no-print, .bottom-control-bar { display: none !important; } 
             .a4-paper { margin: 0; box-shadow: none; border: none; } 
             .a4-paper::before { display: none; }
         }
     </style>
 </head>
-<body class="pb-32">
+<body>
 
 <div class="a4-paper">
     <div class="watermark">SMART STAY</div>
@@ -155,7 +255,7 @@
             <p class="italic text-slate-500 mb-6 text-sm">(Ký và ghi rõ họ tên)</p>
             
             <div id="sigA-container" class="relative">
-                <div class="stamp absolute -left-10 opacity-30 pointer-events-none hidden" id="stampA">SMART STAY<br>APPROVED</div>
+                <div class="stamp absolute -left-10 opacity-30 pointer-events-none" style="display:none" id="stampA">SMART STAY<br>APPROVED</div>
                 <div id="sigA" class="signature-font h-20 flex items-center justify-center relative z-10"></div>
             </div>
             <p class="font-bold text-xl uppercase mt-4" id="nameBottomA"></p>
@@ -166,7 +266,7 @@
             <p class="italic text-slate-500 mb-6 text-sm">(Ký và ghi rõ họ tên)</p>
             
             <div id="sigB-container" class="relative">
-                <div class="stamp absolute -right-4 border-blue-600 text-blue-600 opacity-30 pointer-events-none hidden" id="stampB">ĐÃ KÝ<br>XÁC NHẬN</div>
+                <div class="stamp absolute -right-4 border-blue-600 text-blue-600 opacity-30 pointer-events-none" style="display:none" id="stampB">ĐÃ KÝ<br>XÁC NHẬN</div>
                 <div id="sigB" class="h-20 flex items-center justify-center relative z-10 border-2 border-dashed border-slate-300 rounded-xl bg-slate-50/50">
                     <span id="txtWait" class="text-slate-400 font-sans font-medium text-sm">Cần chữ ký xác nhận</span>
                 </div>
@@ -176,19 +276,30 @@
     </div>
 </div>
 
-<!-- THANH ĐIỀU KHIỂN -->
-<div class="fixed bottom-0 left-0 right-0 p-4 md:p-6 bg-white/70 backdrop-blur-xl border-t border-slate-200/50 flex justify-center gap-4 no-print shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-50">
-    <button onclick="location.href='/myContracts'" class="px-6 py-3.5 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition-colors flex items-center gap-2">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Quay lại
+<!-- THANH ĐIỀU KHIỂN - dùng CSS class thay vì utility class để đảm bảo hiển thị -->
+<div class="bottom-control-bar no-print" id="bottomBar">
+    <button class="btn-back" onclick="location.href='/myContracts'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Quay lại
     </button>
-    <div id="btnGroup" class="flex gap-4"></div>
+    <div id="btnGroup" style="display:flex; gap:16px; align-items:center;"></div>
 </div>
 
 <script>
+    function parseJwt(token) {
+        try {
+            const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+            return JSON.parse(atob(base64));
+        } catch { return null; }
+    }
+
     document.addEventListener("DOMContentLoaded", async () => {
         const contractId = window.location.pathname.split('/').pop();
         const token = localStorage.getItem('smartstay_token');
         
+        // Giải mã token để check role
+        const payload = token ? parseJwt(token) : null;
+
         // Cập nhật ngày tháng hiện tại cho hợp đồng
         const now = new Date();
         document.getElementById('daySpan').innerText = now.getDate().toString().padStart(2, '0');
@@ -196,84 +307,124 @@
         document.getElementById('yearSpan').innerText = now.getFullYear();
 
         try {
-            const res = await fetch(`/api/contract/get-my-contracts`, {
+            const res = await fetch(`/api/contract/detail/${contractId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            const data = await res.json();
-
-            // KHẮC PHỤC LỖI: Tìm đúng hợp đồng trong mảng JSON
-            const c = data.find(item => item.id == contractId);
-            if (!c) throw new Error("Không thấy hợp đồng");
-
-            // Mapping dữ liệu từ JSON chính xác
-            document.getElementById("cCode").innerText = c.contractCode;
-            document.getElementById("lanName").innerText = c.landLord.fullName;
-            document.getElementById("lanPhone").innerText = c.landLord.phoneNumber;
-            document.getElementById("lanEmail").innerText = c.landLord.email;
-            document.getElementById("nameBottomA").innerText = c.landLord.fullName;
-            document.getElementById("sigA").innerText = c.landLord.fullName;
-            document.getElementById("stampA").style.display = 'flex'; // Hiện mộc đỏ bên A
-
-            document.getElementById("cusName").innerText = c.customer.fullName;
-            document.getElementById("cusPhone").innerText = c.customer.phoneNumber;
-            document.getElementById("cusEmail").innerText = c.customer.email;
-            document.getElementById("nameBottomB").innerText = c.customer.fullName;
-
-            document.getElementById("roomAddr").innerText = c.roomAddress;
-            document.getElementById("rentPrice").innerText = c.monthlyRent.toLocaleString();
-            document.getElementById("vElec").innerText = c.electricityPricePerKwh.toLocaleString();
-            document.getElementById("vWater").innerText = c.waterPricePerM3.toLocaleString();
-            document.getElementById("vDate").innerText = c.billingDate;
-
-            // Xử lý nút bấm theo trạng thái
-            if (c.status === 'PENDING') {
-                const b = document.createElement("button");
-                b.className = "px-8 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-1 transform transition-all flex items-center gap-2 border-0 cursor-pointer";
-                b.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg> Ký & Xác nhận Hợp đồng`;
-                b.onclick = () => confirmSign(contractId);
-                document.getElementById("btnGroup").appendChild(b);
-            } else {
-                const txtWait = document.getElementById("txtWait");
-                if(txtWait) txtWait.remove();
-                
-                const sigBContainer = document.getElementById("sigB");
-                sigBContainer.className = "h-20 flex items-center justify-center relative z-10"; // Bỏ border dashed
-                sigBContainer.innerHTML = `<span class="signature-font text-blue-700">${c.customer.fullName}</span>`;
-                document.getElementById("stampB").style.display = 'flex'; // Hiện mộc xanh bên B
-
-                const b = document.createElement("button");
-                b.className = "px-8 py-3.5 bg-slate-800 text-white rounded-2xl font-bold shadow-lg hover:bg-slate-900 transition-colors flex items-center gap-2 border-0 cursor-pointer";
-                b.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg> Tải xuống / In PDF`;
-                b.onclick = () => window.print();
-                document.getElementById("btnGroup").appendChild(b);
+            if (!res.ok) {
+                const errText = await res.text().catch(() => '');
+                console.error("[ContractDetail] API error:", res.status, errText);
+                throw new Error("Không thể tải chi tiết hợp đồng (HTTP " + res.status + ")");
             }
-        } catch (e) { alert("Lỗi: Dữ liệu hợp đồng không hợp lệ hoặc đã bị xóa!"); }
+            const c = await res.json();
+            console.log("[ContractDetail] Dữ liệu hợp đồng:", JSON.stringify(c));
+            console.log("[ContractDetail] status =", JSON.stringify(c.status));
+
+            // Mapping dữ liệu (null-safe)
+            document.getElementById("cCode").innerText = c.contractCode || '...';
+            document.getElementById("lanName").innerText = (c.landLord && c.landLord.fullName) || '...';
+            document.getElementById("lanPhone").innerText = (c.landLord && c.landLord.phoneNumber) || '...';
+            document.getElementById("lanEmail").innerText = (c.landLord && c.landLord.email) || '...';
+            document.getElementById("nameBottomA").innerText = (c.landLord && c.landLord.fullName) || '';
+            document.getElementById("sigA").innerText = (c.landLord && c.landLord.fullName) || '';
+            document.getElementById("stampA").style.display = 'flex';
+
+            document.getElementById("cusName").innerText = (c.customer && c.customer.fullName) || '...';
+            document.getElementById("cusPhone").innerText = (c.customer && c.customer.phoneNumber) || '...';
+            document.getElementById("cusEmail").innerText = (c.customer && c.customer.email) || '...';
+            document.getElementById("nameBottomB").innerText = (c.customer && c.customer.fullName) || '';
+
+            document.getElementById("roomAddr").innerText = c.roomAddress || '...';
+            document.getElementById("rentPrice").innerText = c.monthlyRent != null ? c.monthlyRent.toLocaleString() : '...';
+            document.getElementById("vElec").innerText = c.electricityPricePerKwh != null ? c.electricityPricePerKwh.toLocaleString() : '...';
+            document.getElementById("vWater").innerText = c.waterPricePerM3 != null ? c.waterPricePerM3.toLocaleString() : '...';
+            document.getElementById("vDate").innerText = c.billingDate || '5';
+
+            // Normalize status
+            const contractStatus = (c.status || '').trim().toUpperCase();
+            console.log("[ContractDetail] Normalized status:", contractStatus);
+
+            const currentUserId = payload ? parseInt(payload.sub) : null;
+            const isContractCustomer = !!(currentUserId && c.customer && currentUserId === c.customer.id);
+            console.log("[ContractDetail] currentUserId:", currentUserId, "customer.id:", c.customer && c.customer.id, "isContractCustomer:", isContractCustomer);
+
+            const btnGroup = document.getElementById("btnGroup");
+
+            if (contractStatus === 'PENDING') {
+                // ========== HỢP ĐỒNG ĐANG CHỜ KÝ ==========
+                console.log("[ContractDetail] -> Trạng thái PENDING, hiển thị nút ký");
+
+                // Nút ký hợp đồng
+                const signBtn = document.createElement("button");
+                signBtn.id = "btnSignContract";
+                signBtn.className = "btn-sign";
+                signBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg> Ký & Xác nhận Hợp đồng';
+                signBtn.onclick = function() { confirmSign(contractId, isContractCustomer); };
+                btnGroup.appendChild(signBtn);
+
+                // Badge thông báo nếu không phải khách thuê
+                if (!isContractCustomer) {
+                    const info = document.createElement("div");
+                    info.className = "info-badge";
+                    info.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Hợp đồng đang chờ khách thuê ký xác nhận';
+                    btnGroup.appendChild(info);
+                }
+            } else {
+                // ========== HỢP ĐỒNG ĐÃ KÝ (ACTIVE / EXPIRED) ==========
+                console.log("[ContractDetail] -> Trạng thái:", contractStatus, "- hiển thị nút in/tải");
+
+                // Cập nhật khu vực chữ ký Bên B
+                var txtWait = document.getElementById("txtWait");
+                if (txtWait) txtWait.parentNode.removeChild(txtWait);
+                
+                var sigBDiv = document.getElementById("sigB");
+                sigBDiv.style.border = 'none';
+                sigBDiv.style.background = 'none';
+                sigBDiv.innerHTML = '<span class="signature-font" style="color:#1d4ed8">' + ((c.customer && c.customer.fullName) || '') + '</span>';
+                document.getElementById("stampB").style.display = 'flex';
+
+                // Nút in/tải PDF
+                const printBtn = document.createElement("button");
+                printBtn.id = "btnPrintContract";
+                printBtn.className = "btn-print";
+                printBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Tải xuống / In PDF';
+                printBtn.onclick = function() { window.print(); };
+                btnGroup.appendChild(printBtn);
+            }
+        } catch (e) {
+            console.error("[ContractDetail] Lỗi:", e);
+            alert("Lỗi: " + e.message);
+        }
     });
 
-    async function confirmSign(id) {
-        if(!confirm("Bằng việc nhấn OK, bạn xác nhận đã đọc, hiểu và đồng ý với toàn bộ các điều khoản trong hợp đồng thuê nhà này.")) return;
-        
-        // Hiển thị loading state
-        const btnGroup = document.getElementById("btnGroup");
-        const originalHtml = btnGroup.innerHTML;
-        btnGroup.innerHTML = `<div class="px-8 py-3.5 bg-blue-100 text-blue-700 rounded-2xl font-bold flex items-center gap-3"><svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Đang xử lý...</div>`;
+    function confirmSign(id, isContractCustomer) {
+        if (!isContractCustomer) {
+            alert("Bạn đang đăng nhập bằng tài khoản Chủ nhà hoặc tài khoản khác.\n\nChỉ Khách thuê được chỉ định trong hợp đồng mới có quyền ký xác nhận.\n\nVui lòng đăng nhập tài khoản Khách thuê để thực hiện.");
+            return;
+        }
 
-        try {
-            const res = await fetch(`/api/contract/sign/${id}`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('smartstay_token')}` }
-            });
-            if(res.ok) { 
-                alert("Chúc mừng! Bạn đã ký hợp đồng thành công."); 
-                location.reload(); 
+        if (!confirm("Bằng việc nhấn OK, bạn xác nhận đã đọc, hiểu và đồng ý với toàn bộ các điều khoản trong hợp đồng thuê nhà này.")) return;
+        
+        var btnGroup = document.getElementById("btnGroup");
+        var originalHtml = btnGroup.innerHTML;
+        btnGroup.innerHTML = '<div class="loading-badge"><svg class="animate-spin" width="20" height="20" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle opacity="0.25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path opacity="0.75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Đang xử lý...</div>';
+
+        fetch('/api/contract/sign/' + id, {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('smartstay_token') }
+        }).then(function(res) {
+            if (res.ok) {
+                alert("Chúc mừng! Bạn đã ký hợp đồng thành công.");
+                location.reload();
             } else {
-                alert("Đã xảy ra lỗi trong quá trình ký hợp đồng.");
-                btnGroup.innerHTML = originalHtml;
+                return res.json().catch(function() { return null; }).then(function(errData) {
+                    alert("Đã xảy ra lỗi: " + (errData && errData.message ? errData.message : "Không thể ký hợp đồng."));
+                    btnGroup.innerHTML = originalHtml;
+                });
             }
-        } catch(e) {
+        }).catch(function(e) {
             alert("Lỗi kết nối máy chủ.");
             btnGroup.innerHTML = originalHtml;
-        }
+        });
     }
 </script>
 </body>

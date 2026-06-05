@@ -31,6 +31,7 @@ public class ContractResponseDTO {
     // Thông tin các bên tham gia (DTO rút gọn)
     private UserResponseDTO landLord;
     private UserResponseDTO customer;
+    private String customerName;
 
     // Thông tin phòng (Chỉ lấy địa chỉ để tránh lặp)[cite: 3]
     private String roomAddress;

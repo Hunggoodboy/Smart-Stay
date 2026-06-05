@@ -9,6 +9,8 @@ import java.time.LocalDateTime;
 
 
 public record AiRentalRequest (
-    Long roomPostId
+    Long roomPostId,
+    String address,
+    String idCardNumber
 ){}
 
