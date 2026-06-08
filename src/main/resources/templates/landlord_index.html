@@ -563,8 +563,8 @@
                             <option value="AVAILABLE">Còn trống</option>
                             <option value="RENTED">Đã cho thuê</option>
                             <option value="ACTIVE">Đang hoạt động</option>
-                            <option value="DRAFT">Nháp</option>
-                            <option value="INACTIVE">Tạm ẩn</option>
+                            <option value="DRAFT">Chờ duyệt</option>
+                            <option value="INACTIVE">Từ chối</option>
                         </select>
                         <select id="houseSortSelect" class="ss-select">
                             <option value="newest">Mới nhất</option>
@@ -688,8 +688,8 @@
             RENTED:    { cls: 'badge-rented',   label: 'Đã cho thuê' },
             OCCUPIED:  { cls: 'badge-rented',   label: 'Đã cho thuê' },
             ACTIVE:    { cls: 'badge-active',   label: 'Đang hoạt động' },
-            DRAFT:     { cls: 'badge-draft',    label: 'Nháp'         },
-            INACTIVE:  { cls: 'badge-inactive', label: 'Tạm ẩn'       },
+            DRAFT:     { cls: 'badge-draft',    label: 'Chờ duyệt'    },
+            INACTIVE:  { cls: 'badge-inactive', label: 'Từ chối'      },
         };
         return map[s] || { cls: 'badge-unknown', label: s || 'Không rõ' };
     }

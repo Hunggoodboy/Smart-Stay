@@ -104,6 +104,26 @@
         return new Date(value).toLocaleString('vi-VN');
     }
 
+    function postStatusLabel(status) {
+        const labels = {
+            DRAFT: 'CHỜ DUYỆT',
+            ACTIVE: 'ĐÃ DUYỆT',
+            INACTIVE: 'TỪ CHỐI',
+            RENTED: 'ĐÃ THUÊ',
+            DELETED: 'ĐÃ XÓA'
+        };
+        return labels[status] || status || '-';
+    }
+
+    function roomStatusLabel(status) {
+        const labels = {
+            AVAILABLE: 'CÒN TRỐNG',
+            RENTED: 'ĐÃ THUÊ',
+            MAINTENANCE: 'BẢO TRÌ'
+        };
+        return labels[status] || status || '-';
+    }
+
     function postMedia(post) {
         const title = esc(post.title || 'Bai dang');
         const imageUrl = post.mainImageUrl;
@@ -164,7 +184,7 @@
     }
 
     async function loadRooms() {
-        setRoomState('Dang tai phong...');
+        setRoomState('Đang tải phòng...');
         try {
             const query = buildQuery({
                 status: els.roomStatus.value,
@@ -186,7 +206,7 @@
 
     function setRoomState(message) {
         els.roomTableBody.innerHTML = `<tr><td colspan="6" class="admin-state">${esc(message)}</td></tr>`;
-        els.roomCountBadge.textContent = `${state.rooms.length || 0} phong`;
+        els.roomCountBadge.textContent = `${state.rooms.length || 0} phòng`;
     }
 
     function renderPosts() {
@@ -237,12 +257,16 @@
                         <div class="admin-row-sub">${esc(post.landlordEmail || '')}</div>
                     </td>
                     <td>
-                        <span class="status-pill">${esc(post.status)}</span>
+                        <span class="status-pill">${esc(postStatusLabel(post.status))}</span>
                         <div class="admin-row-sub">${dateTime(post.createdAt)}</div>
                     </td>
                     <td>
                         <div class="admin-actions">
-                            <button class="admin-btn secondary" type="button" data-action="edit-post">Sua</button>
+                            <select class="admin-select js-post-status" style="max-width:150px">
+                                ${POST_STATUSES.map(s => `<option value="${s}" ${s === post.status ? 'selected' : ''}>${postStatusLabel(s)}</option>`).join('')}
+                            </select>
+                            <button class="admin-btn" type="button" data-action="save-post-status">Lưu</button>
+                            <button class="admin-btn secondary" type="button" data-action="edit-post">Sửa</button>
                         </div>
                     </td>
                 </tr>
@@ -276,16 +300,16 @@
     }
 
     function renderRooms() {
-        els.roomCountBadge.textContent = `${state.rooms.length} phong`;
+        els.roomCountBadge.textContent = `${state.rooms.length} phòng`;
         if (!state.rooms.length) {
-            setRoomState('Khong co phong phu hop.');
+            setRoomState('Không có phòng phù hợp.');
             return;
         }
 
         els.roomTableBody.innerHTML = state.rooms.map(room => `
             <tr data-room-id="${room.id}">
                 <td>
-                    <div class="admin-row-title">${esc(room.roomNumber || `Phong #${room.id}`)}</div>
+                    <div class="admin-row-title">${esc(room.roomNumber || `Phòng #${room.id}`)}</div>
                     <div class="admin-row-sub">${esc([room.address, room.district, room.city].filter(Boolean).join(', '))}</div>
                 </td>
                 <td>
@@ -294,19 +318,19 @@
                 </td>
                 <td>${esc(room.landlordName || '-')}</td>
                 <td>
-                    <div>${esc(room.tenantName || 'Chua co')}</div>
+                    <div>${esc(room.tenantName || 'Chưa có')}</div>
                     <div class="admin-row-sub">${esc(room.tenantEmail || '')}</div>
                 </td>
                 <td>
-                    <span class="status-pill">${esc(room.status)}</span>
+                    <span class="status-pill">${esc(roomStatusLabel(room.status))}</span>
                     <div class="admin-row-sub">${dateTime(room.updatedAt || room.createdAt)}</div>
                 </td>
                 <td>
                     <div class="admin-actions">
                         <select class="admin-select js-room-status" style="max-width:165px">
-                            ${ROOM_STATUSES.map(s => `<option value="${s}" ${s === room.status ? 'selected' : ''}>${s}</option>`).join('')}
+                            ${ROOM_STATUSES.map(s => `<option value="${s}" ${s === room.status ? 'selected' : ''}>${roomStatusLabel(s)}</option>`).join('')}
                         </select>
-                        <button class="admin-btn" type="button" data-action="save-room-status">Luu</button>
+                        <button class="admin-btn" type="button" data-action="save-room-status">Lưu</button>
                     </div>
                 </td>
             </tr>

@@ -853,9 +853,9 @@
                                 </div>
                             </div>
                             <div class="admin-mini-meta">
-                                <span class="admin-mini-tag">AVAILABLE</span>
-                                <span class="admin-mini-tag">RENTED</span>
-                                <span class="admin-mini-tag">MAINTENANCE</span>
+                                <span class="admin-mini-tag">Còn trống</span>
+                                <span class="admin-mini-tag">Đã thuê</span>
+                                <span class="admin-mini-tag">Bảo trì</span>
                             </div>
                         </div>
                         <a href="#admin-room-list" class="admin-shortcut-link secondary" data-admin-view="rooms">Mở danh sách phòng</a>
@@ -878,17 +878,17 @@
                         <input id="post-keyword" class="admin-input" type="search" placeholder="Tim theo tieu de, dia chi, thanh pho" />
                     </div>
                     <div class="admin-field">
-                        <label for="post-status">Trang thai</label>
+                        <label for="post-status">Trạng thái</label>
                         <select id="post-status" class="admin-select">
-                            <option value="">Tat ca</option>
-                            <option value="DRAFT">DRAFT</option>
-                            <option value="ACTIVE">ACTIVE</option>
-                            <option value="INACTIVE">INACTIVE</option>
-                            <option value="RENTED">RENTED</option>
-                            <option value="DELETED">DELETED</option>
+                            <option value="">Tất cả</option>
+                            <option value="DRAFT">Chờ duyệt</option>
+                            <option value="ACTIVE">Đã duyệt</option>
+                            <option value="INACTIVE">Từ chối</option>
+                            <option value="RENTED">Đã thuê</option>
+                            <option value="DELETED">Đã xóa</option>
                         </select>
                     </div>
-                    <button id="post-search-btn" class="admin-btn" type="button">Tai danh sach</button>
+                    <button id="post-search-btn" class="admin-btn" type="button">Tải danh sách</button>
                 </div>
 
                 <div class="admin-table-wrap">
@@ -904,7 +904,7 @@
                             </tr>
                         </thead>
                         <tbody id="post-table-body">
-                            <tr><td colspan="6" class="admin-state">Dang tai...</td></tr>
+                            <tr><td colspan="6" class="admin-state">Đang tải...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -913,39 +913,39 @@
             <section class="ss-card" id="admin-room-list">
                 <div class="ss-card-header">
                     <div>
-                        <div class="ss-card-title">Danh sach phong quan ly</div>
-                        <div class="ss-card-sub">Theo doi va cap nhat trang thai phong that trong he thong.</div>
+                        <div class="ss-card-title">Danh sách phòng quản lý</div>
+                        <div class="ss-card-sub">Theo dõi và cập nhật trạng thái phòng thật trong hệ thống.</div>
                     </div>
-                    <span class="count-badge" id="room-count-badge">0 phong</span>
+                    <span class="count-badge" id="room-count-badge">0 phòng</span>
                 </div>
 
                 <div class="admin-toolbar">
                     <div class="admin-field">
-                        <label for="room-keyword">Tu khoa</label>
-                        <input id="room-keyword" class="admin-input" type="search" placeholder="Tim theo so phong, dia chi, thanh pho" />
+                        <label for="room-keyword">Từ khóa</label>
+                        <input id="room-keyword" class="admin-input" type="search" placeholder="Tìm theo số phòng, địa chỉ, thành phố" />
                     </div>
                     <div class="admin-field">
-                        <label for="room-status">Trang thai</label>
+                        <label for="room-status">Trạng thái</label>
                         <select id="room-status" class="admin-select">
-                            <option value="">Tat ca</option>
-                            <option value="AVAILABLE">AVAILABLE</option>
-                            <option value="RENTED">RENTED</option>
-                            <option value="MAINTENANCE">MAINTENANCE</option>
+                            <option value="">Tất cả</option>
+                            <option value="AVAILABLE">Còn trống</option>
+                            <option value="RENTED">Đã thuê</option>
+                            <option value="MAINTENANCE">Bảo trì</option>
                         </select>
                     </div>
-                    <button id="room-search-btn" class="admin-btn" type="button">Tai danh sach</button>
+                    <button id="room-search-btn" class="admin-btn" type="button">Tải danh sách</button>
                 </div>
 
                 <div class="admin-table-wrap">
                     <table class="admin-table">
                         <thead>
                             <tr>
-                                <th>Phong</th>
-                                <th>Gia / Loai</th>
-                                <th>Chu nha</th>
-                                <th>Khach thue</th>
-                                <th>Trang thai</th>
-                                <th>Thao tac</th>
+                                <th>Phòng</th>
+                                <th>Giá / Loại</th>
+                                <th>Chủ nhà</th>
+                                <th>Khách thuê</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
                             </tr>
                         </thead>
                         <tbody id="room-table-body">

@@ -1,6 +1,8 @@
 package vn.edu.ptit.service;
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.ptit.dto.Request.AdminRoomPostFeaturedRequest;
@@ -14,6 +16,7 @@ import vn.edu.ptit.entity.RoomPosts;
 import vn.edu.ptit.entity.Rooms;
 import vn.edu.ptit.repository.AdminRoomPostRepository;
 import vn.edu.ptit.repository.AdminRoomRepository;
+import vn.edu.ptit.service.AI.VectorService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -22,8 +25,11 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class AdminRoomPostManagementService {
+    private static final Logger log = LoggerFactory.getLogger(AdminRoomPostManagementService.class);
+
     private final AdminRoomPostRepository roomPostRepository;
     private final AdminRoomRepository roomRepository;
+    private final VectorService vectorService;
 
     public List<AdminRoomPostResponse> getRoomPosts(RoomPosts.Status status, String keyword) {
         String normalizedKeyword = normalizeKeyword(keyword);
@@ -168,12 +174,21 @@ public class AdminRoomPostManagementService {
     }
 
     private void applyRoomPostStatus(RoomPosts post, RoomPosts.Status status) {
+        RoomPosts.Status previousStatus = post.getStatus();
         post.setStatus(status);
 
         if (status == RoomPosts.Status.DELETED) {
             post.setDeletedAt(LocalDateTime.now());
         } else if (post.getDeletedAt() != null) {
             post.setDeletedAt(null);
+        }
+
+        if (status == RoomPosts.Status.ACTIVE && previousStatus != RoomPosts.Status.ACTIVE) {
+            try {
+                vectorService.addRoomPosts(post);
+            } catch (RuntimeException ex) {
+                log.warn("Khong the them vector cho bai dang id={}. Kiem tra API key AI/embedding.", post.getId(), ex);
+            }
         }
     }
 

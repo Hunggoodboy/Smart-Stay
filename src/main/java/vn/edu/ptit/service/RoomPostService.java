@@ -16,7 +16,6 @@ import vn.edu.ptit.entity.RoomPosts;
 import vn.edu.ptit.entity.User;
 import vn.edu.ptit.repository.LandLordRepository;
 import vn.edu.ptit.repository.RoomPostRepository;
-import vn.edu.ptit.service.AI.VectorService;
 import vn.edu.ptit.service.Authentication.AuthService;
 
 import java.io.IOException;
@@ -32,7 +31,6 @@ public class RoomPostService {
     private final RoomPostRepository roomPostRepository;
     private final AuthService authService;
     private final FileService fileService;
-    private final VectorService vectorService;
 
     @Transactional
     public ApiResponse createNewRoomPost(CreateRoomPostRequest createRoomPostRequest, MultipartFile mainImg,
@@ -44,7 +42,7 @@ public class RoomPostService {
             throw new InvalidParameterException("Bạn cần chờ admin xác thực tài khoản chủ nhà trước khi đăng bài");
         }
         roomPosts.setLandlord(landLord);
-        roomPosts.setStatus(RoomPosts.Status.ACTIVE);
+        roomPosts.setStatus(RoomPosts.Status.DRAFT);
         roomPosts.setCreatedAt(LocalDateTime.now());
         if (mainImg != null && !mainImg.isEmpty()) {
             String url = fileService.saveImg(mainImg);
@@ -59,8 +57,7 @@ public class RoomPostService {
             }
         }
         roomPostRepository.save(roomPosts);
-        vectorService.addRoomPosts(roomPosts);
-        return ApiResponse.builder().message("Thêm phòng thành công").success(true).build();
+        return ApiResponse.builder().message("Thêm bài đăng thành công, đang chờ admin kiểm duyệt").success(true).build();
     }
 
     public List<RoomPostSummaryResponse> getAllRoomPosts() {

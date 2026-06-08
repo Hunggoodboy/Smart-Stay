@@ -95,6 +95,7 @@ public interface RoomPostRepository extends JpaRepository<RoomPosts, Long> {
 
     @Query("""
             SELECT r FROM RoomPosts r
+            WHERE r.status = 'ACTIVE'
             ORDER BY
               CASE
                 WHEN r.featured = true
@@ -109,6 +110,7 @@ public interface RoomPostRepository extends JpaRepository<RoomPosts, Long> {
     @Query("""
             SELECT r FROM RoomPosts r
             WHERE r.landlord.id != :userId
+              AND r.status = 'ACTIVE'
             ORDER BY
               CASE
                 WHEN r.featured = true
