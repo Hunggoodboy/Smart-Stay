@@ -184,10 +184,7 @@ let authToken = null;
                     document.getElementById('serviceAmount').textContent = serviceAmount.toLocaleString('vi-VN');
                 }
 
-                if (data.roomName) {
-                    const roomLabel = document.getElementById('user-room-label');
-                    if (roomLabel) roomLabel.textContent = `Phòng ${data.roomName}`;
-                }
+
                 if (paymentReturn.paid && paymentReturn.matches(data.rentPaymentId)) {
                     renderPaidReturnState();
                 }

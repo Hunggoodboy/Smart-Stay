@@ -219,16 +219,12 @@
             </nav>
 
             <!-- ── Actions ── -->
-            <div class="nav-actions">
+            <div class="nav-actions" style="display:flex;align-items:center;gap:8px;">
                 <a href="/login"    class="btn-ghost"   id="btnLogin">Đăng nhập</a>
                 <a href="/register" class="btn-primary"  id="btnRegister">Đăng ký</a>
-
-                <span class="nav-user" id="navUser">
-                <span class="nav-user-avatar" id="userAvatar">U</span>
-                <span id="userName">User</span>
-            </span>
-                <button class="btn-logout" id="btnLogout">Đăng xuất</button>
+                <!-- User chip được inject bởi shared-navbar.js -->
             </div>
+
 
             <button class="hamburger" id="hamburger" aria-label="Menu">
                 <span></span><span></span><span></span>
@@ -364,83 +360,10 @@
     </footer>
 
     <script th:src="@{/js/roomsSummary.js}"></script>
-    <script>
-        (function () {
-            function parseJwt(token) {
-                try {
-                    const base64 = token.split('.')[1]
-                        .replace(/-/g, '+').replace(/_/g, '/');
-                    return JSON.parse(atob(base64));
-                } catch { return null; }
-            }
-
-            const token = localStorage.getItem('smartstay_token');
-            const payload = token ? parseJwt(token) : null;
-            const isLoggedIn = payload && (payload.exp * 1000 > Date.now());
-
-            if (!isLoggedIn) {
-                return;
-            }
-
-            // ── Ẩn Login / Register ──────────────────────────────
-            document.getElementById('btnLogin').style.display = 'none';
-            document.getElementById('btnRegister').style.display = 'none';
-
-            // ── Hiện tên user ────────────────────────────────────
-            const username = payload.sub || payload.username || payload.name || 'User';
-            document.getElementById('userAvatar').textContent = username.charAt(0).toUpperCase();
-            document.getElementById('userName').textContent = username;
-            document.getElementById('navUser').classList.add('visible');
-            document.getElementById('btnLogout').classList.add('visible');
-
-            // ── Lấy roles từ Token ────────────────────────────────
-            const rawRoles = [].concat(
-                payload.roles || payload.authorities || payload.role || []
-            );
-            const roles = rawRoles.map(r =>
-                (typeof r === 'string' ? r : (r.authority || '')).toUpperCase()
-            );
-
-            // ── XỬ LÝ PHÂN QUYỀN (ROLE-BASED UI) ───────────────────
-            const isAdmin = roles.some(r => r.includes('ADMIN'));
-            const isLandlord = roles.some(r => r.includes('LANDLORD'));
-
-            // Mặc định, nếu đã đăng nhập mà không phải Admin hay Landlord thì là Tenant (Khách thuê)
-            const isTenant = !isAdmin && !isLandlord;
-
-            if (isAdmin) {
-                // Hiện nút Admin
-                document.getElementById('btnAdminVerify').classList.add('visible');
-            }
-
-            if (isLandlord) {
-                // Hiện các link của Chủ nhà
-                document.querySelectorAll('.nav-link-landlord').forEach(el => {
-                    el.style.display = 'inline-flex';
-                });
-                // Ẩn nút "Trở thành chủ nhà" vì họ đã là chủ nhà rồi
-                const regLandlordLink = document.getElementById('linkRegisterLandlord');
-                if (regLandlordLink) regLandlordLink.style.display = 'none';
-            }
-
-            if (isTenant) {
-                // Hiện các link của Khách thuê
-                document.querySelectorAll('.nav-link-tenant').forEach(el => {
-                    el.style.display = 'inline-flex';
-                });
-            }
-
-            // ── Logout ────────────────────────────────────────────
-            document.getElementById('btnLogout').addEventListener('click', function () {
-                localStorage.removeItem('smartstay_token');
-                localStorage.removeItem('smartstay_user');
-                document.cookie = 'smartstay_token=; Max-Age=0; path=/';
-                window.location.href = '/login';
-            });
-        })();
-
-    </script>
+    <script th:src="@{/js/shared-navbar.js}" src="../static/js/shared-navbar.js"></script>
     <script th:src="@{/js/chat-ai-widget.js}" src="../static/js/chat-ai-widget.js"></script>
+
+
 
 </body>
 

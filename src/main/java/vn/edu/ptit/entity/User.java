@@ -117,4 +117,7 @@ public class User implements Serializable {
     @EqualsAndHashCode.Exclude
     private List<RentPayments> rentPayments;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private RefreshToken  refreshToken;
+
 }

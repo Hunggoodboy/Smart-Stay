@@ -1,5 +1,6 @@
 package vn.edu.ptit.service.Authentication;
 
+import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,16 +25,20 @@ import vn.edu.ptit.dto.Response.ApiResponse;
 import vn.edu.ptit.dto.Response.AuthResponse;
 import vn.edu.ptit.dto.Request.LoginRequest;
 import vn.edu.ptit.dto.Request.RegisterRequest;
+import vn.edu.ptit.dto.Response.TokenResponse;
 import vn.edu.ptit.dto.Response.UserResponse;
 import vn.edu.ptit.dto.UserDTO;
 import vn.edu.ptit.entity.LandLord;
+import vn.edu.ptit.entity.RefreshToken;
 import vn.edu.ptit.entity.User;
 import vn.edu.ptit.entity.Customer;
 import vn.edu.ptit.repository.LandLordRepository;
+import vn.edu.ptit.repository.RefreshTokenRepository;
 import vn.edu.ptit.repository.UserRepository;
 import vn.edu.ptit.service.JWT.jwtService;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +50,7 @@ public class AuthService {
     private final LandLordRepository landLordRepository;
     private final AuthenticationManager authManager;
     private final jwtService jwtService;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     private boolean checkUsernameExists(String username) {
         return userRepository.findByUsername(username).isPresent();
@@ -55,11 +61,11 @@ public class AuthService {
             if (registerRequest.getUsername() == null || registerRequest.getPassword() == null
                     || registerRequest.getConfirmPassword() == null || registerRequest.getFullName() == null
                     || registerRequest.getPhoneNumber() == null) {
-                return new AuthResponse("Vui lòng điền đầy đủ thông tin", false, null, null);
+                return new AuthResponse("Vui lòng điền đầy đủ thông tin", false, null, null, null);
             } else if (!registerRequest.getPassword().equals(registerRequest.getConfirmPassword())) {
-                return new AuthResponse("Mật khẩu và xác nhận mật khẩu không khớp", false, null, null);
+                return new AuthResponse("Mật khẩu và xác nhận mật khẩu không khớp", false, null, null, null);
             } else if (checkUsernameExists(registerRequest.getUsername())) {
-                return new AuthResponse("Tên đăng nhập đã tồn tại", false, null, null);
+                return new AuthResponse("Tên đăng nhập đã tồn tại", false, null, null, null);
             }
             User user = new User();
             user.setUsername(registerRequest.getUsername());
@@ -72,9 +78,9 @@ public class AuthService {
             user.setCreatedAt(LocalDateTime.now());
             userRepository.save(user);
             UserDTO userDTO = UserDTO.fromEntity(user);
-            return new AuthResponse("Đăng ký thành công", true, userDTO, null);
+            return new AuthResponse("Đăng ký thành công", true, userDTO, null, null);
         } catch (Exception e) {
-            return new AuthResponse("Đăng ký thất bại: " + e.getMessage(), false, null, null);
+            return new AuthResponse("Đăng ký thất bại: " + e.getMessage(), false, null, null, null);
         }
     }
 
@@ -91,17 +97,95 @@ public class AuthService {
             securityContextRepository.saveContext(context, httpRequest, httpResponse);
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new RuntimeException("Tên đăng nhập hoặc mật khẩu không chính xác"));
-            String token = jwtService.generateToken(user.getUsername());
-            Cookie tokenCookie = new Cookie("smartstay_token", token);
+            TokenResponse token = jwtService.generateToken(user.getUsername());
+            Cookie tokenCookie = new Cookie("smartstay_token", token.getAccessToken());
+            Cookie refreshTokenCookie = new Cookie("refresh_token", token.getRefreshToken());
             tokenCookie.setHttpOnly(true);
             tokenCookie.setPath("/");
             tokenCookie.setMaxAge(24 * 60 * 60);
             httpResponse.addCookie(tokenCookie);
-            return new AuthResponse("Đăng nhập thành công", true, UserDTO.fromEntity(user), token);
+            httpResponse.addCookie(refreshTokenCookie);
+            return new AuthResponse("Đăng nhập thành công", true, UserDTO.fromEntity(user), token.getAccessToken(), token.getRefreshToken());
         } catch (BadCredentialsException e) {
-            return new AuthResponse("Tên đăng nhập hoặc mật khẩu không chính xác", false, null, null);
+            return new AuthResponse("Tên đăng nhập hoặc mật khẩu không chính xác", false, null, null, null);
         } catch (Exception ex) {
-            return new AuthResponse("Đăng nhập thất bại: " + ex.getMessage(), false, null, null);
+            return new AuthResponse("Đăng nhập thất bại: " + ex.getMessage(), false, null, null, null);
+        }
+    }
+
+    public ApiResponse logout(HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
+        try{
+            String refreshToken = null;
+            Cookie[] cookies = httpRequest.getCookies();
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("smartstay_token")) {
+                    refreshToken = cookie.getValue();
+                }
+            }
+            if (refreshToken != null) {
+                jwtService.deleteRefreshToken(refreshToken);
+            }
+            Cookie tokenCookie = new Cookie("smartstay_token", null);
+            tokenCookie.setHttpOnly(true);
+            tokenCookie.setPath("/");
+            tokenCookie.setMaxAge(0);
+            httpResponse.addCookie(tokenCookie);
+            Cookie refreshTokenCookie = new Cookie("refresh_token", null);
+            tokenCookie.setHttpOnly(true);
+            tokenCookie.setPath("/");
+            tokenCookie.setMaxAge(0);
+            httpResponse.addCookie(tokenCookie);
+            httpResponse.addCookie(refreshTokenCookie);
+            SecurityContextHolder.clearContext();
+            return ApiResponse.builder()
+                    .success(true)
+                    .message("Đăng xuất thành công")
+                    .build();
+        }
+        catch (Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    public AuthResponse generateTokenByRefreshToken(HttpServletRequest request, HttpServletResponse response) {
+        String refreshToken = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("refresh_token".equals(cookie.getName())) {
+                    refreshToken = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if (refreshToken == null) {
+            return new AuthResponse("Không tìm thấy Refresh Token", false, null, null, null);
+        }
+
+        try {
+            RefreshToken refreshTokenObj = refreshTokenRepository.findByToken(refreshToken)
+                    .orElseThrow(() -> new RuntimeException("Refresh Token không hợp lệ hoặc không tồn tại"));
+            jwtService.verifyExpiration(refreshTokenObj);
+            User user = refreshTokenObj.getUser();
+            TokenResponse token = jwtService.generateToken(user.getUsername());
+            Cookie tokenCookie = new Cookie("smartstay_token", token.getAccessToken());
+            tokenCookie.setHttpOnly(true);
+            tokenCookie.setPath("/");
+            tokenCookie.setMaxAge(24 * 60 * 60); // 1 ngày
+            response.addCookie(tokenCookie);
+
+            Cookie newRefreshTokenCookie = new Cookie("refresh_token", token.getRefreshToken());
+            newRefreshTokenCookie.setHttpOnly(true);
+            newRefreshTokenCookie.setPath("/");
+            newRefreshTokenCookie.setMaxAge(14 * 24 * 60 * 60); // 14 ngày
+            response.addCookie(newRefreshTokenCookie);
+
+            jwtService.deleteRefreshToken(refreshToken);
+            return new AuthResponse("Làm mới token thành công", true, UserDTO.fromEntity(user), token.getAccessToken(), token.getRefreshToken());
+        }
+        catch (Exception e){
+            return new AuthResponse("Lỗi refresh token: " + e.getMessage(), false, null, null, null);
         }
     }
 

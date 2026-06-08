@@ -18,7 +18,7 @@ const el = {
     welcomeMessage: byId('welcome-message'),
     roomLocation: byId('room-location'),
     userAvatar: byId('user-avatar'),
-    userRoomLabel: byId('user-room-label'),
+    userNameLabel: byId('user-name-label'),
     userRoleLabel: byId('user-role-label'),
     dropdownUserName: byId('dropdown-user-name'),
     dropdownUserRole: byId('dropdown-user-role'),
@@ -468,13 +468,16 @@ function applyDashboardData(data) {
         else if (data.role === 'CUSTOMER') roleLabel = 'Khách thuê';
     }
 
+    setText(el.userNameLabel, displayName);
     setText(el.userRoleLabel, roleLabel);
     setText(el.welcomeMessage, `Xin chào, ${displayName}! 👋`);
     setText(el.dropdownUserName, displayName);
     setText(el.dropdownUserRole, roleLabel);
 
-    if (el.userAvatar && data.avatarUrl) {
-        el.userAvatar.src = data.avatarUrl;
+    if (el.userAvatar) {
+        const avatarUrl = data.avatarUrl ||
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=eff6ff&color=1d4ed8`;
+        el.userAvatar.src = avatarUrl;
     }
 
     const unread = Number(data.unreadNotifications || 0);
@@ -553,10 +556,12 @@ function renderUserMenu(isLoggedIn, data) {
         if (data.role === 'ADMIN') roleLabel = 'Quản trị viên';
         else if (data.role === 'LANDLORD') roleLabel = 'Chủ nhà';
 
-        const avatarUrl = data.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=eff6ff&color=1d4ed8`;
+        const avatarUrl = data.avatarUrl ||
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=eff6ff&color=1d4ed8`;
 
         if (el.userAvatar) el.userAvatar.src = avatarUrl;
-        if (el.userRoleLabel) el.userRoleLabel.textContent = displayName;
+        if (el.userNameLabel) el.userNameLabel.textContent = displayName;
+        if (el.userRoleLabel) el.userRoleLabel.textContent = roleLabel;
         if (el.dropdownUserName) el.dropdownUserName.textContent = displayName;
         if (el.dropdownUserRole) el.dropdownUserRole.textContent = roleLabel;
     }
@@ -1095,3 +1100,23 @@ function escapeHtml(str) {
 
 loadDashboard();
 loadNotifications();
+
+// Logout function cho tất cả các trang dùng script.js
+window.doLogout = async function(skipApiCall = false) {
+    if (!skipApiCall) {
+        try {
+            const fetcher = window.originalFetch || window.fetch;
+            await fetcher('/api/user/logout', {
+                method: 'POST',
+                credentials: 'include'
+            });
+        } catch (e) {
+            console.error('Logout API failed', e);
+        }
+    }
+    localStorage.removeItem('smartstay_token');
+    localStorage.removeItem('smartstay_user');
+    document.cookie = 'smartstay_token=; Max-Age=0; path=/';
+    window.location.href = '/login';
+};
+

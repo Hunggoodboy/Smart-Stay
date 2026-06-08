@@ -40,6 +40,22 @@ public class AuthController {
         }
         return ResponseEntity.ok(authResponse);
     }
+
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse> logout(HttpServletRequest request, HttpServletResponse response) {
+        ApiResponse result = authService.logout(request, response);
+        return ResponseEntity.ok(result);
+
+    }
+    @PostMapping("/refresh-token")
+    public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
+        AuthResponse authResponse = authService.generateTokenByRefreshToken(request, response);
+        if (!authResponse.isSuccess()) {
+            return ResponseEntity.status(401).body(authResponse);
+        }
+        return ResponseEntity.ok(authResponse);
+    }
     @PostMapping("upgrade/customer")
     public ResponseEntity<?> upgradeToCustomer(@RequestBody UpgradeCustomerRequest upgradeCustomerRequest) {
         ApiResponse authResponse = authService.upgradeCustomer(upgradeCustomerRequest);

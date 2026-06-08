@@ -30,7 +30,7 @@ public class SecurityConfig {
                         "/postRooms", "/MyRentalRequest", "/myHome", "/payment", "/chatMessage", "/registerLandLord",
                         "/api/payments/payos/webhook",
                         "/error", "/gs-guide-websocket/**", "/contract/create", "/myContracts", "/contractDetail/**",
-                        "/revenue-management", "/createRoomManage", "/landlord-view/**", "/room-detail-management/**"
+                        "/revenue-management", "/createRoomManage", "/landlord-view/**", "/room-detail-management/**", "/api/user/logout", "/api/user/refresh-token"
         };
 
         private static final String[] LANDLORD_API_URLS = {
@@ -65,6 +65,7 @@ public class SecurityConfig {
                                                 .hasAuthority("ADMIN")
                                                 .requestMatchers(AUTHENTICATED_API_URLS).authenticated()
                                                 .anyRequest().authenticated())
+                        .logout(logout -> logout.disable())
                                 .csrf(csrf -> csrf.disable());
                 return http.build();
         }
