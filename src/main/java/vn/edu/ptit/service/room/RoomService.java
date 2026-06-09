@@ -15,6 +15,9 @@ import vn.edu.ptit.repository.RoomsRepository;
 import vn.edu.ptit.repository.UserRepository;
 import vn.edu.ptit.repository.RoomPostRepository;
 import vn.edu.ptit.service.Authentication.AuthService;
+import vn.edu.ptit.Exception.ResourceNotFoundException;
+import vn.edu.ptit.Exception.BusinessRuleException;
+import vn.edu.ptit.Exception.UnauthorizedException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,21 +35,21 @@ public class RoomService {
 
         // Tìm Contract theo ID (gửi từ frontend sau khi tạo hợp đồng xong)
         Contracts contract = contractsRepository.findById(request.getContractId())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy hợp đồng với id: " + request.getContractId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Hop dong", request.getContractId()));
 
         // Kiểm tra hợp đồng có thuộc về chủ nhà hiện tại không
         if (!contract.getLandLord().getId().equals(landLord.getId())) {
-            throw new RuntimeException("Ấp đồng này không thuộc về chủ nhà hiện tại");
+            throw new UnauthorizedException("Ấp đồng này không thuộc về chủ nhà hiện tại");
         }
 
         // Kiểm tra hợp đồng đã được khách thuê ký nhận chưa (status phải là ACTIVE)
         if (!"ACTIVE".equals(contract.getStatus())) {
-            throw new RuntimeException("Hợp đồng chưa được khách hàng ký xác nhận");
+            throw new BusinessRuleException("Hợp đồng chưa được khách hàng ký xác nhận");
         }
 
         // Kiểm tra phòng đã được tạo chưa
         if (roomsRepository.findByContractId(contract.getId()).isPresent()) {
-            throw new RuntimeException("Đã có phòng quản lý cho hợp đồng này");
+            throw new BusinessRuleException("Đã có phòng quản lý cho hợp đồng này");
         }
 
         // Customer lấy từ hợp đồng, không cần truyền thê m email
@@ -118,7 +121,7 @@ public class RoomService {
 
     public RoomManageSummaryResponse getRoomDetailManagement(Long id) {
         Rooms room = roomsRepository.findRoomsById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy phòng với id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Phong", id));
         // Contract lấy trực tiếp từ Room (Rooms giữ FK contract_id)
         Contracts currentContract = room.getContract();
         return RoomManageSummaryResponse.builder()

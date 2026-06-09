@@ -7,6 +7,8 @@ import vn.edu.ptit.entity.RentPayments;
 import vn.edu.ptit.entity.User;
 import vn.edu.ptit.repository.RevenueReportRepository;
 import vn.edu.ptit.service.Authentication.AuthService;
+import vn.edu.ptit.Exception.InvalidRequestException;
+import vn.edu.ptit.Exception.UnauthorizedException;
 
 import java.util.List;
 import java.util.Comparator;
@@ -20,7 +22,7 @@ public class RevenueReportService {
     public RevenueReportResponse getMonthlyReport(Integer year, Integer month) {
         checkYear(year);
         if (month == null || month < 1 || month > 12) {
-            throw new RuntimeException("Thang thong ke khong hop le");
+            throw new InvalidRequestException("Thang thong ke khong hop le");
         }
         String billingMonth = year + "-" + String.format("%02d", month);
         Long landlordId = getLandlordId();
@@ -103,14 +105,14 @@ public class RevenueReportService {
             return null;
         }
         if (user.getRole() != User.Role.LANDLORD) {
-            throw new RuntimeException("Ban khong co quyen xem bao cao doanh thu");
+            throw new UnauthorizedException("Ban khong co quyen xem bao cao doanh thu");
         }
         return user.getId();
     }
 
     private void checkYear(Integer year) {
         if (year == null || year < 2000 || year > 2100) {
-            throw new RuntimeException("Nam thong ke khong hop le");
+            throw new InvalidRequestException("Nam thong ke khong hop le");
         }
     }
 

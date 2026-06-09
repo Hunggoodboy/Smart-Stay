@@ -1,6 +1,8 @@
 package vn.edu.ptit.service.admin;
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.ptit.dto.Request.AdminRoomPostFeaturedRequest;
@@ -14,6 +16,9 @@ import vn.edu.ptit.entity.RoomPosts;
 import vn.edu.ptit.entity.Rooms;
 import vn.edu.ptit.repository.AdminRoomPostRepository;
 import vn.edu.ptit.repository.AdminRoomRepository;
+import vn.edu.ptit.service.AI.VectorService;
+import vn.edu.ptit.Exception.ResourceNotFoundException;
+import vn.edu.ptit.Exception.InvalidRequestException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -22,8 +27,11 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class AdminRoomPostManagementService {
+    private static final Logger log = LoggerFactory.getLogger(AdminRoomPostManagementService.class);
+
     private final AdminRoomPostRepository roomPostRepository;
     private final AdminRoomRepository roomRepository;
+    private final VectorService vectorService;
 
     public List<AdminRoomPostResponse> getRoomPosts(RoomPosts.Status status, String keyword) {
         String normalizedKeyword = normalizeKeyword(keyword);
@@ -54,7 +62,7 @@ public class AdminRoomPostManagementService {
     @Transactional
     public AdminRoomPostResponse updateRoomPost(Long id, UpdateRoomPostRequest request) {
         RoomPosts post = roomPostRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Khong tim thay bai dang"));
+                .orElseThrow(() -> new ResourceNotFoundException("Bai dang", id));
 
         updateRoomPostInfo(post, request);
         post.setUpdatedAt(LocalDateTime.now());
@@ -65,11 +73,11 @@ public class AdminRoomPostManagementService {
     @Transactional
     public ApiResponse updateRoomPostStatus(Long id, AdminRoomPostStatusRequest request) {
         if (request.getStatus() == null) {
-            throw new RuntimeException("Trang thai bai dang khong duoc de trong");
+            throw new InvalidRequestException("Trang thai bai dang khong duoc de trong");
         }
 
         RoomPosts post = roomPostRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Khong tim thay bai dang"));
+                .orElseThrow(() -> new ResourceNotFoundException("Bai dang", id));
 
         applyRoomPostStatus(post, request.getStatus());
         post.setUpdatedAt(LocalDateTime.now());
@@ -81,11 +89,11 @@ public class AdminRoomPostManagementService {
     @Transactional
     public AdminRoomPostResponse updateRoomPostFeatured(Long id, AdminRoomPostFeaturedRequest request) {
         if (request.getFeatured() == null) {
-            throw new RuntimeException("Trang thai noi bat khong duoc de trong");
+            throw new InvalidRequestException("Trang thai noi bat khong duoc de trong");
         }
 
         RoomPosts post = roomPostRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Khong tim thay bai dang"));
+                .orElseThrow(() -> new ResourceNotFoundException("Bai dang", id));
 
         applyFeatured(post, request);
         post.setUpdatedAt(LocalDateTime.now());
@@ -96,11 +104,11 @@ public class AdminRoomPostManagementService {
     @Transactional
     public ApiResponse updateRoomStatus(Long id, AdminRoomStatusRequest request) {
         if (request.getStatus() == null) {
-            throw new RuntimeException("Trang thai phong khong duoc de trong");
+            throw new InvalidRequestException("Trang thai phong khong duoc de trong");
         }
 
         Rooms room = roomRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Khong tim thay phong"));
+                .orElseThrow(() -> new ResourceNotFoundException("Phong", id));
 
         room.setStatus(request.getStatus());
         room.setUpdatedAt(LocalDateTime.now());
@@ -168,12 +176,21 @@ public class AdminRoomPostManagementService {
     }
 
     private void applyRoomPostStatus(RoomPosts post, RoomPosts.Status status) {
+        RoomPosts.Status previousStatus = post.getStatus();
         post.setStatus(status);
 
         if (status == RoomPosts.Status.DELETED) {
             post.setDeletedAt(LocalDateTime.now());
         } else if (post.getDeletedAt() != null) {
             post.setDeletedAt(null);
+        }
+
+        if (status == RoomPosts.Status.ACTIVE && previousStatus != RoomPosts.Status.ACTIVE) {
+            try {
+                vectorService.addRoomPosts(post);
+            } catch (RuntimeException ex) {
+                log.warn("Khong the them vector cho bai dang id={}. Kiem tra API key AI/embedding.", post.getId(), ex);
+            }
         }
     }
 

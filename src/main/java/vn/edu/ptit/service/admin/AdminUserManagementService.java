@@ -8,6 +8,9 @@ import vn.edu.ptit.dto.Response.ApiResponse;
 import vn.edu.ptit.entity.User;
 import vn.edu.ptit.repository.AdminUserManagementRepository;
 import vn.edu.ptit.service.Authentication.AuthService;
+import vn.edu.ptit.Exception.ResourceNotFoundException;
+import vn.edu.ptit.Exception.InvalidRequestException;
+import vn.edu.ptit.Exception.UnauthorizedException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -38,7 +41,7 @@ public class AdminUserManagementService {
     @Transactional(readOnly = true)
     public List<AdminUserResponse> getUsersByStatus(Boolean active, boolean includeDeleted) {
         if (active == null) {
-            throw new RuntimeException("Trang thai tai khoan khong duoc de trong");
+            throw new InvalidRequestException("Trang thai tai khoan khong duoc de trong");
         }
 
         return adminUserRepository.findByStatusForAdmin(active, includeDeleted)
@@ -73,7 +76,7 @@ public class AdminUserManagementService {
     @Transactional
     public ApiResponse updateStatus(Long id, Boolean active) {
         if (active == null) {
-            throw new RuntimeException("Trang thai tai khoan khong duoc de trong");
+            throw new InvalidRequestException("Trang thai tai khoan khong duoc de trong");
         }
 
         User user = findUser(id);
@@ -92,7 +95,7 @@ public class AdminUserManagementService {
     @Transactional
     public ApiResponse updateRole(Long id, User.Role role) {
         if (role == null) {
-            throw new RuntimeException("Vai tro tai khoan khong duoc de trong");
+            throw new InvalidRequestException("Vai tro tai khoan khong duoc de trong");
         }
 
         User user = findUser(id);
@@ -141,13 +144,13 @@ public class AdminUserManagementService {
 
     private User findUser(Long id) {
         return adminUserRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Khong tim thay tai khoan"));
+                .orElseThrow(() -> new ResourceNotFoundException("Tai khoan", id));
     }
 
     private void preventSelfManagement(Long userId, String message) {
         Long currentUserId = authService.getCurrentUserId();
         if (currentUserId != null && currentUserId.equals(userId)) {
-            throw new RuntimeException(message);
+            throw new UnauthorizedException(message);
         }
     }
 

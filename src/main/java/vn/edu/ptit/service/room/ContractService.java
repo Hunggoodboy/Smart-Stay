@@ -11,6 +11,9 @@ import vn.edu.ptit.dto.Response.ContractSuggestionResponse;
 import vn.edu.ptit.entity.*;
 import vn.edu.ptit.repository.*;
 import vn.edu.ptit.service.Authentication.AuthService;
+import vn.edu.ptit.Exception.ResourceNotFoundException;
+import vn.edu.ptit.Exception.UnauthorizedException;
+import vn.edu.ptit.Exception.BusinessRuleException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -38,11 +41,11 @@ public class ContractService {
         public ContractSuggestionResponse getContractDraft(Long roomPostId, Long userId) {
                 LandLord currentLandLord = authService.getCurrentLandLord();
                 Customer currentCustomer = customerRepository.findById(userId)
-                                .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng"));
+                                .orElseThrow(() -> new ResourceNotFoundException("Khach hang", userId));
 
                 // Lấy thông tin từ RoomPost (chưa có Rooms ở giai đoạn tạo hợp đồng)
                 RoomPosts roomPost = roomPostRepository.findById(roomPostId)
-                                .orElseThrow(() -> new RuntimeException("Không tìm thấy bài đăng phòng"));
+                                .orElseThrow(() -> new ResourceNotFoundException("Bai dang phong", roomPostId));
 
                 return ContractSuggestionResponse.builder()
                                 .landLordId(currentLandLord.getId())
@@ -82,8 +85,7 @@ public class ContractService {
                                 .substring(0, 8).toUpperCase();
                 RentalRequests rentalRequests = rentalRequestRepository
                                 .findByRoomPostIdAndCustomerId(request.getRoomPostId(), request.getCustomerId())
-                                .orElseThrow(
-                                                () -> new RuntimeException("Bạn chưa yêu cầu thuê phòng này"));
+                                .orElseThrow(() -> new ResourceNotFoundException("Bạn chưa yêu cầu thuê phòng này"));
                 Contracts contracts = Contracts.builder()
                                 .contractCode("HD-" + java.time.LocalDate.now().getYear() + "-" + randomPart)
                                 .startDate(request.getStartDate())
@@ -103,9 +105,9 @@ public class ContractService {
                                 .parkingFee(request.getParkingFee())
                                 .cleaningFee(request.getCleaningFee())
                                 .landLord(userRepository.findById(request.getLandLordId())
-                                                .orElseThrow(() -> new RuntimeException("Landlord not found")))
+                                                .orElseThrow(() -> new ResourceNotFoundException("Chu nha", request.getLandLordId())))
                                 .customer(userRepository.findById(request.getCustomerId())
-                                                .orElseThrow(() -> new RuntimeException("Customer not found")))
+                                                .orElseThrow(() -> new ResourceNotFoundException("Khach hang", request.getCustomerId())))
                                 // KHAI BÁO: Không gán .room() vì Contracts không còn giữ FK room_id nữa
                                 // Room sẽ được tạo sau khi Contract được dúyệt và gắn FK contract_id →
                                 // contracts.id
@@ -175,12 +177,12 @@ public class ContractService {
 
         public ContractResponseDTO getContractDetail(Long id) {
                 Contracts contract = contractsRepository.findById(id)
-                                .orElseThrow(() -> new RuntimeException("Không tìm thấy hợp đồng với id: " + id));
+                                .orElseThrow(() -> new ResourceNotFoundException("Hop dong", id));
 
                 // Phân quyền: Người dùng hiện tại phải là Chủ nhà hoặc Khách thuê của hợp đồng này
                 Long currentUserId = authService.getCurrentUser().getId();
                 if (!contract.getLandLord().getId().equals(currentUserId) && !contract.getCustomer().getId().equals(currentUserId)) {
-                        throw new RuntimeException("Bạn không có quyền xem chi tiết hợp đồng này");
+                        throw new UnauthorizedException("Bạn không có quyền xem chi tiết hợp đồng này");
                 }
 
                 return ContractResponseDTO.builder()
@@ -207,16 +209,16 @@ public class ContractService {
         @Transactional
         public ApiResponse signContract(Long id) {
                 Contracts contract = contractsRepository.findById(id)
-                                .orElseThrow(() -> new RuntimeException("Không tìm thấy hợp đồng với id: " + id));
+                                .orElseThrow(() -> new ResourceNotFoundException("Hop dong", id));
 
                 // Xác thực: Người ký phải là khách thuê trong hợp đồng
                 Long currentUserId = authService.getCurrentUser().getId();
                 if (!contract.getCustomer().getId().equals(currentUserId)) {
-                        throw new RuntimeException("Bạn không có quyền ký xác nhận hợp đồng này");
+                        throw new UnauthorizedException("Bạn không có quyền ký xác nhận hợp đồng này");
                 }
 
                 if (!"PENDING".equals(contract.getStatus())) {
-                        throw new RuntimeException("Hợp đồng này không ở trạng thái chờ ký");
+                        throw new BusinessRuleException("Hợp đồng này không ở trạng thái chờ ký");
                 }
 
                 contract.setStatus("ACTIVE");

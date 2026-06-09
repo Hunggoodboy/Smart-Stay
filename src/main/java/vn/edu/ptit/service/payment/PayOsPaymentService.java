@@ -7,6 +7,8 @@ import vn.edu.ptit.entity.RentPayments;
 import vn.edu.ptit.entity.UtilityBills;
 import vn.edu.ptit.repository.RentPaymentsRepository;
 import vn.edu.ptit.repository.UtilityBillsRepository;
+import vn.edu.ptit.Exception.PaymentException;
+import vn.edu.ptit.Exception.ResourceNotFoundException;
 import vn.payos.model.webhooks.WebhookData;
 
 import java.time.LocalDate;
@@ -28,14 +30,14 @@ public class PayOsPaymentService {
         String description = webhookData.getDescription();
 
         if (orderCode == null) {
-            throw new RuntimeException("Webhook PayOS khong co orderCode");
+            throw new PaymentException("Webhook PayOS khong co orderCode");
         }
         if (code != null && !"00".equals(code)) {
-            throw new RuntimeException("Webhook PayOS chua thanh cong");
+            throw new PaymentException("Webhook PayOS chua thanh cong");
         }
 
         RentPayments payment = rentPaymentsRepository.findById(orderCode)
-                .orElseThrow(() -> new RuntimeException("Khong tim thay ky thanh toan PayOS: " + orderCode));
+                .orElseThrow(() -> new ResourceNotFoundException("Ky thanh toan PayOS", orderCode));
 
         if (payment.getStatus() == RentPayments.Status.PAID) {
             return;
@@ -43,7 +45,7 @@ public class PayOsPaymentService {
 
         long expectedAmount = Math.round(payment.getTotalAmount() != null ? payment.getTotalAmount() : 0.0);
         if (amount == null || amount != expectedAmount) {
-            throw new RuntimeException("So tien PayOS khong khop ky thanh toan");
+            throw new PaymentException("So tien PayOS khong khop ky thanh toan");
         }
 
         payment.setStatus(RentPayments.Status.PAID);

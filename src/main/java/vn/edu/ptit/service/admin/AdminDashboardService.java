@@ -44,7 +44,7 @@ public class AdminDashboardService {
     @Transactional(readOnly = true)
     public AdminDashboardCountResponse getPostsNeedReview() {
         return countResponse("postsNeedReview", adminDashboardRepository.countPostsNeedReview(
-                List.of(RoomPosts.Status.DRAFT, RoomPosts.Status.INACTIVE)
+                List.of(RoomPosts.Status.DRAFT)
         ));
     }
 

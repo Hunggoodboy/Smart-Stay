@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import vn.edu.ptit.Exception.TokenExpiredException;
 import vn.edu.ptit.Exception.UserNotFoundException;
 import vn.edu.ptit.dto.Response.TokenResponse;
 import vn.edu.ptit.dto.Response.UserResponse;
@@ -74,7 +75,7 @@ public class jwtService {
     public RefreshToken verifyExpiration(RefreshToken token) {
         if (token.getExpiredAt().isBefore(LocalDateTime.now())) {
             refreshTokenRepository.delete(token); // Xóa khỏi DB vì đã vô dụng
-            throw new RuntimeException("Refresh token đã hết hạn. Vui lòng đăng nhập lại.");
+            throw new TokenExpiredException("Refresh token đã hết hạn. Vui lòng đăng nhập lại.");
         }
         return token;
     }

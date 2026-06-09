@@ -19,6 +19,9 @@ import vn.edu.ptit.dto.Response.MonthlyBillResponse;
 import vn.edu.ptit.dto.Response.getBillingLastMonthResponse;
 import vn.edu.ptit.repository.*;
 import vn.edu.ptit.service.Authentication.AuthService;
+import vn.edu.ptit.Exception.ResourceNotFoundException;
+import vn.edu.ptit.Exception.InvalidRequestException;
+import vn.edu.ptit.Exception.BusinessRuleException;
 
 @Service
 @Transactional
@@ -40,13 +43,13 @@ public class BillingService {
     public MonthlyBillResponse createBill(MonthlyBillRequest request) {
         CalculationResult result = calculate(request);
         if (result.contract == null) {
-            throw new RuntimeException("Không tìm thấy hợp đồng ACTIVE cho phòng " + result.room.getRoomNumber());
+            throw new BusinessRuleException("Không tìm thấy hợp đồng ACTIVE cho phòng " + result.room.getRoomNumber());
         }
 
         utilityBillsRepository
                 .findTopByRoom_IdAndBillingMonthOrderByCreatedAtDesc(result.room.getId(), result.billingMonth)
                 .ifPresent(existing -> {
-                    throw new RuntimeException("Phòng đã có hóa đơn điện nước tháng " + result.billingMonth);
+                    throw new BusinessRuleException("Phòng đã có hóa đơn điện nước tháng " + result.billingMonth);
                 });
 
         Optional<UtilityBills> existingBill =
@@ -56,13 +59,13 @@ public class BillingService {
                 );
 
         if (existingBill.isPresent()) {
-            throw new RuntimeException("Phòng đã có hóa đơn điện nước tháng " + result.billingMonth);
+            throw new BusinessRuleException("Phòng đã có hóa đơn điện nước tháng " + result.billingMonth);
         }
 
         rentPaymentsRepository
                 .findTopByContract_IdAndBillingMonthOrderByCreatedAtDesc(result.contract.getId(), result.billingMonth)
                 .ifPresent(existing -> {
-                    throw new RuntimeException("Hợp đồng đã có hóa đơn tổng tháng " + result.billingMonth);
+                    throw new BusinessRuleException("Hợp đồng đã có hóa đơn tổng tháng " + result.billingMonth);
                 });
 
 
@@ -94,7 +97,8 @@ public class BillingService {
 
         utilityBill = utilityBillsRepository.save(utilityBill);
 
-        User currentCustomer = userRepository.findById(result.contract.getCustomer().getId()).orElseThrow(() -> new RuntimeException("Không tìm thấy customer"));
+        User currentCustomer = userRepository.findById(result.contract.getCustomer().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Customer", result.contract.getCustomer().getId()));
 
 
         RentPayments rentPayment = new RentPayments();
@@ -124,7 +128,7 @@ public class BillingService {
     private CalculationResult calculate(MonthlyBillRequest request) {
         validateRequest(request);
         Rooms room = roomsRepository.findById(request.getRoomId())
-                                    .orElseThrow(() -> new RuntimeException("Không tìm thấy phòng với id = " + request.getRoomId()));
+                                    .orElseThrow(() -> new ResourceNotFoundException("Phong", request.getRoomId()));
 //        Optional<Rooms> roomot =roomsRepository.findById(request.getRoomId());
 //        Rooms room = new Rooms();
 //        if(roomot.isPresent()) {
@@ -150,11 +154,11 @@ public class BillingService {
         double waterNewIndex = requiredNumber(request.getWaterNewIndex(), "waterNewIndex");
 
         if (electricityNewIndex < electricityOldIndex) {
-            throw new RuntimeException("Chỉ số điện mới phải lớn hơn hoặc bằng chỉ số điện cũ");
+            throw new InvalidRequestException("Chỉ số điện mới phải lớn hơn hoặc bằng chỉ số điện cũ");
         }
 
         if (waterNewIndex < waterOldIndex) {
-            throw new RuntimeException("Chỉ số nước mới phải lớn hơn hoặc bằng chỉ số nước cũ");
+            throw new InvalidRequestException("Chỉ số nước mới phải lớn hơn hoặc bằng chỉ số nước cũ");
         }
 
         double electricityConsumed = round(electricityNewIndex - electricityOldIndex);
@@ -220,14 +224,14 @@ public class BillingService {
 
     private void validateRequest(MonthlyBillRequest request) {
         if (request == null) {
-            throw new RuntimeException("Request không được để trống");
+            throw new InvalidRequestException("Request không được để trống");
         }
         if (request.getRoomId() == null) {
-            throw new RuntimeException("roomId là bắt buộc");
+            throw new InvalidRequestException("roomId là bắt buộc");
         }
         if (request.getBillingMonth() == null || request.getBillingMonth()
                                                         .isBlank()) {
-            throw new RuntimeException("billingMonth là bắt buộc, định dạng yyyy-MM");
+            throw new InvalidRequestException("billingMonth là bắt buộc, định dạng yyyy-MM");
         }
         parseBillingMonth(request.getBillingMonth());
     }
@@ -235,11 +239,11 @@ public class BillingService {
     private Contracts resolveContract(MonthlyBillRequest request, Rooms room) {
         if (request.getContractId() != null) {
             Contracts contract = contractsRepository.findById(request.getContractId())
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy hợp đồng với id = " + request.getContractId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("Hop dong", request.getContractId()));
             // Kiểm tra contract có thuộc room này không (FK giờ nằm ở Rooms.contract_id)
             Contracts roomContract = room.getContract();
             if (roomContract != null && !roomContract.getId().equals(contract.getId())) {
-                throw new RuntimeException("contractId không thuộc roomId đã gửi");
+                throw new InvalidRequestException("contractId không thuộc roomId đã gửi");
             }
             return contract;
         }
@@ -280,7 +284,7 @@ public class BillingService {
         try {
             return YearMonth.parse(billingMonth);
         } catch (DateTimeParseException ex) {
-            throw new RuntimeException("billingMonth phải có định dạng yyyy-MM");
+            throw new InvalidRequestException("billingMonth phải có định dạng yyyy-MM");
         }
     }
 
@@ -290,7 +294,7 @@ public class BillingService {
 
     private double requiredNumber(Double value, String fieldName) {
         if (value == null) {
-            throw new RuntimeException(fieldName + " là bắt buộc");
+            throw new InvalidRequestException(fieldName + " là bắt buộc");
         }
         return value;
     }
@@ -401,7 +405,7 @@ public class BillingService {
 
     public SuggestionBillingResponse createSuggestionBillingResponse(Long roomId) {
         Rooms currentRoom = roomsRepository.findRoomsById(roomId)
-                                           .orElseThrow(() -> new RuntimeException("Không hiển thị phòng"));
+                                           .orElseThrow(() -> new ResourceNotFoundException("Phong", roomId));
         SuggestionBillingResponse response = SuggestionBillingResponse.builder()
                 .rentPrice(currentRoom.getRentPrice())
                 .internetFee(currentRoom.getInternetFee())

@@ -14,6 +14,9 @@ import vn.edu.ptit.entity.Rooms;
 import vn.edu.ptit.entity.UtilityBills;
 import vn.edu.ptit.repository.UtilityBillsRepository;
 import vn.edu.ptit.service.Authentication.AuthService;
+import vn.edu.ptit.Exception.ResourceNotFoundException;
+import vn.edu.ptit.Exception.BusinessRuleException;
+import vn.edu.ptit.Exception.PaymentException;
 import vn.payos.PayOS;
 import vn.payos.model.v2.paymentRequests.CreatePaymentLinkRequest;
 import vn.payos.model.v2.paymentRequests.CreatePaymentLinkResponse;
@@ -41,13 +44,13 @@ public class VietQrQuickLinkService {
                 PageRequest.of(0, 1));
         UtilityBills bill = bills.stream()
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Hien tai ban chua co hoa don"));
+                .orElseThrow(() -> new ResourceNotFoundException("Hien tai ban chua co hoa don"));
 
         double amount = resolveTotalAmount(bill);
         String addInfo = buildAddInfo(bill);
         RentPayments rentPayment = bill.getRentPayment();
         if (rentPayment == null || rentPayment.getId() == null) {
-            throw new RuntimeException("Hoa don chua co ky thanh toan");
+            throw new BusinessRuleException("Hoa don chua co ky thanh toan");
         }
 
         CreatePaymentLinkResponse paymentLink = createPayOsPaymentLink(rentPayment, amount, addInfo);
@@ -76,7 +79,7 @@ public class VietQrQuickLinkService {
     private CreatePaymentLinkResponse createPayOsPaymentLink(RentPayments rentPayment, double amount, String addInfo) {
         if (!StringUtils.hasText(payOsProperties.getReturnUrl())
                 || !StringUtils.hasText(payOsProperties.getCancelUrl())) {
-            throw new RuntimeException("Chua cau hinh PayOS return/cancel URL");
+            throw new PaymentException("Chua cau hinh PayOS return/cancel URL");
         }
 
         CreatePaymentLinkRequest request = CreatePaymentLinkRequest.builder()
@@ -121,11 +124,11 @@ public class VietQrQuickLinkService {
                         .qrCode("")
                         .build();
             }
-            throw new RuntimeException("Link PayOS hien tai co trang thai " + paymentLink.getStatus());
+            throw new PaymentException("Link PayOS hien tai co trang thai " + paymentLink.getStatus());
         } catch (RuntimeException ex) {
             throw ex;
         } catch (Exception getException) {
-            throw new RuntimeException("Khong tao duoc link thanh toan PayOS: " + createException.getMessage());
+            throw new PaymentException("Khong tao duoc link thanh toan PayOS: " + createException.getMessage());
         }
     }
 

@@ -47,10 +47,10 @@ function getStatusMeta(status) {
         return { label: 'Đã cho thuê', badgeClass: 'bg-amber-500', tableClass: 'bg-amber-50 text-amber-700 border border-amber-100' };
     }
     if (normalized === 'DRAFT') {
-        return { label: 'Nháp', badgeClass: 'bg-slate-600', tableClass: 'bg-slate-100 text-slate-600 border border-slate-200' };
+        return { label: 'Chờ duyệt', badgeClass: 'bg-slate-600', tableClass: 'bg-slate-100 text-slate-600 border border-slate-200' };
     }
     if (normalized === 'INACTIVE') {
-        return { label: 'Tạm ẩn', badgeClass: 'bg-gray-500', tableClass: 'bg-gray-100 text-gray-600 border border-gray-200' };
+        return { label: 'Từ chối', badgeClass: 'bg-gray-500', tableClass: 'bg-gray-100 text-gray-600 border border-gray-200' };
     }
     return { label: normalized, badgeClass: 'bg-gray-500', tableClass: 'bg-gray-100 text-gray-600 border border-gray-200' };
 }

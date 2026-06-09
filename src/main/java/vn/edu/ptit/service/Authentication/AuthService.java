@@ -36,6 +36,8 @@ import vn.edu.ptit.repository.LandLordRepository;
 import vn.edu.ptit.repository.RefreshTokenRepository;
 import vn.edu.ptit.repository.UserRepository;
 import vn.edu.ptit.service.JWT.jwtService;
+import vn.edu.ptit.Exception.ResourceNotFoundException;
+import vn.edu.ptit.Exception.UnauthorizedException;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -143,7 +145,7 @@ public class AuthService {
                     .build();
         }
         catch (Exception e){
-            throw new RuntimeException(e);
+            throw new RuntimeException("Lỗi khi đăng xuất: " + e.getMessage(), e);
         }
     }
 
@@ -201,14 +203,16 @@ public class AuthService {
 
     public UserDTO getCurrentUser() {
         Long userId = getCurrentUserId();
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
         return UserDTO.fromEntity(user);
     }
 
     @Transactional
     public UserDTO updateCurrentUser(UpdateProfileRequest request) {
         Long userId = getCurrentUserId();
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
 
         if (StringUtils.hasText(request.getFullName())) {
             user.setFullName(request.getFullName().trim());
@@ -272,7 +276,8 @@ public class AuthService {
         }
 
         Long userId = getCurrentUserId();
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
             return ApiResponse.builder()
                     .success(false)
@@ -292,19 +297,20 @@ public class AuthService {
 
     public User getUser() {
         Long userId = getCurrentUserId();
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
         return user;
     }
 
     public Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null) {
-            throw new RuntimeException("Authentication object is null");
+            throw new UnauthorizedException("Không thể xác thực người dùng, vui lòng đăng nhập lại");
         }
         if (authentication instanceof org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) {
             OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
-            return userRepository.findByEmail(oauth2User.getAttribute("email")).orElseThrow(
-                    () -> new RuntimeException("User not found with email: " + oauth2User.getAttribute("email")))
+            return userRepository.findByEmail(oauth2User.getAttribute("email"))
+                    .orElseThrow(() -> new ResourceNotFoundException("User", "email", oauth2User.getAttribute("email")))
                     .getId();
         }
         if (authentication == null || !authentication.isAuthenticated()
@@ -316,8 +322,9 @@ public class AuthService {
 
     public LandLord getCurrentLandLord() {
         Long currentUserId = getCurrentUserId();
-        LandLord landLord = landLordRepository.findLandLordById(currentUserId).orElseThrow(() -> new RuntimeException(
-                "Bạn chưa đăng ký diện chủ nhà, vui lòng gửi yêu cầu đăng ký bạn là chủ nhà trước"));
+        LandLord landLord = landLordRepository.findLandLordById(currentUserId)
+                .orElseThrow(() -> new UnauthorizedException(
+                        "Bạn chưa đăng ký diện chủ nhà, vui lòng gửi yêu cầu đăng ký bạn là chủ nhà trước"));
         return landLord;
     }
 
@@ -339,7 +346,8 @@ public class AuthService {
     }
 
     public UserDTO getUserById(Long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User", id));
         return UserDTO.fromEntity(user);
     }
 }

@@ -10,6 +10,8 @@ import vn.edu.ptit.dto.Response.RentalRequestResponse;
 import vn.edu.ptit.entity.*;
 import vn.edu.ptit.repository.*;
 import vn.edu.ptit.service.Authentication.AuthService;
+import vn.edu.ptit.Exception.BusinessRuleException;
+import vn.edu.ptit.Exception.ResourceNotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,12 +33,12 @@ public class RentalRequestService {
 
         // Kiểm tra đã gửi yêu cầu chưa
         if (rentalRequestRepository.existsByRoomPostIdAndCustomerId(request.getRoomPostId(), currentId)) {
-            throw new RuntimeException("Bạn đã yêu cầu thuê phòng này, yêu cầu chờ chủ nhà xác nhận");
+            throw new BusinessRuleException("Bạn đã yêu cầu thuê phòng này, yêu cầu chờ chủ nhà xác nhận");
         }
 
         // Kiểm tra phòng đã có người đang thuê chưa
         if (roomsRepository.existsByRoomPostIdAndStatus(request.getRoomPostId(), Rooms.Status.RENTED)) {
-            throw new RuntimeException("Phòng này hiện đã có người thuê, vui lòng chọn phòng khác");
+            throw new BusinessRuleException("Phòng này hiện đã có người thuê, vui lòng chọn phòng khác");
         }
 
         Optional<Customer> currentCustomer = customerRepository.findById(currentId);
@@ -70,16 +72,16 @@ public class RentalRequestService {
 
     public CreateRoomManageRequest getRecommendedRentalRequest(Long requestId) {
         RentalRequests rentalRequests = rentalRequestRepository.findById(requestId)
-                                                               .orElseThrow(() -> new RuntimeException("Phòng này chưa được gửi yêu cầu thuê"));
+                                                               .orElseThrow(() -> new ResourceNotFoundException("Yeu cau thue phong", requestId));
         RoomPosts roomPost = rentalRequests.getRoomPost();
         Customer customerRef = rentalRequests.getCustomer();
         LandLord landlordRef = rentalRequests.getLandlord();
         Contracts contractRef = contractsRepository.findByCustomerIdAndLandLordId(customerRef.getId(), landlordRef.getId())
-                                                   .orElseThrow(() -> new RuntimeException("Bạn chưa làm hợp đồng, vui lòng tiến hành làm hợp đồng trước"));
+                                                   .orElseThrow(() -> new ResourceNotFoundException("Bạn chưa làm hợp đồng, vui lòng tiến hành làm hợp đồng trước"));
         
         // Kiểm tra hợp đồng đã được khách thuê ký nhận chưa
         if (!"ACTIVE".equals(contractRef.getStatus())) {
-            throw new RuntimeException("Hợp đồng chưa được khách hàng ký xác nhận. Vui lòng chờ khách hàng ký trước khi tạo phòng quản lý.");
+            throw new BusinessRuleException("Hợp đồng chưa được khách hàng ký xác nhận. Vui lòng chờ khách hàng ký trước khi tạo phòng quản lý.");
         }
 
         return CreateRoomManageRequest.builder()
@@ -194,7 +196,7 @@ public class RentalRequestService {
                               .message("Bạn đã xoá yêu cầu thuê phòng này thành công")
                               .build();
         } catch (Exception e) {
-            throw new RuntimeException("Yêu cầu chưa được thực hiện");
+            throw new BusinessRuleException("Yêu cầu chưa được thực hiện");
         }
     }
 }
