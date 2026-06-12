@@ -52,11 +52,12 @@ public class jwtService {
     }
     private String generateRefreshToken(String username) {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found"));
-        RefreshToken refreshToken = RefreshToken.builder()
-                .token(UUID.randomUUID().toString())
-                .user(user)
-                .expiredAt(LocalDateTime.now().plusSeconds(refreshTokenValiditySeconds))
-                .build();
+        RefreshToken refreshToken = refreshTokenRepository.findByUserId(user.getId())
+                .orElseGet(() -> RefreshToken.builder()
+                        .user(user)
+                        .build());
+        refreshToken.setToken(UUID.randomUUID().toString());
+        refreshToken.setExpiredAt(LocalDateTime.now().plusSeconds(refreshTokenValiditySeconds));
         refreshTokenRepository.save(refreshToken);
         return refreshToken.getToken();
     }

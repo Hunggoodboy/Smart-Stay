@@ -61,7 +61,7 @@ public class SecurityConfig {
                                                 .requestMatchers(LANDLORD_API_URLS).hasAuthority("LANDLORD")
                                                 .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
                                                 .requestMatchers("/adminVerify", "/adminDashboard", "/adminUsers",
-                                                                "/adminPosts")
+                                                                "/adminPosts", "/adminSystemStats")
                                                 .hasAuthority("ADMIN")
                                                 .requestMatchers(AUTHENTICATED_API_URLS).authenticated()
                                                 .anyRequest().authenticated())
