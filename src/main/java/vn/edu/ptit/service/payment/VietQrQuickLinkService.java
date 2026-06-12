@@ -31,6 +31,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class VietQrQuickLinkService {
 
+    public static final long PAYOS_ORDER_CODE_FACTOR = 1_000_000L;
+
     private final AuthService authService;
     private final UtilityBillsRepository utilityBillsRepository;
     private final VietQrQuickLinkProperties properties;
@@ -82,26 +84,36 @@ public class VietQrQuickLinkService {
             throw new PaymentException("Chua cau hinh PayOS return/cancel URL");
         }
 
-        CreatePaymentLinkRequest request = CreatePaymentLinkRequest.builder()
-                .orderCode(rentPayment.getId())
+        CreatePaymentLinkRequest request = buildPayOsRequest(rentPayment, amount, addInfo, rentPayment.getId());
+
+        try {
+            return payOS.paymentRequests().create(request);
+        } catch (Exception ex) {
+            return getReusablePayOsPaymentLink(rentPayment, amount, addInfo, request.getDescription(), ex);
+        }
+    }
+
+    private CreatePaymentLinkRequest buildPayOsRequest(
+            RentPayments rentPayment,
+            double amount,
+            String addInfo,
+            Long orderCode) {
+        return CreatePaymentLinkRequest.builder()
+                .orderCode(orderCode)
                 .amount((long) Math.round(amount))
                 .description(buildPayOsDescription(rentPayment, addInfo))
                 .returnUrl(payOsProperties.getReturnUrl())
                 .cancelUrl(payOsProperties.getCancelUrl())
                 .build();
-
-        try {
-            return payOS.paymentRequests().create(request);
-        } catch (Exception ex) {
-            return getReusablePayOsPaymentLink(rentPayment.getId(), amount, request.getDescription(), ex);
-        }
     }
 
     private CreatePaymentLinkResponse getReusablePayOsPaymentLink(
-            Long orderCode,
+            RentPayments rentPayment,
             double amount,
+            String addInfo,
             String description,
             Exception createException) {
+        Long orderCode = rentPayment.getId();
         try {
             PaymentLink paymentLink = payOS.paymentRequests().get(orderCode);
             if (paymentLink.getStatus() == PaymentLinkStatus.PENDING
@@ -124,12 +136,30 @@ public class VietQrQuickLinkService {
                         .qrCode("")
                         .build();
             }
+            if (isCancelledPayOsStatus(paymentLink)) {
+                CreatePaymentLinkRequest newRequest = buildPayOsRequest(
+                        rentPayment,
+                        amount,
+                        addInfo,
+                        buildRetryPayOsOrderCode(rentPayment.getId()));
+                return payOS.paymentRequests().create(newRequest);
+            }
             throw new PaymentException("Link PayOS hien tai co trang thai " + paymentLink.getStatus());
         } catch (RuntimeException ex) {
             throw ex;
         } catch (Exception getException) {
             throw new PaymentException("Khong tao duoc link thanh toan PayOS: " + createException.getMessage());
         }
+    }
+
+    private boolean isCancelledPayOsStatus(PaymentLink paymentLink) {
+        return paymentLink.getStatus() != null
+                && paymentLink.getStatus().name().toUpperCase().contains("CANCEL");
+    }
+
+    private Long buildRetryPayOsOrderCode(Long rentPaymentId) {
+        long suffix = System.currentTimeMillis() % PAYOS_ORDER_CODE_FACTOR;
+        return rentPaymentId * PAYOS_ORDER_CODE_FACTOR + suffix;
     }
 
     private double resolveTotalAmount(UtilityBills bill) {
