@@ -34,8 +34,8 @@ public class AiToolConfig {
     private final RentalRequestRepository rentalRequestRepository;
 
     @Bean
-    @Tool(description = "Tạo yêu cầu thuê phòng. Tham số bắt buộc: roomPostId (Long). " +
-            "Đối với address (String) và idCardNumber (String): NẾU người dùng chưa cung cấp trong chat, HÃY TRUYỀN NULL. " +
+    @Tool(description = "Tạo yêu cầu thuê phòng. Tham số bắt buộc: roomPostId (Long). Đối với address (String) và" +
+            " idCardNumber (String): NẾU người dùng chưa cung cấp trong chat, HÃY TRUYỀN NULL." +
             "Tuyệt đối KHÔNG tự ý hỏi người dùng CCCD/Địa chỉ trước khi gọi hàm. Hệ thống backend sẽ tự động tìm trong Database.")
     public Function<AiRentalRequest, String> createRequestRentalForAi(){
         return request -> {
@@ -79,8 +79,8 @@ public class AiToolConfig {
     }
 
     @Bean
-    @Tool(description = "Lên lịch hẹn xem phòng. Tham số: rentalRequestId (Long), " +
-            "appointmentTime (yyyy-MM-ddTHH:mm:ss), location (String), note (String, có thể null).")
+    @Tool(description = "Lên lịch hẹn xem phòng. Tham số: rentalRequestId (Long)," +
+            " appointmentTime (yyyy-MM-ddTHH:mm:ss), location (String), note (String, có thể null).")
     public Function<AiScheduleAppointmentRequest, String> scheduleAppointmentForAi() {
         return request -> {
             try {
