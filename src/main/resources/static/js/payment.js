@@ -26,7 +26,7 @@ let authToken = null;
 
         if (data.status === 'PAID') {
             if (data.orderCode) {
-                localStorage.setItem('smartstay_paid_order_code', String(data.orderCode));
+                localStorage.setItem('smartstay_paid_order_code', String(resolveRentPaymentIdFromOrderCode(Number(data.orderCode))));
             }
             renderPaidReturnState();
             return;
@@ -97,7 +97,7 @@ let authToken = null;
 
         const paymentReturn = getPayOsReturnState();
         if (paymentReturn.paid && paymentReturn.orderCode) {
-            localStorage.setItem('smartstay_paid_order_code', String(paymentReturn.orderCode));
+            localStorage.setItem('smartstay_paid_order_code', String(paymentReturn.rentPaymentId || paymentReturn.orderCode));
         }
         fetch('/api/utility-bills/newest', {
             method: 'GET',
@@ -221,16 +221,25 @@ let authToken = null;
     function getPayOsReturnState() {
         const params = new URLSearchParams(window.location.search);
         const orderCode = params.get('orderCode');
+        const orderCodeNumber = orderCode ? Number(orderCode) : null;
+        const rentPaymentId = resolveRentPaymentIdFromOrderCode(orderCodeNumber);
 
         return {
             paid: params.get('code') === '00'
                 && params.get('status') === 'PAID'
                 && params.get('cancel') === 'false',
-            orderCode: orderCode ? Number(orderCode) : null,
+            orderCode: orderCodeNumber,
+            rentPaymentId,
             matches(rentPaymentId) {
-                return !this.orderCode || Number(rentPaymentId) === this.orderCode;
+                return !this.rentPaymentId || Number(rentPaymentId) === this.rentPaymentId;
             }
         };
+    }
+
+    function resolveRentPaymentIdFromOrderCode(orderCode) {
+        return orderCode && orderCode >= 1000000
+            ? Math.floor(orderCode / 1000000)
+            : orderCode;
     }
 
     function renderPaidReturnState() {

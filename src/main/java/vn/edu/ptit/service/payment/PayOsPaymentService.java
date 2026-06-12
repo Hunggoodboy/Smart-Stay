@@ -36,7 +36,8 @@ public class PayOsPaymentService {
             throw new PaymentException("Webhook PayOS chua thanh cong");
         }
 
-        RentPayments payment = rentPaymentsRepository.findById(orderCode)
+        Long rentPaymentId = resolveRentPaymentId(orderCode);
+        RentPayments payment = rentPaymentsRepository.findById(rentPaymentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Ky thanh toan PayOS", orderCode));
 
         if (payment.getStatus() == RentPayments.Status.PAID) {
@@ -68,5 +69,12 @@ public class PayOsPaymentService {
         }
 
         rentPaymentsRepository.save(payment);
+    }
+
+    private Long resolveRentPaymentId(Long orderCode) {
+        if (orderCode >= VietQrQuickLinkService.PAYOS_ORDER_CODE_FACTOR) {
+            return orderCode / VietQrQuickLinkService.PAYOS_ORDER_CODE_FACTOR;
+        }
+        return orderCode;
     }
 }
