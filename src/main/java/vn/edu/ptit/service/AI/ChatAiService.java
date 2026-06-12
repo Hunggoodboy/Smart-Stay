@@ -171,7 +171,7 @@ public class ChatAiService {
         String answer = similarDocuments.stream().map(docs -> {
             String roomId = docs.getMetadata().get("roomId").toString();
             String content = docs.getText();
-            String url = "\nLink: http://localhost:8081/room-detail?id=" + roomId;
+            String url = "\nLink: http://localhost:8081/rooms?id=" + roomId;
             return content + url;
         }).collect(Collectors.joining("\n"));
         return answer;

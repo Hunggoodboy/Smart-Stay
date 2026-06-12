@@ -33,6 +33,7 @@ public class BillingService {
     private final UtilityBillsRepository utilityBillsRepository;
     private final RentPaymentsRepository rentPaymentsRepository;
     private final AuthService authService;
+    private final CustomerRepository customerRepository;
     private final UserRepository userRepository;
     @Transactional(readOnly = true)
     public MonthlyBillResponse previewBill(MonthlyBillRequest request) {
@@ -97,7 +98,7 @@ public class BillingService {
 
         utilityBill = utilityBillsRepository.save(utilityBill);
 
-        User currentCustomer = userRepository.findById(result.contract.getCustomer().getId())
+        Customer currentCustomer = customerRepository.findById(result.contract.getCustomer().getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Customer", result.contract.getCustomer().getId()));
 
 

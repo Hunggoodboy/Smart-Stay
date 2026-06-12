@@ -20,7 +20,8 @@ public interface RentalRequestRepository extends JpaRepository<RentalRequests, L
             "where (r.landlord.id = :userId or r.customer.id = :userId) and r.deletedAt is null " +
             "order by r.createdAt desc")
     List<Object[]> findAllWithRoomPostAndCustomer(@Param("userId") Long userId);
-
+    List<RentalRequests> findByLandlordId(Long LandlordId);
+    List<RentalRequests> findByCustomerId(Long CustomerId);
     boolean existsByRoomPostIdAndCustomerId(Long roomId, Long customerId);
 
     Optional<RentalRequests> findByRoomPostIdAndCustomerId(@Param("roomId") Long roomId, @Param("customerId") Long customerId);

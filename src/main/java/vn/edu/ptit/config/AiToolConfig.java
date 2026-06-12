@@ -140,6 +140,43 @@ public class AiToolConfig {
     }
 
     @Bean
+    @Tool(description = "Sử dụng hàm này để lấy danh sách các yêu cầu thuê phòng của người dùng hiện tại. \" +\n" +
+            "             \"Gọi hàm này TRƯỚC khi lên lịch hẹn để lấy danh sách rentalRequestId. \" +\n" +
+            "             \"Không cần tham số đầu vào")
+    public Function<AiEmptyRequest, String> getRentalRequestsForAi() {
+        return request -> {
+            try {
+                Long userId = authService.getCurrentUserId();
+                List<RentalRequests> todayRequests = rentalRequestRepository.findTodayRequestsByUserId(userId);
+
+                if (todayRequests.isEmpty()) {
+                    return "Hôm nay chưa có yêu cầu thuê phòng nào.";
+                }
+
+                StringBuilder sb = new StringBuilder();
+                sb.append("Danh sách yêu cầu thuê phòng hôm nay (").append(todayRequests.size()).append(" yêu cầu):\n\n");
+
+                for (int i = 0; i < todayRequests.size(); i++) {
+                    RentalRequests rr = todayRequests.get(i);
+                    sb.append(i + 1).append(". ");
+                    sb.append("ID yêu cầu: ").append(rr.getId());
+                    sb.append(" | Phòng: ").append(rr.getRoomPost() != null ? rr.getRoomPost().getTitle() : "N/A");
+                    sb.append(" | Khách: ").append(rr.getCustomer() != null ? rr.getCustomer().getFullName() : "N/A");
+                    sb.append(" | Chủ nhà: ").append(rr.getLandlord() != null ? rr.getLandlord().getFullName() : "N/A");
+                    sb.append(" | Trạng thái: ").append(rr.getStatus());
+                    sb.append(" | Thời gian gửi: ").append(rr.getCreatedAt() != null ?
+                            rr.getCreatedAt().format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")) : "N/A");
+                    sb.append("\n");
+                }
+
+                return sb.toString();
+            } catch (Exception e) {
+                return "Không thể lấy danh sách yêu cầu thuê hôm nay: " + e.getMessage();
+            }
+        };
+    }
+
+    @Bean
     @Tool(description = "Sử dụng hàm này khi người dùng muốn duyệt (chấp nhận) hoặc từ chối yêu cầu thuê phòng. " +
                  "Cần truyền rentalRequestId (ID yêu cầu thuê) và action (APPROVED để duyệt, REJECTED để từ chối)")
     public Function<AiApproveRentalRequest, String> approveRentalRequestForAi() {

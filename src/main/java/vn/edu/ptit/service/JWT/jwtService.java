@@ -50,6 +50,7 @@ public class jwtService {
                 .expiration(expiryDate)
                 .compact();
     }
+
     private String generateRefreshToken(String username) {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found"));
         RefreshToken refreshToken = refreshTokenRepository.findByUserId(user.getId())

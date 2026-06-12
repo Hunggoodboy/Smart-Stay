@@ -107,10 +107,30 @@ public class RentalRequestService {
                     .build();
     }
 
-    public List<RentalRequestResponse> findRentalRequestByLandLordId() {
-        LandLord landLord = authService.getCurrentLandLord();
-        List<Object[]> rentalRequestsList = rentalRequestRepository.findAllWithRoomPostAndCustomer(landLord.getId());
-        return mapToResponse(rentalRequestsList);
+    public List<RentalRequestResponse> findRentalRequestByUser() {
+        Long currentUserId = authService.getCurrentUserId();
+        if (authService.getUser() instanceof Customer) {
+            User user = authService.getUser();
+            return rentalRequestRepository.findByCustomerId(currentUserId)
+                    .stream()
+                    .map(currentRental -> {
+                        return RentalRequestResponse.builder()
+                                .contractId(currentRental.getContract().getId())
+                                .status(currentRental.getStatus())
+                                .reviewedAt(currentRental.getReviewedAt())
+                                .createdAt(currentRental.getCreatedAt())
+                                .customer(RentalRequestResponse.UserInfo.builder().
+                                        fullName(user.getFullName())
+                                        .build())
+                                .landlord(RentalRequestResponse.UserInfo.builder().
+                                        fullName(currentRental.getLandlord().getFullName())
+                                        .build())
+                                .contractStatus(currentRental.getContract().getStatus())
+                                .build();
+                    })
+                    .collect(Collectors.toList());
+        }
+        return null;
     }
 
     /**
@@ -119,8 +139,49 @@ public class RentalRequestService {
      */
     public List<RentalRequestResponse> findMyRequests() {
         Long currentUserId = authService.getCurrentUserId();
-        List<Object[]> rentalRequestsList = rentalRequestRepository.findAllWithRoomPostAndCustomer(currentUserId);
-        return mapToResponse(rentalRequestsList);
+        if(authService.getUser() instanceof Customer){
+            User user = authService.getUser();
+            return rentalRequestRepository.findByCustomerId(currentUserId)
+                    .stream()
+                    .map(currentRental -> {
+                        return RentalRequestResponse.builder()
+                                .contractId(currentRental.getContract().getId())
+                                .status(currentRental.getStatus())
+                                .reviewedAt(currentRental.getReviewedAt())
+                                .createdAt(currentRental.getCreatedAt())
+                                .customer(RentalRequestResponse.UserInfo.builder().
+                                fullName(user.getFullName())
+                                        .build())
+                                .landlord(RentalRequestResponse.UserInfo.builder().
+                                        fullName(currentRental.getLandlord().getFullName())
+                                        .build())
+                                .contractStatus(currentRental.getContract().getStatus())
+                                .build();
+                    })
+                    .collect(Collectors.toList());
+        }
+        if(authService.getUser() instanceof LandLord){
+            User user = authService.getUser();
+            return rentalRequestRepository.findByLandlordId(currentUserId)
+                    .stream()
+                    .map(currentRental -> {
+                        return RentalRequestResponse.builder()
+                                .contractId(currentRental.getContract().getId())
+                                .status(currentRental.getStatus())
+                                .reviewedAt(currentRental.getReviewedAt())
+                                .createdAt(currentRental.getCreatedAt())
+                                .customer(RentalRequestResponse.UserInfo.builder().
+                                        fullName(currentRental.getCustomer().getFullName())
+                                        .build())
+                                .landlord(RentalRequestResponse.UserInfo.builder().
+                                        fullName(user.getFullName())
+                                        .build())
+                                .contractStatus(currentRental.getContract().getStatus())
+                                .build();
+                    })
+                    .collect(Collectors.toList());
+        }
+        return null;
     }
 
     private List<RentalRequestResponse> mapToResponse(List<Object[]> rentalRequestsList) {
