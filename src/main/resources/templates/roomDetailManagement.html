@@ -533,8 +533,11 @@
         document.getElementById('d-city').textContent = r.city || '—';
 
         // Khách thuê hiện tại
+        const hasActiveTenant = r.userName || r.status === 'RENTED' || r.status === 'OCCUPIED';
         if (r.userName) {
             document.getElementById('tenant-card-wrap').innerHTML = `<div class="tenant-card"><div class="tenant-avatar">${getInitials(r.userName)}</div><div><div class="tenant-name">${esc(r.userName)}</div><div class="tenant-email">${esc(r.userEmail||'')}</div></div></div>`;
+        } else if (hasActiveTenant) {
+            document.getElementById('tenant-card-wrap').innerHTML = `<div style="padding:0.75rem 1rem;background:var(--amber-bg);border:1.5px solid var(--amber-bd);border-radius:0.75rem;font-size:0.8rem;color:var(--amber);font-weight:700;">⚠️ Phòng đang cho thuê — đang tải thông tin khách thuê...</div>`;
         } else {
             document.getElementById('tenant-card-wrap').innerHTML = `<div style="padding:0.75rem 1rem;background:var(--success-bg);border:1.5px solid var(--success-bd);border-radius:0.75rem;font-size:0.8rem;color:var(--success);font-weight:700;">Phòng hiện đang trống — sẵn sàng cho thuê</div>`;
         }
@@ -786,11 +789,16 @@
 
     // Xem trước Hóa đơn (Gọi /preview API)
     async function previewInvoice() {
+        // Chặn nếu phòng chưa có khách thuê
+        if (!currentRoom || (!currentRoom.userName && currentRoom.status !== 'RENTED' && currentRoom.status !== 'OCCUPIED')) {
+            showToast('⚠️ Phòng chưa có khách thuê — không thể lập hóa đơn', 'error');
+            return;
+        }
         const payload = getInvoicePayload();
 
-        if(!payload.billingMonth) { showToast("Vui lòng chọn kỳ tháng", "error"); return; }
-        if(isNaN(payload.electricityNewIndex) || isNaN(payload.waterNewIndex)) {
-            showToast("Vui lòng nhập đầy đủ chỉ số Điện/Nước MỚI", "error"); return;
+        if(!payload.billingMonth) { showToast('Vui lòng chọn kỳ tháng', 'error'); return; }
+        if(payload.electricityNewIndex === null || payload.waterNewIndex === null) {
+            showToast('Vui lòng nhập đầy đủ chỉ số Điện/Nước MỚI', 'error'); return;
         }
 
         try {
