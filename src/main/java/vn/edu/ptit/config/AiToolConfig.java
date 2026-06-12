@@ -34,21 +34,37 @@ public class AiToolConfig {
     private final RentalRequestRepository rentalRequestRepository;
 
     @Bean
-    @Tool(description = "Tạo yêu cầu thuê phòng. Tham số: roomPostId (Long), " +
-            "address (String - địa chỉ người dùng, null nếu chưa cung cấp), " +
-            "idCardNumber (String - CCCD, null nếu chưa cung cấp).")
+    @Tool(description = "Tạo yêu cầu thuê phòng. Tham số bắt buộc: roomPostId (Long). " +
+            "Đối với address (String) và idCardNumber (String): NẾU người dùng chưa cung cấp trong chat, HÃY TRUYỀN NULL. " +
+            "Tuyệt đối KHÔNG tự ý hỏi người dùng CCCD/Địa chỉ trước khi gọi hàm. Hệ thống backend sẽ tự động tìm trong Database.")
     public Function<AiRentalRequest, String> createRequestRentalForAi(){
         return request -> {
             RentalRequestDTO rentalRequestDTO = new RentalRequestDTO();
             User user = authService.getUser();
+            String currentAddress = null;
+            String currentIdCard = null;
+            if (user instanceof Customer customer) {
+                currentAddress = customer.getAddress();
+                currentIdCard = customer.getIdCardNumber();
+            } else if (user instanceof vn.edu.ptit.entity.LandLord landLord) {
+                // Nếu là chủ nhà đi thuê phòng thì lấy thông tin của chủ nhà
+                currentAddress = landLord.getAddress();
+                currentIdCard = landLord.getIdCardNumber();
+            }
+
+            // 2. Ưu tiên dùng thông tin trong DB, nếu DB trống thì mới lấy từ AI (người dùng chat)
+            String finalAddress = (currentAddress != null && !currentAddress.isBlank()) ? currentAddress : request.address();
+            String finalIdCard = (currentIdCard != null && !currentIdCard.isBlank()) ? currentIdCard : request.idCardNumber();
+
+            // 3. Nếu cả DB lẫn AI đều không có thông tin -> Trả lỗi bắt AI đi đòi người dùng
+            if (finalAddress == null || finalAddress.isBlank() || finalIdCard == null || finalIdCard.isBlank()) {
+                return "Hệ thống: Người dùng này chưa cập nhật đầy đủ Địa chỉ và CCCD. " +
+                        "Bạn (AI) hãy phản hồi lại người dùng: 'Để tạo yêu cầu thuê phòng, bạn cần cung cấp thêm Địa chỉ và Số CCCD để hoàn thiện tài khoản. Vui lòng cung cấp thông tin này cho tôi nhé.'";
+            }
             if(! (user instanceof Customer)){
-                if (request.address() == null || request.idCardNumber() == null) {
-                    return "Hệ thống: Người dùng này chưa được nâng cấp thành Khách hàng. " +
-                            "Bạn (AI) hãy phản hồi lại người dùng: 'Để thuê phòng, bạn cần cung cấp thêm Địa chỉ và Số CCCD để nâng cấp tài khoản. Vui lòng cung cấp cho tôi nhé.'";
-                }
                 authService.upgradeCustomer(UpgradeCustomerRequest.builder()
-                        .idCardNumber(request.idCardNumber())
-                        .address(request.address())
+                        .idCardNumber(finalIdCard)
+                        .address(finalAddress)
                         .build());
             }
             try {
@@ -142,9 +158,9 @@ public class AiToolConfig {
     public Function<AiEmptyRequest, String> getRentalRequestsForAi() {
         return request -> {
             try {
-                List<RentalRequestResponse> requests = rentalRequestService.findRentalRequestByUser();
+                List<RentalRequestResponse> requests = rentalRequestService.findMyRequests();
 
-                if (requests.isEmpty()) {
+                if (requests == null || requests.isEmpty()) {
                     return "Bạn chưa có yêu cầu thuê phòng nào.";
                 }
 
@@ -152,7 +168,9 @@ public class AiToolConfig {
                 sb.append("Danh sách yêu cầu thuê phòng (").append(requests.size()).append(" yêu cầu):\n\n");
 
                 for (int i = 0; i < requests.size(); i++) {
+                    System.out.println();
                     RentalRequestResponse rr = requests.get(i);
+                    System.out.println(rr);
                     sb.append(i + 1).append(". ");
                     sb.append("ID yêu cầu: ").append(rr.getId());
                     sb.append(" | Phòng: ").append(rr.getRoomPost() != null ? rr.getRoomPost().getTitle() : "N/A");

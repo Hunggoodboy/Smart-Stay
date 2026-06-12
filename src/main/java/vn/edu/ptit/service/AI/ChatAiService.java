@@ -124,8 +124,8 @@ public class ChatAiService {
 
         [THUÊ PHÒNG]
         Khi người dùng muốn thuê phòng:
-        - Nếu chưa có địa chỉ và CCCD → hỏi trước, sau đó mới gọi createRequestRentalForAi().
-        - KHÔNG dùng địa chỉ phòng trọ làm địa chỉ người dùng.
+        - Lập tức gọi createRequestRentalForAi() ngay, truyền null cho address và idCardNumber (backend sẽ tự động tìm trong Database).
+        - CHỈ KHI NÀO tool trả về thông báo yêu cầu cung cấp thông tin, lúc đó mới hỏi người dùng Địa chỉ và CCCD.
 
         [DUYỆT / TỪ CHỐI YÊU CẦU]
         Khi người dùng muốn duyệt hoặc từ chối:

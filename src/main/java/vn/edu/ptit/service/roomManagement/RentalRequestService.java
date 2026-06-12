@@ -115,6 +115,7 @@ public class RentalRequestService {
                     .stream()
                     .map(currentRental -> {
                         return RentalRequestResponse.builder()
+                                .id(currentRental.getId())
                                 .contractId(currentRental.getContract().getId())
                                 .status(currentRental.getStatus())
                                 .reviewedAt(currentRental.getReviewedAt())
