@@ -139,8 +139,6 @@ public class BillingService {
 //            throw new RuntimeException("Không tìm thấy phòng với id = " + request.getRoomId());
 //        }
         Contracts contract = resolveContract(request, room);
-        System.out.println(contract.getRoom());
-        System.out.println(contract.getContractCode());
         UtilityBills previousBill = resolvePreviousBill(room.getId(), request.getBillingMonth());
 
         double electricityOldIndex = request.getElectricityOldIndex() != null
@@ -181,8 +179,8 @@ public class BillingService {
         double cleaningFee = request.getCleaningFee() != null ? request.getCleaningFee() : safe(room.getCleaningFee());
         double otherFee = request.getOtherFee() != null ? request.getOtherFee() : 0.0;
 
-        double serviceAmount = round(internetFee + parkingFee + cleaningFee + otherFee);
-        double utilityAmount = round(electricityAmount + waterAmount + serviceAmount);
+        double serviceAmount = round(internetFee + parkingFee + cleaningFee);
+        double utilityAmount = round(electricityAmount + waterAmount + serviceAmount + otherFee);
 
         double rentAmount = contract != null
                 ? round(safe(contract.getMonthlyRent()))

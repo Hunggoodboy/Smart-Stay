@@ -188,7 +188,13 @@ if (formLogin) {
                 localStorage.setItem('smartstay_token', data.accessToken);
             }
             showMessage(loginMessage, data && data.message ? data.message : 'Đăng nhập thành công.', true);
-            window.location.href = '/';
+            
+            // Chuyển hướng dựa trên vai trò (Role) của người dùng
+            if (data && data.user && data.user.role === 'ADMIN') {
+                window.location.href = '/adminDashboard';
+            } else {
+                window.location.href = '/';
+            }
         } catch (error) {
             showMessage(loginMessage, error.message, false);
         } finally {
@@ -198,6 +204,23 @@ if (formLogin) {
     });
 }
 
+
+// Kiểm tra nếu đã đăng nhập thì tự động chuyển hướng, tránh hiện lại trang Login/Register
+const currentToken = localStorage.getItem('smartstay_token');
+const currentUserStr = localStorage.getItem('smartstay_user');
+if (currentToken && currentUserStr) {
+    try {
+        const user = JSON.parse(currentUserStr);
+        if (user && user.role === 'ADMIN') {
+            window.location.href = '/adminDashboard';
+        } else {
+            window.location.href = '/';
+        }
+    } catch (e) {
+        localStorage.removeItem('smartstay_token');
+        localStorage.removeItem('smartstay_user');
+    }
+}
 
 // Khởi tạo trạng thái ban đầu
 if (window.location.pathname === '/register') {
