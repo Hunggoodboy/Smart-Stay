@@ -134,6 +134,23 @@ function setProfileFormValue(id, value) {
     if (node) node.value = value || '';
 }
 
+let profileAvatarObjectUrl = null;
+
+function getDefaultAvatarUrl(name) {
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'User')}&background=eff6ff&color=1d4ed8`;
+}
+
+function setProfileAvatarPreview(src, label) {
+    const preview = document.getElementById('profile-avatar-preview');
+    const nameBox = document.getElementById('profile-avatar-name');
+    if (preview) {
+        preview.src = src || getDefaultAvatarUrl(document.getElementById('profile-full-name')?.value || 'User');
+    }
+    if (nameBox) {
+        nameBox.textContent = label || 'JPG, PNG, WEBP hoặc GIF, tối đa 5MB';
+    }
+}
+
 function fillProfileForm(data) {
     setProfileFormValue('profile-full-name', data.fullName);
     setProfileFormValue('profile-email', data.email);
@@ -142,7 +159,9 @@ function fillProfileForm(data) {
     setProfileFormValue('profile-date-of-birth', data.dateOfBirth);
     setProfileFormValue('profile-id-card', data.idCardNumber);
     setProfileFormValue('profile-address', data.address);
-    setProfileFormValue('profile-avatar-url', data.avatarUrl);
+    const avatarFile = document.getElementById('profile-avatar-file');
+    if (avatarFile) avatarFile.value = '';
+    setProfileAvatarPreview(data.avatarUrl || getDefaultAvatarUrl(data.fullName || data.username), data.avatarUrl ? 'Đang dùng ảnh đại diện hiện tại' : undefined);
 }
 
 async function fetchCurrentProfile() {
@@ -260,16 +279,22 @@ async function submitProfileForm(event) {
     event.preventDefault();
     const submitButton = document.getElementById('profile-submit');
     const token = localStorage.getItem('smartstay_token');
-    const payload = {
-        fullName: document.getElementById('profile-full-name')?.value.trim(),
-        email: document.getElementById('profile-email')?.value.trim(),
-        phoneNumber: document.getElementById('profile-phone')?.value.trim(),
-        gender: document.getElementById('profile-gender')?.value,
-        dateOfBirth: document.getElementById('profile-date-of-birth')?.value || null,
-        idCardNumber: document.getElementById('profile-id-card')?.value.trim(),
-        address: document.getElementById('profile-address')?.value.trim(),
-        avatarUrl: document.getElementById('profile-avatar-url')?.value.trim()
-    };
+    const payload = new FormData();
+    payload.append('fullName', document.getElementById('profile-full-name')?.value.trim() || '');
+    payload.append('email', document.getElementById('profile-email')?.value.trim() || '');
+    payload.append('phoneNumber', document.getElementById('profile-phone')?.value.trim() || '');
+    payload.append('gender', document.getElementById('profile-gender')?.value || '');
+    const dateOfBirth = document.getElementById('profile-date-of-birth')?.value;
+    if (dateOfBirth) {
+        payload.append('dateOfBirth', dateOfBirth);
+    }
+    payload.append('idCardNumber', document.getElementById('profile-id-card')?.value.trim() || '');
+    payload.append('address', document.getElementById('profile-address')?.value.trim() || '');
+
+    const avatarFile = document.getElementById('profile-avatar-file')?.files?.[0];
+    if (avatarFile) {
+        payload.append('avatarFile', avatarFile);
+    }
 
     if (submitButton) {
         submitButton.disabled = true;
@@ -280,14 +305,14 @@ async function submitProfileForm(event) {
         const res = await fetch('/api/user/profile', {
             method: 'PUT',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': token ? `Bearer ${token}` : ''
             },
             credentials: 'include',
-            body: JSON.stringify(payload)
+            body: payload
         });
         if (!res.ok) {
-            throw new Error('Không thể cập nhật thông tin cá nhân');
+            const errorBody = await res.json().catch(() => null);
+            throw new Error(errorBody?.message || 'Không thể cập nhật thông tin cá nhân');
         }
         currentProfileData = await res.json();
         localStorage.setItem('smartstay_user', JSON.stringify(currentProfileData));
@@ -308,6 +333,35 @@ async function submitProfileForm(event) {
 const profileForm = document.getElementById('profile-form');
 if (profileForm) {
     profileForm.addEventListener('submit', submitProfileForm);
+}
+
+const profileAvatarFile = document.getElementById('profile-avatar-file');
+if (profileAvatarFile) {
+    profileAvatarFile.addEventListener('change', function () {
+        const file = profileAvatarFile.files && profileAvatarFile.files[0];
+        if (!file) {
+            setProfileAvatarPreview(currentProfileData?.avatarUrl || getDefaultAvatarUrl(currentProfileData?.fullName));
+            return;
+        }
+        if (!file.type || !file.type.startsWith('image/')) {
+            profileAvatarFile.value = '';
+            showProfileMessage('File ảnh đại diện phải là ảnh hợp lệ', true);
+            setProfileAvatarPreview(currentProfileData?.avatarUrl || getDefaultAvatarUrl(currentProfileData?.fullName));
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            profileAvatarFile.value = '';
+            showProfileMessage('Ảnh đại diện không được vượt quá 5MB', true);
+            setProfileAvatarPreview(currentProfileData?.avatarUrl || getDefaultAvatarUrl(currentProfileData?.fullName));
+            return;
+        }
+        if (profileAvatarObjectUrl) {
+            URL.revokeObjectURL(profileAvatarObjectUrl);
+        }
+        profileAvatarObjectUrl = URL.createObjectURL(file);
+        setProfileAvatarPreview(profileAvatarObjectUrl, file.name);
+        resetInlineMessage('profile-message');
+    });
 }
 
 const passwordForm = document.getElementById('password-form');
