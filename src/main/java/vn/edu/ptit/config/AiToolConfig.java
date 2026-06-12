@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import vn.edu.ptit.dto.Request.*;
 import vn.edu.ptit.dto.Response.ApiResponse;
 import vn.edu.ptit.dto.Response.AppointmentResponse;
+import vn.edu.ptit.dto.Response.RentalRequestResponse;
 import vn.edu.ptit.entity.Customer;
 import vn.edu.ptit.entity.RentalRequests;
 import vn.edu.ptit.entity.User;
@@ -33,10 +34,9 @@ public class AiToolConfig {
     private final RentalRequestRepository rentalRequestRepository;
 
     @Bean
-    @Tool(description = "Sử dụng hàm này khi người dùng yêu cầu thuê phòng. Bắt buộc truyền roomPostId. " +
-            "Tham số 'address' là ĐỊA CHỈ NƠI Ở CỦA NGƯỜI DÙNG (Tuyệt đối KHÔNG sử dụng địa chỉ của phòng trọ/căn hộ). " +
-            "Tham số 'idCardNumber' là số CCCD/CMND của người dùng. " +
-            "NẾU người dùng CHƯA cung cấp rõ ràng thông tin cá nhân (địa chỉ và CCCD) trong câu chat, BẮT BUỘC để trống (null) cả 2 trường này.")
+    @Tool(description = "Tạo yêu cầu thuê phòng. Tham số: roomPostId (Long), " +
+            "address (String - địa chỉ người dùng, null nếu chưa cung cấp), " +
+            "idCardNumber (String - CCCD, null nếu chưa cung cấp).")
     public Function<AiRentalRequest, String> createRequestRentalForAi(){
         return request -> {
             RentalRequestDTO rentalRequestDTO = new RentalRequestDTO();
@@ -63,9 +63,8 @@ public class AiToolConfig {
     }
 
     @Bean
-    @Tool(description = "Sử dụng hàm này khi người dùng muốn lên lịch hẹn xem phòng với chủ nhà hoặc khách hàng. " +
-                 "Cần truyền rentalRequestId (ID yêu cầu thuê), appointmentTime (thời gian hẹn dạng yyyy-MM-ddTHH:mm:ss), " +
-                 "location (địa điểm hẹn), note (ghi chú, có thể để trống)")
+    @Tool(description = "Lên lịch hẹn xem phòng. Tham số: rentalRequestId (Long), " +
+            "appointmentTime (yyyy-MM-ddTHH:mm:ss), location (String), note (String, có thể null).")
     public Function<AiScheduleAppointmentRequest, String> scheduleAppointmentForAi() {
         return request -> {
             try {
@@ -104,8 +103,7 @@ public class AiToolConfig {
     }
 
     @Bean
-    @Tool(description = "Sử dụng hàm này khi người dùng muốn xem tất cả các yêu cầu thuê phòng được gửi hôm nay. " +
-                 "Không cần truyền tham số nào.")
+    @Tool(description = "Lấy danh sách yêu cầu thuê phòng được gửi hôm nay. Không cần tham số.")
     public Function<AiEmptyRequest, String> getTodayRentalRequestsForAi() {
         return request -> {
             try {
@@ -140,24 +138,21 @@ public class AiToolConfig {
     }
 
     @Bean
-    @Tool(description = "Sử dụng hàm này để lấy danh sách các yêu cầu thuê phòng của người dùng hiện tại. \" +\n" +
-            "             \"Gọi hàm này TRƯỚC khi lên lịch hẹn để lấy danh sách rentalRequestId. \" +\n" +
-            "             \"Không cần tham số đầu vào")
+    @Tool(description = "Lấy danh sách yêu cầu thuê phòng của người dùng hiện tại. Không cần tham số.")
     public Function<AiEmptyRequest, String> getRentalRequestsForAi() {
         return request -> {
             try {
-                Long userId = authService.getCurrentUserId();
-                List<RentalRequests> todayRequests = rentalRequestRepository.findTodayRequestsByUserId(userId);
+                List<RentalRequestResponse> requests = rentalRequestService.findRentalRequestByUser();
 
-                if (todayRequests.isEmpty()) {
-                    return "Hôm nay chưa có yêu cầu thuê phòng nào.";
+                if (requests.isEmpty()) {
+                    return "Bạn chưa có yêu cầu thuê phòng nào.";
                 }
 
                 StringBuilder sb = new StringBuilder();
-                sb.append("Danh sách yêu cầu thuê phòng hôm nay (").append(todayRequests.size()).append(" yêu cầu):\n\n");
+                sb.append("Danh sách yêu cầu thuê phòng (").append(requests.size()).append(" yêu cầu):\n\n");
 
-                for (int i = 0; i < todayRequests.size(); i++) {
-                    RentalRequests rr = todayRequests.get(i);
+                for (int i = 0; i < requests.size(); i++) {
+                    RentalRequestResponse rr = requests.get(i);
                     sb.append(i + 1).append(". ");
                     sb.append("ID yêu cầu: ").append(rr.getId());
                     sb.append(" | Phòng: ").append(rr.getRoomPost() != null ? rr.getRoomPost().getTitle() : "N/A");
@@ -171,14 +166,13 @@ public class AiToolConfig {
 
                 return sb.toString();
             } catch (Exception e) {
-                return "Không thể lấy danh sách yêu cầu thuê hôm nay: " + e.getMessage();
+                return "Không thể lấy danh sách yêu cầu thuê: " + e.getMessage();
             }
         };
     }
 
     @Bean
-    @Tool(description = "Sử dụng hàm này khi người dùng muốn duyệt (chấp nhận) hoặc từ chối yêu cầu thuê phòng. " +
-                 "Cần truyền rentalRequestId (ID yêu cầu thuê) và action (APPROVED để duyệt, REJECTED để từ chối)")
+    @Tool(description = "Duyệt hoặc từ chối yêu cầu thuê. Tham số: rentalRequestId (Long), action (APPROVED | REJECTED).")
     public Function<AiApproveRentalRequest, String> approveRentalRequestForAi() {
         return request -> {
             try {

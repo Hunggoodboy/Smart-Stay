@@ -58,6 +58,7 @@ public class jwtService {
                         .user(user)
                         .build());
         refreshToken.setToken(UUID.randomUUID().toString());
+        refreshToken.setCreatedAt(LocalDateTime.now());
         refreshToken.setExpiredAt(LocalDateTime.now().plusSeconds(refreshTokenValiditySeconds));
         refreshTokenRepository.save(refreshToken);
         return refreshToken.getToken();

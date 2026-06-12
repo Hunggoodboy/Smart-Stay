@@ -484,8 +484,8 @@
 
     function populatePage(r) {
         if(!r) return;
-        document.getElementById('hero-room-num').textContent = 'Phòng ' + (r.roomNumber || r.id);
-        document.getElementById('hero-room-number').textContent = 'Phòng ' + esc(r.roomNumber);
+        document.getElementById('hero-room-num').textContent = r.title || r.name || (r.roomNumber ? 'Phòng ' + r.roomNumber : 'Chi tiết phòng');
+        document.getElementById('hero-room-number').textContent = r.title || r.name || (r.roomNumber ? 'Phòng ' + esc(r.roomNumber) : 'Chi tiết phòng');
         document.getElementById('hero-room-type-text').textContent = (r.roomType || '').replace(/_/g,' ');
         document.getElementById('hero-price').textContent = r.rentPrice ? Number(r.rentPrice).toLocaleString('vi-VN') : '—';
         document.getElementById('hero-address').textContent = r.address || '—';

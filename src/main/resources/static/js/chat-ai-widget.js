@@ -568,19 +568,26 @@
     }
 
     function formatMessage(text) {
-        // 1. Escape HTML cơ bản để chống lỗi hiển thị và XSS
-        let safeText = text
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/\n/g, "<br>");
+        // AI response có thể chứa thẻ HTML hợp lệ (ví dụ: <a href="...">Xem chi tiết tại đây</a>)
+        // Không escape HTML để giữ nguyên thẻ <a>, nhưng cần xử lý ngắt dòng
 
-        // 2. Dùng Regex tự động tìm URL bắt đầu bằng http hoặc https và bọc thẻ <a>
-        const urlRegex = /(https?:\/\/[^\s<]+)/g;
-        return safeText.replace(urlRegex, function(url) {
-            return `<a href="${url}" target="_blank" style="color: #3b82f6; text-decoration: underline; font-weight: 600;">Xem chi tiết tại đây</a>`;
+        // 1. Style các thẻ <a> trong response
+        let result = text.replace(/<a\s+href="([^"]+)"[^>]*>(.*?)<\/a>/gi, function(match, href, linkText) {
+            // Đảm bảo URL đúng định dạng (dùng path đồng nhất)
+            const cleanHref = href.replace(/\?id=(\d+)$/, '/$1');
+            return `<a href="${cleanHref}" target="_blank" style="color: #60a5fa; text-decoration: underline; font-weight: 600;">${linkText || 'Xem chi tiết tại đây'}</a>`;
         });
+
+        // 2. Xử lý URL thần (không nằm trong thẻ <a>) - bắt đầu bằng http/https
+        result = result.replace(/(?<!["'])(https?:\/\/[^\s<"']+)(?![^<]*<\/a>)/g, function(url) {
+            const cleanUrl = url.replace(/\?id=(\d+)$/, '/$1');
+            return `<a href="${cleanUrl}" target="_blank" style="color: #60a5fa; text-decoration: underline; font-weight: 600;">Xem chi tiết tại đây</a>`;
+        });
+
+        // 3. Chuyển ngắt dòng thành <br>
+        result = result.replace(/\n/g, '<br>');
+
+        return result;
     }
 
     function generateUUID() {

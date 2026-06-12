@@ -27,7 +27,9 @@ public class RefreshToken {
     @Column(nullable = false)
     private LocalDateTime expiredAt;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private LocalDateTime createdAt;
+
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 }

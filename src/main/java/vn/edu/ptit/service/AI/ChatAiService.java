@@ -38,7 +38,7 @@ public class ChatAiService {
     private final AuthService  authService;
     public ChatAiService(ChatClient.Builder chatClient,  VectorStore vectorStore, ChatAiHistoryRepository chatAiHistoryRepository, AuthService authService) {
         this.chatClient = chatClient
-                .defaultToolNames("createRequestRentalForAi", "scheduleAppointmentForAi", "getTodayRentalRequestsForAi", "approveRentalRequestForAi")
+                .defaultToolNames("createRequestRentalForAi", "scheduleAppointmentForAi","getRentalRequestsForAi", "getTodayRentalRequestsForAi", "approveRentalRequestForAi")
                 .build();
         this.vectorStore = vectorStore;
         this.chatAiHistoryRepository = chatAiHistoryRepository;
@@ -103,13 +103,35 @@ public class ChatAiService {
         }
     }
 
-        private List<Message> getListMessages(String conversationId, String currentQuestionWithRag) {
+    private List<Message> getListMessages(String conversationId, String currentQuestionWithRag) {
         List<Message> messages = new ArrayList<>();
-        messages.add(new SystemMessage("Bạn là trợ lý của một trang web cho thuê phòng trọ, dưới đây là lịch sử trò chuyện" +
-                "giữa bạn và người dùng, bạn hãy xem lại và trả lời câu hỏi của người dùng thật thông minh và chính xác"+
-                ". Bạn sẽ trả lời các câu hỏi của người dùng về việc tìm kiếm phòng trọ," +
-                " đăng bài viết, và các vấn đề liên quan đến việc sử dụng trang web. Hãy cung cấp câu trả lời ngắn gọn, chính xác và hữu ích." +
-                " Và không dùng markdown. Đặc biệt khi "));
+        messages.add(new SystemMessage("""
+        Bạn là trợ lý AI của trang web cho thuê phòng trọ. Trả lời ngắn gọn, chính xác, KHÔNG dùng markdown.
+        Khi thông tin tham khảo có chứa link (bắt đầu bằng http://), hãy biến link đó thành thẻ HTML <a> theo đúng định dạng sau:
+        <a href="LINK_URL">Xem chi tiết tại đây</a>
+        Chỉ xuất ra thẻ <a> hoàn chỉnh, KHÔNG viết thêm bất kỳ text nào xung quanh thẻ đó như "chi tiết", "xem", v.v.
+
+        === QUY TẮC SỬ DỤNG TOOL ===
+
+        [ĐẶT LỊCH HẸN]
+        Khi người dùng muốn đặt lịch hẹn xem phòng, thực hiện đúng thứ tự:
+        1. Gọi getRentalRequestsForAi() để lấy danh sách yêu cầu thuê.
+        2. Hiển thị danh sách, hỏi user chọn yêu cầu nào.
+        3. Hỏi thời gian hẹn (nếu chưa có).
+        4. Hỏi địa điểm (nếu chưa có).
+        5. Gọi scheduleAppointmentForAi() với đầy đủ thông tin.
+        KHÔNG yêu cầu user tự nhập rentalRequestId. KHÔNG gọi scheduleAppointmentForAi() trước bước 2.
+
+        [THUÊ PHÒNG]
+        Khi người dùng muốn thuê phòng:
+        - Nếu chưa có địa chỉ và CCCD → hỏi trước, sau đó mới gọi createRequestRentalForAi().
+        - KHÔNG dùng địa chỉ phòng trọ làm địa chỉ người dùng.
+
+        [DUYỆT / TỪ CHỐI YÊU CẦU]
+        Khi người dùng muốn duyệt hoặc từ chối:
+        - Nếu chưa có rentalRequestId → gọi getTodayRentalRequestsForAi() để lấy danh sách, hỏi user chọn.
+        - Sau khi có ID → gọi approveRentalRequestForAi().
+        """));
         messages.addAll(addMessageBaseHistory(conversationId));
         messages.add(new UserMessage(currentQuestionWithRag));
         return messages;
@@ -171,7 +193,7 @@ public class ChatAiService {
         String answer = similarDocuments.stream().map(docs -> {
             String roomId = docs.getMetadata().get("roomId").toString();
             String content = docs.getText();
-            String url = "\nLink: http://localhost:8081/rooms?id=" + roomId;
+            String url = "\nLink: http://localhost:8081/rooms/" + roomId;
             return content + url;
         }).collect(Collectors.joining("\n"));
         return answer;

@@ -72,6 +72,7 @@ async function postJson(url, payload, defaultMessage = 'Đã có lỗi xảy ra,
     const token = localStorage.getItem('smartstay_token'); // Lấy token đã lưu
     const response = await fetch(url, {
         method: 'POST',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
             ...(token ? { 'Authorization': `Bearer ${token}` } : {})

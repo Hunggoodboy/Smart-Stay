@@ -101,11 +101,15 @@ public class AuthService {
                     .orElseThrow(() -> new RuntimeException("Tên đăng nhập hoặc mật khẩu không chính xác"));
             TokenResponse token = jwtService.generateToken(user.getUsername());
             Cookie tokenCookie = new Cookie("smartstay_token", token.getAccessToken());
-            Cookie refreshTokenCookie = new Cookie("refresh_token", token.getRefreshToken());
             tokenCookie.setHttpOnly(true);
             tokenCookie.setPath("/");
-            tokenCookie.setMaxAge(24 * 60 * 60);
+            tokenCookie.setMaxAge(24 * 60 * 60); // 1 ngày
             httpResponse.addCookie(tokenCookie);
+            // Fix: thêm httpOnly, path, maxAge cho refresh_token cookie
+            Cookie refreshTokenCookie = new Cookie("refresh_token", token.getRefreshToken());
+            refreshTokenCookie.setHttpOnly(true);
+            refreshTokenCookie.setPath("/");
+            refreshTokenCookie.setMaxAge(14 * 24 * 60 * 60); // 14 ngày
             httpResponse.addCookie(refreshTokenCookie);
             return new AuthResponse("Đăng nhập thành công", true, UserDTO.fromEntity(user), token.getAccessToken(), token.getRefreshToken());
         } catch (BadCredentialsException e) {
@@ -116,35 +120,58 @@ public class AuthService {
     }
 
     public ApiResponse logout(HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
-        try{
+        try {
             String refreshToken = null;
             Cookie[] cookies = httpRequest.getCookies();
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("smartstay_token")) {
-                    refreshToken = cookie.getValue();
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if (cookie.getName().equals("refresh_token")) {
+                        refreshToken = cookie.getValue();
+                        break;
+                    }
                 }
             }
-            if (refreshToken != null) {
-                jwtService.deleteRefreshToken(refreshToken);
-            }
+            // Xóa refresh token khỏi DB
+//            if (refreshToken != null) {
+//                System.out.println(refreshToken + "tồn tại");
+//                jwtService.deleteRefreshToken(refreshToken);
+//            }
+//            else{
+//                System.out.println(refreshToken + "null");
+//            }
+
+            // Xóa cookie access token
             Cookie tokenCookie = new Cookie("smartstay_token", null);
             tokenCookie.setHttpOnly(true);
             tokenCookie.setPath("/");
             tokenCookie.setMaxAge(0);
             httpResponse.addCookie(tokenCookie);
+
+            // Bug fix: xóa đúng cookie refresh_token
             Cookie refreshTokenCookie = new Cookie("refresh_token", null);
-            tokenCookie.setHttpOnly(true);
-            tokenCookie.setPath("/");
-            tokenCookie.setMaxAge(0);
-            httpResponse.addCookie(tokenCookie);
+            refreshTokenCookie.setHttpOnly(true);
+            refreshTokenCookie.setPath("/");
+            refreshTokenCookie.setMaxAge(0);
             httpResponse.addCookie(refreshTokenCookie);
+
             SecurityContextHolder.clearContext();
+
+            if (refreshToken != null) {
+                try {
+                    System.out.println(refreshToken);
+                    jwtService.deleteRefreshToken(refreshToken);
+                } catch (Exception e) {
+                    // Bỏ qua lỗi nếu token rác/không có trong DB
+                    System.out.println("Token không tồn tại trong DB, bỏ qua thao tác xóa.");
+                }
+            }
+
+
             return ApiResponse.builder()
                     .success(true)
                     .message("Đăng xuất thành công")
                     .build();
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             throw new RuntimeException("Lỗi khi đăng xuất: " + e.getMessage(), e);
         }
     }
