@@ -18,6 +18,7 @@ import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 import vn.edu.ptit.dto.Request.ChangePasswordRequest;
 import vn.edu.ptit.dto.Request.UpdateProfileRequest;
 import vn.edu.ptit.dto.Request.UpgradeCustomerRequest;
@@ -39,13 +40,29 @@ import vn.edu.ptit.service.JWT.jwtService;
 import vn.edu.ptit.Exception.ResourceNotFoundException;
 import vn.edu.ptit.Exception.UnauthorizedException;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.time.Duration;
 import java.util.Date;
+import java.util.Locale;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 
 public class AuthService {
+    private static final long MAX_AVATAR_BYTES = 5L * 1024 * 1024;
+    private static final Path SOURCE_AVATAR_DIR = Paths.get("src/main/resources/static/images/avatars");
+    private static final Path TARGET_AVATAR_DIR = Paths.get("target/classes/static/images/avatars");
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
@@ -237,6 +254,11 @@ public class AuthService {
 
     @Transactional
     public UserDTO updateCurrentUser(UpdateProfileRequest request) {
+        return updateCurrentUser(request, null);
+    }
+
+    @Transactional
+    public UserDTO updateCurrentUser(UpdateProfileRequest request, MultipartFile avatarFile) {
         Long userId = getCurrentUserId();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", userId));
@@ -254,8 +276,10 @@ public class AuthService {
             user.setGender(request.getGender().trim());
         }
         user.setDateOfBirth(request.getDateOfBirth());
-        if (request.getAvatarUrl() != null) {
-            user.setAvatarUrl(request.getAvatarUrl().trim());
+        if (avatarFile != null && !avatarFile.isEmpty()) {
+            user.setAvatarUrl(saveUploadedAvatarToStatic(avatarFile));
+        } else if (request.getAvatarUrl() != null) {
+            user.setAvatarUrl(resolveAvatarUrl(request.getAvatarUrl()));
         }
         if (user instanceof Customer customer) {
             if (request.getIdCardNumber() != null) {
@@ -275,6 +299,149 @@ public class AuthService {
         user.setUpdatedAt(LocalDateTime.now());
 
         return UserDTO.fromEntity(userRepository.save(user));
+    }
+
+    private String saveUploadedAvatarToStatic(MultipartFile avatarFile) {
+        String contentType = avatarFile.getContentType();
+        if (StringUtils.hasText(contentType)
+                && !contentType.toLowerCase(Locale.ROOT).startsWith("image/")) {
+            throw new IllegalArgumentException("File ảnh đại diện phải là ảnh hợp lệ");
+        }
+        if (avatarFile.getSize() > MAX_AVATAR_BYTES) {
+            throw new IllegalArgumentException("Ảnh đại diện không được vượt quá 5MB");
+        }
+        if (avatarFile.isEmpty()) {
+            throw new IllegalArgumentException("Ảnh đại diện tải lên bị rỗng");
+        }
+
+        String extension = avatarExtension(contentType, avatarFile.getOriginalFilename());
+        if (!StringUtils.hasText(extension)) {
+            throw new IllegalArgumentException("Ảnh đại diện chỉ hỗ trợ JPG, PNG, WEBP hoặc GIF");
+        }
+
+        try {
+            byte[] imageBytes = avatarFile.getBytes();
+            String filename = UUID.randomUUID() + extension;
+            writeAvatarFile(SOURCE_AVATAR_DIR, filename, imageBytes);
+            if (Files.exists(Paths.get("target/classes/static"))) {
+                writeAvatarFile(TARGET_AVATAR_DIR, filename, imageBytes);
+            }
+            return "/images/avatars/" + filename;
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Không thể lưu ảnh đại diện vào static", e);
+        }
+    }
+
+    private String resolveAvatarUrl(String avatarUrl) {
+        String value = avatarUrl == null ? "" : avatarUrl.trim();
+        if (!StringUtils.hasText(value)) {
+            return null;
+        }
+        if (value.startsWith("/images/") || value.startsWith("images/")) {
+            return value.startsWith("/") ? value : "/" + value;
+        }
+        if (!isHttpUrl(value)) {
+            throw new IllegalArgumentException("URL ảnh đại diện phải bắt đầu bằng http:// hoặc https://");
+        }
+        return downloadAvatarToStatic(value);
+    }
+
+    private boolean isHttpUrl(String value) {
+        try {
+            URI uri = new URI(value);
+            String scheme = uri.getScheme();
+            return ("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme))
+                    && StringUtils.hasText(uri.getHost());
+        } catch (URISyntaxException e) {
+            return false;
+        }
+    }
+
+    private String downloadAvatarToStatic(String avatarUrl) {
+        try {
+            HttpClient client = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(10))
+                    .followRedirects(HttpClient.Redirect.NORMAL)
+                    .build();
+            HttpRequest request = HttpRequest.newBuilder(URI.create(avatarUrl))
+                    .timeout(Duration.ofSeconds(20))
+                    .GET()
+                    .build();
+            HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                throw new IllegalArgumentException("Không tải được ảnh đại diện từ URL đã nhập");
+            }
+
+            String contentType = response.headers().firstValue("content-type").orElse("");
+            if (StringUtils.hasText(contentType)
+                    && !contentType.toLowerCase(Locale.ROOT).startsWith("image/")
+                    && !contentType.toLowerCase(Locale.ROOT).startsWith("application/octet-stream")) {
+                throw new IllegalArgumentException("URL ảnh đại diện phải trỏ tới file ảnh hợp lệ");
+            }
+            String extension = avatarExtension(contentType, avatarUrl);
+            if (!StringUtils.hasText(extension)) {
+                throw new IllegalArgumentException("URL ảnh đại diện phải trỏ tới file ảnh hợp lệ");
+            }
+
+            byte[] imageBytes = response.body();
+            if (imageBytes.length == 0) {
+                throw new IllegalArgumentException("Ảnh đại diện tải về bị rỗng");
+            }
+            if (imageBytes.length > MAX_AVATAR_BYTES) {
+                throw new IllegalArgumentException("Ảnh đại diện không được vượt quá 5MB");
+            }
+
+            String filename = UUID.randomUUID() + extension;
+            writeAvatarFile(SOURCE_AVATAR_DIR, filename, imageBytes);
+            if (Files.exists(Paths.get("target/classes/static"))) {
+                writeAvatarFile(TARGET_AVATAR_DIR, filename, imageBytes);
+            }
+            return "/images/avatars/" + filename;
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Không thể lưu ảnh đại diện vào static", e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalArgumentException("Quá trình tải ảnh đại diện bị gián đoạn", e);
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new IllegalArgumentException("URL ảnh đại diện không hợp lệ", e);
+        }
+    }
+
+    private void writeAvatarFile(Path directory, String filename, byte[] imageBytes) throws IOException {
+        Files.createDirectories(directory);
+        Files.write(directory.resolve(filename), imageBytes);
+    }
+
+    private String avatarExtension(String contentType, String avatarUrl) {
+        String normalizedContentType = contentType == null ? "" : contentType.toLowerCase(Locale.ROOT);
+        if (normalizedContentType.contains(";")) {
+            normalizedContentType = normalizedContentType.substring(0, normalizedContentType.indexOf(";")).trim();
+        }
+        return switch (normalizedContentType) {
+            case "image/jpeg", "image/jpg" -> ".jpg";
+            case "image/png" -> ".png";
+            case "image/webp" -> ".webp";
+            case "image/gif" -> ".gif";
+            default -> extensionFromPath(avatarUrl);
+        };
+    }
+
+    private String extensionFromUrl(String avatarUrl) {
+        String path = URI.create(avatarUrl).getPath();
+        return extensionFromPath(path);
+    }
+
+    private String extensionFromPath(String path) {
+        if (!StringUtils.hasText(path) || !path.contains(".")) {
+            return null;
+        }
+        String extension = path.substring(path.lastIndexOf(".")).toLowerCase(Locale.ROOT);
+        return switch (extension) {
+            case ".jpg", ".jpeg", ".png", ".webp", ".gif" -> extension;
+            default -> null;
+        };
     }
 
     @Transactional

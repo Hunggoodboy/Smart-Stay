@@ -3,8 +3,10 @@ package vn.edu.ptit.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import vn.edu.ptit.dto.Request.ChangePasswordRequest;
 import vn.edu.ptit.dto.Request.UpgradeCustomerRequest;
 import vn.edu.ptit.dto.Request.UpdateProfileRequest;
@@ -69,9 +71,29 @@ public class AuthController {
         return ResponseEntity.ok(authService.getCurrentUser());
     }
 
-    @PutMapping("/profile")
+    @PutMapping(value = "/profile", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateProfile(@RequestBody UpdateProfileRequest request) {
-        return ResponseEntity.ok(authService.updateCurrentUser(request));
+        try {
+            return ResponseEntity.ok(authService.updateCurrentUser(request));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(ApiResponse.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .build());
+        }
+    }
+
+    @PutMapping(value = "/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updateProfileForm(@ModelAttribute UpdateProfileRequest request,
+                                               @RequestPart(value = "avatarFile", required = false) MultipartFile avatarFile) {
+        try {
+            return ResponseEntity.ok(authService.updateCurrentUser(request, avatarFile));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(ApiResponse.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .build());
+        }
     }
 
     @PutMapping("/password")
