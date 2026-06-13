@@ -167,25 +167,42 @@ function requestHistory() {
     });
 }
 
+// Lưu subscription để tránh đăng ký trùng khi reconnect
+let privateSubscription = null;
+let historySubscription = null;
+
 // ==================== WEBSOCKET EVENTS ====================
 stompClient.onConnect = (frame) => {
     updateStatus(true);
 
+    // Hủy subscription cũ nếu đã tồn tại (tránh đăng ký trùng khi reconnect)
+    if (privateSubscription) {
+        privateSubscription.unsubscribe();
+        privateSubscription = null;
+    }
+    if (historySubscription) {
+        historySubscription.unsubscribe();
+        historySubscription = null;
+    }
+
     // Đăng ký nhận tin nhắn mới
-    stompClient.subscribe('/topic/private/' + senderId, (message) => {
+    privateSubscription = stompClient.subscribe('/topic/private/' + senderId, (message) => {
         const msg = JSON.parse(message.body);
-        
-        // Nếu tin nhắn thuộc về cuộc hội thoại đang mở, render nó
-        if (msg.senderId == currentReceiverId || msg.receiverId == currentReceiverId) {
-            renderMessage(msg);
+
+        // Chỉ render tin nhắn CỦA NGƯỜI KHÁC gửi đến mình
+        // (tin của bản thân đã được render ngay khi gửi, không cần echo lại)
+        if (msg.senderId != senderId) {
+            if (msg.senderId == currentReceiverId || msg.receiverId == currentReceiverId) {
+                renderMessage(msg);
+            }
         }
-        
+
         // Cập nhật lại danh sách summary (để đưa tin nhắn này lên đầu / cập nhật text)
         fetchSummaries();
     });
 
     // Đăng ký nhận lịch sử
-    stompClient.subscribe('/topic/history/' + senderId, (message) => {
+    historySubscription = stompClient.subscribe('/topic/history/' + senderId, (message) => {
         const messages = JSON.parse(message.body);
         const area = document.getElementById('messagesArea');
         area.innerHTML = ''; // Xóa chữ "Đang tải"
@@ -195,11 +212,11 @@ stompClient.onConnect = (frame) => {
         } else {
             messages.forEach(msg => renderMessage(msg));
         }
-        
+
         // Cuộn xuống cuối
         setTimeout(() => { area.scrollTop = area.scrollHeight; }, 100);
     });
-    
+
     // Nếu có receiverId được chọn sẵn, gọi lịch sử
     if (currentReceiverId) {
         setTimeout(requestHistory, 500);
@@ -227,6 +244,15 @@ function sendMessage() {
     stompClient.publish({
         destination: '/app/chat.private',
         body: JSON.stringify(request)
+    });
+
+    // Hiển thị tin nhắn ngay cho bản thân (optimistic UI)
+    // Vì echo từ server đã bị lọc để tránh double message
+    renderMessage({
+        senderId: parseInt(senderId),
+        receiverId: parseInt(currentReceiverId),
+        content: content,
+        sentAt: null  // null → dùng new Date() trong renderMessage
     });
 
     input.value = '';

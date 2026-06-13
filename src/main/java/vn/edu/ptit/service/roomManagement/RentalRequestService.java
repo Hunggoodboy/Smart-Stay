@@ -44,6 +44,18 @@ public class RentalRequestService {
             throw new BusinessRuleException("Phòng này hiện đã có người thuê, vui lòng chọn phòng khác");
         }
 
+        // ── KIỂM TRA CUSTOMER ĐANG TRONG DIỆN THUÊ ────────────────────
+        // 1. Kiểm tra xem customer đang ở trong bảng rooms (deleted_at IS NULL)
+        if (roomsRepository.existsActiveRentalByCustomerId(currentId)) {
+            throw new BusinessRuleException("Bạn đang trong diện thuê phòng. Không thể gửi yêu cầu thuê mới khi đang có phòng đang ở.");
+        }
+
+        // 2. Kiểm tra xem customer có hợp đồng còn hiệu lực không
+        //    (deleted_at IS NULL, status = ACTIVE, end_date chưa qua hoặc null)
+        if (contractsRepository.existsActiveContractByCustomerId(currentId)) {
+            throw new BusinessRuleException("Bạn đang có hợp đồng thuê phòng còn hiệu lực. Không thể gửi yêu cầu thuê mới.");
+        }
+
         Optional<Customer> currentCustomer = customerRepository.findById(currentId);
         if(!userRepository.findById(currentId).isPresent()  && currentCustomer.isEmpty()){
             return ApiResponse.builder()

@@ -52,7 +52,17 @@ public class RoomService {
             throw new BusinessRuleException("Đã có phòng quản lý cho hợp đồng này");
         }
 
-        // Customer lấy từ hợp đồng, không cần truyền thê m email
+        // ── KIỂM TRA CUSTOMER ĐÃ ĐANG TRONG PHÒNG KHÁC ──────────────
+        // Lấy customer từ hợp đồng để kiểm tra
+        User customerToCheck = contract.getCustomer();
+        if (roomsRepository.existsActiveRentalByCustomerId(customerToCheck.getId())) {
+            throw new BusinessRuleException(
+                "Khách thuê " + customerToCheck.getFullName() + " hiện đang trong diện thuê phòng ở hệ thống. " +
+                "Không thể tạo phòng quản lý mới cho khách này."
+            );
+        }
+
+        // Customer lấy từ hợp đồng, không cần truyền thêm email
         User customer = contract.getCustomer();
 
         // RoomPost gốc (optional — gán để track "bài đăng nào sinh ra phòng này")
