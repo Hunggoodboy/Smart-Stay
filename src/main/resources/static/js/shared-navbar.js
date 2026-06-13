@@ -578,6 +578,7 @@
         
         localStorage.removeItem('smartstay_token');
         localStorage.removeItem('smartstay_user');
+        localStorage.removeItem('smartstay_chat_session');
         document.cookie = 'smartstay_token=; Max-Age=0; path=/';
         window.location.href = '/login';
     };

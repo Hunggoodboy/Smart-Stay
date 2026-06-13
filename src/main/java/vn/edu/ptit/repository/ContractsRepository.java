@@ -35,16 +35,18 @@ public interface ContractsRepository extends JpaRepository<Contracts, Long> {
     Optional<Contracts> findByCustomerIdAndLandLordId(@Param("cutomerId") Long customerId,
             @Param("landlordId") Long landlordId);
 
-    /**
-     * Kiểm tra customer có hợp đồng đang còn hiệu lực không:
-     * - deletedAt IS NULL (chưa bị xoá)
-     * - status = ACTIVE (đã ký)
-     * - endDate IS NULL hoặc endDate >= ngày hôm nay (chưa hết hạn)
-     */
+
     @Query("SELECT COUNT(c) > 0 FROM Contracts c " +
            "WHERE c.customer.id = :customerId " +
            "AND c.deletedAt IS NULL " +
            "AND c.status = 'ACTIVE' " +
            "AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE)")
     boolean existsActiveContractByCustomerId(@Param("customerId") Long customerId);
+
+    @Query("SELECT COUNT(c) > 0 FROM Contracts c " +
+           "WHERE c.rentalRequest.roomPost.id = :roomPostId " +
+           "AND c.deletedAt IS NULL " +
+           "AND c.status = 'ACTIVE' " +
+           "AND (c.endDate IS NULL OR c.endDate >= CURRENT_DATE)")
+    boolean existsActiveContractByRoomPostId(@Param("roomPostId") Long roomPostId);
 }

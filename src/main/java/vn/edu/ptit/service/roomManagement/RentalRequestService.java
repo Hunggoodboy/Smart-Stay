@@ -40,8 +40,10 @@ public class RentalRequestService {
         }
 
         // Kiểm tra phòng đã có người đang thuê chưa
-        if (roomsRepository.existsByRoomPostIdAndStatus(request.getRoomPostId(), Rooms.Status.RENTED)) {
-            throw new BusinessRuleException("Phòng này hiện đã có người thuê, vui lòng chọn phòng khác");
+        if (roomsRepository.existsByRoomPostIdAndStatus(request.getRoomPostId(), Rooms.Status.RENTED) ||
+            rentalRequestRepository.existsActiveRentalRequestByRoomPostId(request.getRoomPostId()) ||
+            contractsRepository.existsActiveContractByRoomPostId(request.getRoomPostId())) {
+            throw new BusinessRuleException("Phòng này hiện đã có người thuê hoặc đã có người đặt cọc thành công, vui lòng chọn phòng khác");
         }
 
         // ── KIỂM TRA CUSTOMER ĐANG TRONG DIỆN THUÊ ────────────────────
@@ -186,7 +188,40 @@ public class RentalRequestService {
                                                                .orElseThrow();
         try {
             RentalRequests.Status newStatus = RentalRequests.Status.valueOf(status.toUpperCase());
+
+            if (newStatus == RentalRequests.Status.APPROVED) {
+                // Kiểm tra xem phòng này đã có ai thuê hoặc đã được duyệt cho người khác chưa
+                if (roomsRepository.existsByRoomPostIdAndStatus(rentalRequests.getRoomPost().getId(), Rooms.Status.RENTED) ||
+                    rentalRequestRepository.existsActiveRentalRequestByRoomPostId(rentalRequests.getRoomPost().getId()) ||
+                    contractsRepository.existsActiveContractByRoomPostId(rentalRequests.getRoomPost().getId())) {
+                    return ApiResponse.builder()
+                                      .message("Phòng này hiện đã có người thuê hoặc đã được duyệt cho người khác, không thể duyệt thêm yêu cầu!")
+                                      .success(false)
+                                      .build();
+                }
+
+                Long customerId = rentalRequests.getCustomer().getId();
+
+                // 1. Kiểm tra xem customer đang ở trong bảng rooms (deleted_at IS NULL)
+                if (roomsRepository.existsActiveRentalByCustomerId(customerId)) {
+                    return ApiResponse.builder()
+                                      .message("Khách thuê này đang thuê phòng khác, không thể duyệt yêu cầu!")
+                                      .success(false)
+                                      .build();
+                }
+
+                // 2. Kiểm tra xem customer có hợp đồng còn hiệu lực không
+                // (deleted_at IS NULL, status = ACTIVE, end_date chưa qua hoặc null)
+                if (contractsRepository.existsActiveContractByCustomerId(customerId)) {
+                    return ApiResponse.builder()
+                                      .message("Khách thuê này đang có hợp đồng thuê phòng khác còn hiệu lực, không thể duyệt yêu cầu!")
+                                      .success(false)
+                                      .build();
+                }
+            }
+
             rentalRequests.setStatus(newStatus);
+            rentalRequests.setReviewedAt(LocalDateTime.now());
             rentalRequestRepository.save(rentalRequests);
             return ApiResponse.builder()
                               .message("Cập nhật trạng thái yêu cầu thành công")
@@ -210,5 +245,16 @@ public class RentalRequestService {
         } catch (Exception e) {
             throw new BusinessRuleException("Yêu cầu chưa được thực hiện");
         }
+    }
+
+    public boolean isRoomAlreadyRented(Long roomPostId) {
+        return roomsRepository.existsByRoomPostIdAndStatus(roomPostId, Rooms.Status.RENTED) ||
+               rentalRequestRepository.existsActiveRentalRequestByRoomPostId(roomPostId) ||
+               contractsRepository.existsActiveContractByRoomPostId(roomPostId);
+    }
+
+    public boolean isCustomerAlreadyRenting(Long customerId) {
+        return roomsRepository.existsActiveRentalByCustomerId(customerId) ||
+               contractsRepository.existsActiveContractByCustomerId(customerId);
     }
 }

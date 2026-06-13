@@ -23,6 +23,9 @@ public interface RentalRequestRepository extends JpaRepository<RentalRequests, L
     List<RentalRequests> findByLandlordId(Long LandlordId);
     List<RentalRequests> findByCustomerId(Long CustomerId);
     boolean existsByRoomPostIdAndCustomerId(Long roomId, Long customerId);
+    
+    @Query("SELECT COUNT(r) > 0 FROM RentalRequests r WHERE r.roomPost.id = :roomPostId AND r.status IN ('APPROVED', 'CONTRACTED') AND r.deletedAt IS NULL")
+    boolean existsActiveRentalRequestByRoomPostId(@Param("roomPostId") Long roomPostId);
 
     Optional<RentalRequests> findByRoomPostIdAndCustomerId(@Param("roomId") Long roomId, @Param("customerId") Long customerId);
 

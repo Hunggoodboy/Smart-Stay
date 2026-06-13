@@ -86,7 +86,7 @@ public class ChatAiService {
 
     public ChatAIResponse generateAnswer(ChatAIRequest chatAIRequest) {
         User currentUser = authService.getUser();
-        String thisConversationId = currentUser.getId().toString() + "_" + chatAIRequest.getConversationId();
+        String thisConversationId = chatAIRequest.getConversationId();
         String optimizedQuestion = rewriteQuestion(chatAIRequest.getQuestion(), thisConversationId);
         String ragContext = findAnswer(optimizedQuestion);
         String currentQuestionWithRag = "Người dùng hỏi: " + chatAIRequest.getQuestion() +

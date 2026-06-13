@@ -18,7 +18,8 @@ public class ChatAiHistoryService {
     private final ChatAiHistoryRepository chatAiHistoryRepository;
     private final AuthService authService;
     public List<ChatAiHistoryResponse> getChatAiHistoryByConversationId(String conversationId) {
-        return chatAiHistoryRepository.findByConversationIdOrderByCreatedAtDesc(conversationId).stream()
+        Long userId = authService.getCurrentUserId();
+        return chatAiHistoryRepository.findByConversationIdAndUserIdOrderByCreatedAtDesc(conversationId, userId).stream()
                 .map(chatAiHistory -> {
                     return ChatAiHistoryResponse.builder()
                             .message(chatAiHistory.getContent())

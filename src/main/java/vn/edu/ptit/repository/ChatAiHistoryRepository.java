@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public interface ChatAiHistoryRepository extends JpaRepository<ChatAiHistory, UUID> {
     List<ChatAiHistory> findTop30ByConversationIdOrderByCreatedAtDesc(String conversationId);
-    List<ChatAiHistory> findByConversationIdOrderByCreatedAtDesc(String conversationId);
+    List<ChatAiHistory> findByConversationIdAndUserIdOrderByCreatedAtDesc(String conversationId, Long userId);
     @Query(value = "select distinct on (conversation_id) * " +
             "from chat_ai_history " +
             "where user_id = :userId " +

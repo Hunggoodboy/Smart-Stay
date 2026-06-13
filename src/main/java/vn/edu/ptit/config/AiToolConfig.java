@@ -69,13 +69,24 @@ public class AiToolConfig {
                         .address(finalAddress)
                         .build());
             }
+            // --- KIỂM TRA TRƯỚC CHO AI ĐỂ AI TRẢ LỜI MƯỢT MÀ HƠN ---
+            // 1. Kiểm tra phòng đã có người thuê hoặc đã cọc chưa
+            if (rentalRequestService.isRoomAlreadyRented(request.roomPostId())) {
+                return "Hệ thống báo: Phòng này hiện đã có người thuê hoặc đã có người đặt cọc thành công. Hãy xin lỗi khách hàng và gợi ý họ chọn một phòng khác nhé.";
+            }
+
+            // 2. Kiểm tra xem bản thân khách hàng đã có phòng chưa
+            if (rentalRequestService.isCustomerAlreadyRenting(user.getId())) {
+                return "Hệ thống báo: Khách hàng này hiện đang thuê một phòng khác hoặc đang có hợp đồng hợp lệ. Quy định chỉ cho phép thuê 1 phòng. Hãy từ chối khách một cách lịch sự.";
+            }
+
             try {
                 rentalRequestDTO.setRoomPostId(request.roomPostId());
                 ApiResponse response = rentalRequestService.createNewRentalRequest(rentalRequestDTO);
                 return response.getMessage();
             }
             catch (Exception e){
-                return "Hệ thống gặp lỗi khi tạo yêu cầu: " + e.getMessage() + ". Hãy báo khách hàng thử lại sau.";
+                return "THẤT BẠI: " + e.getMessage() + ". Lệnh cho AI: Bắt buộc phải thông báo lỗi này nguyên văn cho khách hàng biết, không được nói là thành công.";
             }
         };
     }
@@ -223,7 +234,7 @@ public class AiToolConfig {
                     return "Thao tác thất bại: " + response.getMessage();
                 }
             } catch (Exception e) {
-                return "Không thể xử lý yêu cầu: " + e.getMessage() + ". Hãy kiểm tra lại ID yêu cầu thuê.";
+                return "THẤT BẠI: Không thể xử lý yêu cầu: " + e.getMessage() + ". Lệnh cho AI: Phải báo cho người dùng biết thao tác đã thất bại kèm theo lý do này.";
             }
         };
     }

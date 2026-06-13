@@ -25,6 +25,7 @@
     function clearAuth() {
         localStorage.removeItem('smartstay_token');
         localStorage.removeItem('smartstay_user');
+        localStorage.removeItem('smartstay_chat_session');
     }
 
     function redirectToLogin() {
