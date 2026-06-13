@@ -7,6 +7,7 @@ import vn.edu.ptit.dto.Response.AdminUserResponse;
 import vn.edu.ptit.dto.Response.ApiResponse;
 import vn.edu.ptit.entity.User;
 import vn.edu.ptit.repository.AdminUserManagementRepository;
+import vn.edu.ptit.repository.RoomPostRepository;
 import vn.edu.ptit.service.Authentication.AuthService;
 import vn.edu.ptit.Exception.ResourceNotFoundException;
 import vn.edu.ptit.Exception.InvalidRequestException;
@@ -20,6 +21,7 @@ import java.util.List;
 public class AdminUserManagementService {
 
     private final AdminUserManagementRepository adminUserRepository;
+    private final RoomPostRepository roomPostRepository;
     private final AuthService authService;
 
     @Transactional(readOnly = true)
@@ -121,6 +123,10 @@ public class AdminUserManagementService {
         user.setUpdatedAt(LocalDateTime.now());
         adminUserRepository.save(user);
 
+        if (user.getRole() == User.Role.LANDLORD) {
+            roomPostRepository.hideActivePostsByLandlord(id);
+        }
+
         return ApiResponse.builder()
                 .success(true)
                 .message("Xoa tai khoan thanh cong")
@@ -135,6 +141,10 @@ public class AdminUserManagementService {
         user.setActive(true);
         user.setUpdatedAt(LocalDateTime.now());
         adminUserRepository.save(user);
+
+        if (user.getRole() == User.Role.LANDLORD) {
+            roomPostRepository.restorePostsHiddenByLandlordDeletion(id);
+        }
 
         return ApiResponse.builder()
                 .success(true)

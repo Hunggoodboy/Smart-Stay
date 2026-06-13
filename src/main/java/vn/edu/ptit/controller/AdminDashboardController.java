@@ -28,12 +28,12 @@ public class AdminDashboardController {
     public ResponseEntity<?> getTotalLandlords() {
         return ResponseEntity.ok(adminDashboardService.getTotalLandlords());
     }
-
+    // tổng tài khoa chờ xác minh
     @GetMapping("/landlords/pending-verifications/total")
     public ResponseEntity<?> getPendingLandlordVerifications() {
         return ResponseEntity.ok(adminDashboardService.getPendingLandlordVerifications());
     }
-
+    // tổng tài khoản đc xác minh
     @GetMapping("/landlords/verified/total")
     public ResponseEntity<?> getVerifiedLandlords() {
         return ResponseEntity.ok(adminDashboardService.getVerifiedLandlords());

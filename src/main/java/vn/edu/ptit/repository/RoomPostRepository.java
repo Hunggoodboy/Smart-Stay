@@ -82,6 +82,29 @@ public interface RoomPostRepository extends JpaRepository<RoomPosts, Long> {
     @Query("UPDATE RoomPosts p SET p.status = 'RENTED', p.room.id = :roomId WHERE p.id = :postId")
     void markRented(@Param("postId") Long postId, @Param("roomId") Long roomId);
 
+    @Modifying
+    @Query("""
+            UPDATE RoomPosts p
+            SET p.status = 'INACTIVE',
+                p.hiddenByLandlordDeletion = true,
+                p.updatedAt = CURRENT_TIMESTAMP
+            WHERE p.landlord.id = :landlordId
+              AND p.status = 'ACTIVE'
+            """)
+    int hideActivePostsByLandlord(@Param("landlordId") Long landlordId);
+
+    @Modifying
+    @Query("""
+            UPDATE RoomPosts p
+            SET p.status = 'ACTIVE',
+                p.hiddenByLandlordDeletion = false,
+                p.updatedAt = CURRENT_TIMESTAMP
+            WHERE p.landlord.id = :landlordId
+              AND p.status = 'INACTIVE'
+              AND p.hiddenByLandlordDeletion = true
+            """)
+    int restorePostsHiddenByLandlordDeletion(@Param("landlordId") Long landlordId);
+
     /**
      * Lấy các bài đăng đã hết hạn nhưng chưa được tắt (dùng cho scheduled job).
      */

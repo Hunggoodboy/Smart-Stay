@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import vn.edu.ptit.dto.Response.AdminSystemStatsResponse;
 import vn.edu.ptit.entity.Customer;
 import vn.edu.ptit.entity.LandLord;
+import vn.edu.ptit.entity.RentPayments;
 import vn.edu.ptit.entity.RoomPosts;
 import vn.edu.ptit.entity.User;
 import vn.edu.ptit.repository.AdminDashboardRepository;
@@ -35,6 +36,7 @@ public class AdminSystemStatsService {
         long customerCount = adminDashboardRepository.countUsersByRole(User.Role.CUSTOMER);
         long landlordCount = adminDashboardRepository.countUsersByRole(User.Role.LANDLORD);
         long adminCount = adminDashboardRepository.countUsersByRole(User.Role.ADMIN);
+        //tổng số lượng chủ nhà đã được hệ thống phê duyệt/xác minh thành công
         long verifiedLandlords = adminDashboardRepository.countVerifiedLandlords();
         long totalLandlords = landlordCount;
 
@@ -65,12 +67,14 @@ public class AdminSystemStatsService {
 
     private List<AdminSystemStatsResponse.MonthlyActivity> buildMonthlyStats(int year) {
         // Query từng loại dữ liệu
+        //dem so tai khoan đc tao trong tháng
         Map<Integer, Long> registrations = toMonthMap(adminSystemStatsRepository.countNewUsersByMonth(year));
+        //đếm số phòng được thuê trong tháng
         Map<Integer, Long> rentals = toMonthMap(adminSystemStatsRepository.countRoomsRentedByMonth(year));
 
         String yearText = String.valueOf(year);
         Map<Integer, Double> revenues = new HashMap<>();
-        List<Object[]> revenueData = adminSystemStatsRepository.revenueByMonth(yearText);
+        List<Object[]> revenueData = adminSystemStatsRepository.revenueByMonth(yearText, RentPayments.Status.PAID);
         for (Object[] row : revenueData) {
             int month = Integer.parseInt((String) row[0]);
             double amount = ((Number) row[1]).doubleValue();

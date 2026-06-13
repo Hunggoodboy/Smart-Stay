@@ -71,6 +71,9 @@ public class RoomPosts implements Serializable {
 
     @Column(name = "deleted_at", nullable = true)
     private LocalDateTime deletedAt = null;
+    //xác định bài đăng nào bị ẩn do xóa tài khoản
+    @Column(name = "hidden_by_landlord_deletion", nullable = false, columnDefinition = "boolean default false")
+    private Boolean hiddenByLandlordDeletion = false;
 
 
     // ==================== GIÁ DỊCH VỤ (dùng để tạo Rooms khi cho thuê) ====================

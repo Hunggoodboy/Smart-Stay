@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import vn.edu.ptit.entity.User;
 
+import vn.edu.ptit.entity.RentPayments;
 import java.util.List;
 
 @Repository
@@ -46,11 +47,11 @@ public interface AdminSystemStatsRepository extends JpaRepository<User, Long> {
             SELECT SUBSTRING(p.billingMonth, 6, 2), COALESCE(SUM(p.totalAmount), 0.0)
             FROM RentPayments p
             WHERE p.billingMonth LIKE CONCAT(:yearText, '%')
-              AND p.status = vn.edu.ptit.entity.RentPayments.Status.PAID
+              AND p.status = :status
             GROUP BY SUBSTRING(p.billingMonth, 6, 2)
             ORDER BY SUBSTRING(p.billingMonth, 6, 2)
             """)
-    List<Object[]> revenueByMonth(@Param("yearText") String yearText);
+    List<Object[]> revenueByMonth(@Param("yearText") String yearText, @Param("status") RentPayments.Status status);
 
     /**
      * Lấy danh sách user mới nhất (không bị xóa)

@@ -183,4 +183,8 @@ public class WebController {
         }
         return "appointments";
     }
+    @GetMapping("/adminSystemStats")
+    public String adminSystemStats() {
+        return "adminSystemStats";
+    }
 }
