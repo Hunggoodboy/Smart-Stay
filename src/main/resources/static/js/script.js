@@ -1009,7 +1009,6 @@ chatStomp.onConnect = async (frame) => {
     const statusTextEl = document.getElementById('chat-status-text');
     if (statusTextEl) statusTextEl.style.color = 'rgba(134,239,172,0.9)';
 
-    // Hủy subscription cũ nếu đã tồn tại (tránh đăng ký trùng khi reconnect)
     if (widgetPrivateSubscription) {
         widgetPrivateSubscription.unsubscribe();
         widgetPrivateSubscription = null;
@@ -1021,21 +1020,18 @@ chatStomp.onConnect = async (frame) => {
 
     widgetPrivateSubscription = chatStomp.subscribe(`/topic/private/${chatCurrentUserId}`, (msg) => {
         const messageObj = JSON.parse(msg.body);
-        // Chỉ render tin nhắn CỦA NGƯỜI KHÁC gửi đến mình (so sánh loose để tránh mismatch kiểu dữ liệu)
-        if (messageObj.senderId != chatCurrentUserId) {
-            const partnerId = window._chatPartnerId;
-            if (!partnerId || messageObj.senderId == partnerId || messageObj.receiverId == partnerId) {
-                renderChatMessage(messageObj);
-            }
+        const partnerId = window._chatPartnerId;
+        // Render tin nhắn nếu nó liên quan đến cuộc hội thoại hiện tại
+        if (!partnerId || messageObj.senderId == partnerId || messageObj.receiverId == partnerId) {
+            renderChatMessage(messageObj);
         }
     });
     widgetHistorySubscription = chatStomp.subscribe(`/topic/history/${chatCurrentUserId}`, (msg) => {
         clearChatMessages();
+        renderedMessageIds.clear();
         JSON.parse(msg.body).forEach(renderChatMessage);
     });
 
-    // Nếu chưa có partner cụ thể (mở từ nút "Nhắn tin chủ nhà")
-    // → tự fetch landlordId từ backend
     if (!window._chatPartnerId) {
         try {
             const token = localStorage.getItem('smartstay_token');
@@ -1044,11 +1040,21 @@ chatStomp.onConnect = async (frame) => {
                 credentials: 'include'
             });
             if (res.ok) {
-                window._chatPartnerId = await res.json();
-                // Cập nhật tên chủ nhà lên header chat
-                const nameEl = document.getElementById('chat-landlord-name');
-                if (nameEl && nameEl.textContent === 'Chủ nhà') {
-                    nameEl.textContent = 'Chủ nhà';  // giữ nguyên, hoặc fetch tên nếu cần
+                const data = await res.json();
+                if (typeof data === 'object') {
+                    window._chatPartnerId = data.id;
+                    const nameEl = document.getElementById('chat-landlord-name');
+                    if (nameEl) nameEl.textContent = data.fullName || 'Chủ nhà';
+                    
+                    const avatarEl = document.getElementById('chat-landlord-avatar');
+                    if (avatarEl && data.avatarUrl) {
+                        avatarEl.innerHTML = `<img src="${data.avatarUrl}" alt="Avatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+                        avatarEl.style.background = 'transparent';
+                    } else if (avatarEl && data.fullName) {
+                        avatarEl.textContent = data.fullName.charAt(0).toUpperCase();
+                    }
+                } else {
+                    window._chatPartnerId = data;
                 }
             }
         } catch (e) {
@@ -1056,7 +1062,6 @@ chatStomp.onConnect = async (frame) => {
         }
     }
 
-    // Load lịch sử chat với partner
     if (window._chatPartnerId) {
         chatStomp.publish({
             destination: '/app/chat.history',
@@ -1090,9 +1095,7 @@ function closeChat() {
     chatOpen = false;
     document.getElementById('chat-panel').style.display = 'none';
     document.getElementById('chat-toggle-btn').style.display = 'flex';
-    // Reset về mặc định để lần sau mở lại sẽ chat với chủ nhà
     window._chatPartnerId = null;
-    // Reset tên header
     const nameEl = document.getElementById('chat-landlord-name');
     if (nameEl) nameEl.textContent = 'Chủ nhà';
 }
@@ -1123,39 +1126,52 @@ async function initChatWidget() {
     chatConnecting = false;
 }
 
+let isSendingMessage = false;
+
 function sendChatMessage() {
+    if (isSendingMessage) return; // Chống double click
+    
     const input = document.getElementById('chat-input');
     const content = input.value.trim();
     if (!content || !chatStomp || !chatStomp.connected) return;
 
+    isSendingMessage = true;
     const partnerId = window._chatPartnerId || 0;
 
     chatStomp.publish({
         destination: '/app/chat.private',
         body: JSON.stringify({
             senderId: chatCurrentUserId,
-            receiverId: partnerId,  // 0 → backend tự resolve chủ nhà
+            receiverId: partnerId,
             content: content,
             messageType: 'TEXT',
             chatType: 'PRIVATE'
         })
     });
 
-    // Hiển thị tin nhắn ngay cho bản thân (optimistic UI)
-    // Vì echo từ server đã bị lọc để tránh double message
-    renderChatMessage({
-        senderId: chatCurrentUserId,
-        receiverId: partnerId,
-        content: content,
-        sentAt: null
-    });
-
+    // Không dùng Optimistic UI nữa, đợi STOMP echo lại qua subscription
+    
     input.value = '';
     input.style.height = 'auto';
+    
+    // Mở khóa gửi tin nhắn sau 500ms
+    setTimeout(() => {
+        isSendingMessage = false;
+    }, 500);
 }
+
+let renderedMessageIds = new Set();
 
 function renderChatMessage(msg) {
     const messagesEl = document.getElementById('chat-messages');
+    if (!messagesEl) return;
+    
+    // Chống duplicate:
+    if (msg.id) {
+        if (renderedMessageIds.has(msg.id)) return;
+        renderedMessageIds.add(msg.id);
+    }
+
     const emptyState = document.getElementById('chat-empty-state');
     if (emptyState) emptyState.style.display = 'none';
 

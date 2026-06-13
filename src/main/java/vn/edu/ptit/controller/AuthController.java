@@ -116,7 +116,11 @@ public class AuthController {
         Long tenantId = authService.getCurrentUser().getId();
         User landlord = roomsRepository.findLandLordByCustomerId(tenantId).orElse(null);
         if (landlord != null) {
-            return ResponseEntity.ok(landlord.getId());
+            java.util.Map<String, Object> data = new java.util.HashMap<>();
+            data.put("id", landlord.getId());
+            data.put("fullName", landlord.getFullName());
+            data.put("avatarUrl", landlord.getAvatarUrl());
+            return ResponseEntity.ok(data);
         }
         return ResponseEntity.badRequest().body("Landlord not found");
     }
