@@ -87,14 +87,14 @@
       position: fixed;
       bottom: 104px;
       right: 28px;
-      width: 380px;
+      width: 650px;
       height: 560px;
       background: var(--chat-primary);
       border-radius: var(--chat-radius);
       box-shadow: var(--chat-shadow);
       border: 1px solid var(--chat-border);
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       z-index: 99998;
       overflow: hidden;
       font-family: 'DM Sans', sans-serif;
@@ -173,6 +173,89 @@
     .chat-close-btn:hover {
       background: var(--chat-surface2);
       color: var(--chat-text);
+    }
+
+    /* Sidebar */
+    .chat-sidebar {
+      width: 260px;
+      border-right: 1px solid var(--chat-border);
+      background: var(--chat-surface2);
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-sidebar-header {
+      padding: 16px 20px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      color: var(--chat-text);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--chat-border);
+      font-size: 14px;
+    }
+    .chat-new-btn {
+      background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+      border: none;
+      color: white;
+      border-radius: 8px;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .chat-new-btn:hover { transform: scale(1.1); }
+    .chat-sidebar-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .chat-sidebar-list::-webkit-scrollbar { width: 4px; }
+    .chat-sidebar-list::-webkit-scrollbar-track { background: transparent; }
+    .chat-sidebar-list::-webkit-scrollbar-thumb { background: var(--chat-border); border-radius: 4px; }
+    .chat-history-item {
+      padding: 12px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      color: var(--chat-muted);
+      font-size: 13px;
+      line-height: 1.4;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .chat-history-item:hover {
+      background: rgba(255,255,255,0.03);
+      border-color: var(--chat-border);
+      color: var(--chat-text);
+    }
+    .chat-history-item.active {
+      background: rgba(59,130,246,0.15);
+      border-color: rgba(59,130,246,0.3);
+      color: white;
+    }
+    .chat-history-msg {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .chat-history-time {
+      font-size: 11px;
+      opacity: 0.6;
+    }
+    .chat-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
     }
 
     /* Messages */
@@ -392,13 +475,15 @@
       margin: 0 4px;
     }
 
-    @media (max-width: 480px) {
+    @media (max-width: 768px) {
       #chat-ai-window {
         width: calc(100vw - 24px);
         right: 12px;
         bottom: 96px;
-        height: 70vh;
+        height: 75vh;
+        flex-direction: column;
       }
+      .chat-sidebar { display: none; }
       #chat-ai-fab { bottom: 20px; right: 20px; }
     }
   `;
@@ -422,6 +507,18 @@
     win.setAttribute("role", "dialog");
     win.setAttribute("aria-label", "AI Chat");
     win.innerHTML = `
+    <div class="chat-sidebar">
+      <div class="chat-sidebar-header">
+        Lịch sử Chat
+        <button class="chat-new-btn" id="chat-ai-new" aria-label="Tạo mới" title="Cuộc trò chuyện mới">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="chat-sidebar-list" id="chat-sidebar-list"></div>
+    </div>
+    <div class="chat-main">
     <div class="chat-header">
       <div class="chat-header-avatar">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -466,6 +563,7 @@
         </svg>
       </button>
     </div>
+    </div>
   `;
 
     document.body.appendChild(fab);
@@ -476,16 +574,26 @@
     const inputEl    = document.getElementById("chat-ai-input");
     const sendBtn    = document.getElementById("chat-ai-send");
     const closeBtn   = document.getElementById("chat-ai-close");
+    const newChatBtn = document.getElementById("chat-ai-new");
+    const sidebarList = document.getElementById("chat-sidebar-list");
 
     let isOpen    = false;
     let isLoading = false;
+    let isHistoryLoaded = false;
 
     // Toggle open/close
     function toggleChat() {
         isOpen = !isOpen;
         fab.classList.toggle("is-open", isOpen);
         win.classList.toggle("is-visible", isOpen);
-        if (isOpen) setTimeout(() => inputEl.focus(), 350);
+        if (isOpen) {
+            setTimeout(() => inputEl.focus(), 350);
+            if (!isHistoryLoaded) {
+                loadHistorySummary();
+                checkAndLoadActiveSession();
+                isHistoryLoaded = true;
+            }
+        }
     }
 
     fab.addEventListener("click", toggleChat);
@@ -597,6 +705,107 @@
         });
     }
 
+    async function loadHistorySummary() {
+        const myToken = localStorage.getItem('smartstay_token');
+        if (!myToken) {
+            sidebarList.innerHTML = '<div style="text-align:center; padding:20px; font-size:12px; color:var(--chat-muted)">Đăng nhập để xem lịch sử</div>';
+            return;
+        }
+        try {
+            const res = await fetch('/api/chat-ai/history', { headers: { 'Authorization': `Bearer ${myToken}` } });
+            if (!res.ok) throw new Error('Fetch error');
+            const data = await res.json();
+            
+            sidebarList.innerHTML = '';
+            if (!data || data.length === 0) {
+                sidebarList.innerHTML = '<div style="text-align:center; padding:20px; font-size:12px; color:var(--chat-muted)">Chưa có hội thoại nào</div>';
+                return;
+            }
+            
+            const activeSession = localStorage.getItem('smartstay_chat_session');
+            data.forEach(item => {
+                const el = document.createElement('div');
+                el.className = 'chat-history-item' + (item.conversationId === activeSession ? ' active' : '');
+                const timeStr = item.lastChatTime ? new Date(item.lastChatTime).toLocaleString('vi-VN', {hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit'}) : '';
+                el.innerHTML = `
+                    <div class="chat-history-msg">${item.lastChatMessage || 'Cuộc trò chuyện mới'}</div>
+                    <div class="chat-history-time">${timeStr}</div>
+                `;
+                el.onclick = () => {
+                    localStorage.setItem('smartstay_chat_session', item.conversationId);
+                    loadHistorySummary(); // to refresh active class
+                    loadConversationDetail(item.conversationId);
+                };
+                sidebarList.appendChild(el);
+            });
+        } catch(e) {
+            sidebarList.innerHTML = '<div style="text-align:center; padding:20px; font-size:12px; color:#ff6b8a">Lỗi tải lịch sử</div>';
+        }
+    }
+
+    async function checkAndLoadActiveSession() {
+        const sId = localStorage.getItem('smartstay_chat_session');
+        if (sId) {
+            loadConversationDetail(sId);
+        }
+    }
+
+    async function loadConversationDetail(conversationId) {
+        const myToken = localStorage.getItem('smartstay_token');
+        if (!myToken) return;
+        
+        messagesEl.innerHTML = '<div style="text-align:center; padding:20px; color:var(--chat-muted); font-size:13px;">Đang tải cuộc trò chuyện...</div>';
+        isLoading = true;
+        
+        try {
+            const res = await fetch(`/api/chat-ai/history/detail?conversationId=${conversationId}`, {
+                headers: { 'Authorization': `Bearer ${myToken}` }
+            });
+            if (!res.ok) throw new Error('Fetch detail error');
+            const data = await res.json();
+            
+            messagesEl.innerHTML = '';
+            if (!data || data.length === 0) {
+                messagesEl.innerHTML = `
+                  <div class="chat-welcome">
+                    <div class="chat-welcome-icon">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                      </svg>
+                    </div>
+                    <h3>Xin chào! Tôi là AI Assistant</h3>
+                    <p>Hỏi tôi bất cứ điều gì,<br/>tôi sẵn sàng giúp đỡ bạn.</p>
+                  </div>`;
+            } else {
+                // data sorted descending in backend -> reverse to show oldest first
+                const reversed = [...data].reverse();
+                reversed.forEach(msg => {
+                    appendMessage((msg.message_type === 'USER' || msg.messageType === 'USER') ? 'user' : 'ai', msg.message);
+                });
+            }
+        } catch(e) {
+            messagesEl.innerHTML = '<div style="text-align:center; padding:20px; color:#ff6b8a; font-size:13px;">Lỗi tải chi tiết cuộc trò chuyện.</div>';
+        } finally {
+            isLoading = false;
+            scrollToBottom();
+        }
+    }
+
+    newChatBtn.addEventListener("click", () => {
+        const sId = generateUUID();
+        localStorage.setItem('smartstay_chat_session', sId);
+        messagesEl.innerHTML = `
+          <div class="chat-welcome">
+            <div class="chat-welcome-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+              </svg>
+            </div>
+            <h3>Xin chào! Tôi là AI Assistant</h3>
+            <p>Hỏi tôi bất cứ điều gì,<br/>tôi sẵn sàng giúp đỡ bạn.</p>
+          </div>`;
+        loadHistorySummary(); // update active state in sidebar
+    });
 
     async function sendMessage() {
         const question = inputEl.value.trim();
@@ -650,6 +859,7 @@
             const data = await response.json();
             const answer = data.answer || data.message || JSON.stringify(data);
             appendMessage("ai", answer);
+            loadHistorySummary();
 
         } catch (err) {
             removeTyping();

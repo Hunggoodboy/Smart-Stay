@@ -17,6 +17,11 @@ import vn.edu.ptit.service.Authentication.AuthService;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ai.openai.OpenAiChatOptions;
+import org.springframework.retry.support.RetryTemplate;
+import org.springframework.retry.backoff.ExponentialBackOffPolicy;
+import org.springframework.retry.policy.SimpleRetryPolicy;
+import org.springframework.ai.retry.NonTransientAiException;
+import org.springframework.ai.retry.TransientAiException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,6 +41,8 @@ public class ChatAiService {
     private final VectorStore vectorStore;
     private final ChatAiHistoryRepository chatAiHistoryRepository;
     private final AuthService  authService;
+    private final RetryTemplate retryTemplate;
+
     public ChatAiService(ChatClient.Builder chatClient,  VectorStore vectorStore, ChatAiHistoryRepository chatAiHistoryRepository, AuthService authService) {
         this.chatClient = chatClient
                 .defaultToolNames("createRequestRentalForAi", "scheduleAppointmentForAi","getRentalRequestsForAi", "getTodayRentalRequestsForAi", "approveRentalRequestForAi")
@@ -43,6 +50,38 @@ public class ChatAiService {
         this.vectorStore = vectorStore;
         this.chatAiHistoryRepository = chatAiHistoryRepository;
         this.authService = authService;
+        
+        // Cấu hình RetryTemplate tùy chỉnh để tự động chờ khi bị lỗi 429
+        this.retryTemplate = new RetryTemplate();
+        ExponentialBackOffPolicy backOffPolicy = new ExponentialBackOffPolicy();
+        backOffPolicy.setInitialInterval(25000); // Bắt đầu chờ 25 giây
+        backOffPolicy.setMultiplier(2.0); // Tăng gấp đôi nếu tiếp tục lỗi
+        backOffPolicy.setMaxInterval(120000); // Chờ tối đa 2 phút
+        this.retryTemplate.setBackOffPolicy(backOffPolicy);
+        
+        SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy(3, Collections.singletonMap(Exception.class, true)) {
+            @Override
+            public boolean canRetry(org.springframework.retry.RetryContext context) {
+                Throwable t = context.getLastThrowable();
+                if (t != null && !super.canRetry(context)) {
+                    return false;
+                }
+                if (t != null) {
+                    String msg = t.getMessage() != null ? t.getMessage() : "";
+                    if (t instanceof NonTransientAiException || msg.contains("429")) {
+                        System.err.println("Nhận diện lỗi AI Rate Limit (429/NonTransientAiException). Chuẩn bị Retry...");
+                        return true;
+                    }
+                    if (t instanceof TransientAiException) {
+                        return true;
+                    }
+                    // Nếu lỗi khác thì không retry
+                    return false;
+                }
+                return true;
+            }
+        };
+        this.retryTemplate.setRetryPolicy(retryPolicy);
     }
 
     public ChatAIResponse generateAnswer(ChatAIRequest chatAIRequest) {
@@ -79,26 +118,30 @@ public class ChatAiService {
 
     private String callChatModel(List<Message> messages, boolean useTools) {
         try {
-            var requestSpec = chatClient.prompt()
-                    .messages(messages)
-                    .options(OpenAiChatOptions.builder().model(primaryModel).build());
-            if (useTools) {
-                requestSpec.toolNames("createRequestRentalForAi");
-            }
-            return requestSpec.call().content();
-        } catch (Exception e) {
-            System.err.println("Primary model error (" + primaryModel + "): " + e.getMessage() + ". Switching to fallback model: " + fallbackModel);
-            try {
+            return retryTemplate.execute(context -> {
                 var requestSpec = chatClient.prompt()
                         .messages(messages)
-                        .options(OpenAiChatOptions.builder().model(fallbackModel).build());
+                        .options(OpenAiChatOptions.builder().model(primaryModel).build());
                 if (useTools) {
                     requestSpec.toolNames("createRequestRentalForAi");
                 }
                 return requestSpec.call().content();
+            });
+        } catch (Exception e) {
+            System.err.println("Primary model error (" + primaryModel + "): " + e.getMessage() + ". Switching to fallback model: " + fallbackModel);
+            try {
+                return retryTemplate.execute(context -> {
+                    var requestSpec = chatClient.prompt()
+                            .messages(messages)
+                            .options(OpenAiChatOptions.builder().model(fallbackModel).build());
+                    if (useTools) {
+                        requestSpec.toolNames("createRequestRentalForAi");
+                    }
+                    return requestSpec.call().content();
+                });
             } catch (Exception ex) {
                 System.err.println("Fallback model error (" + fallbackModel + "): " + ex.getMessage());
-                throw ex;
+                return "Hệ thống AI hiện đang quá tải hoặc gặp sự cố. Vui lòng thử lại sau vài phút.";
             }
         }
     }
@@ -107,6 +150,9 @@ public class ChatAiService {
         List<Message> messages = new ArrayList<>();
         messages.add(new SystemMessage("""
         Bạn là trợ lý AI của trang web cho thuê phòng trọ. Trả lời ngắn gọn, chính xác, KHÔNG dùng markdown.
+        THỜI GIAN HIỆN TẠI HỆ THỐNG: """ + java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME) + """
+        . Hãy lấy thời gian này làm mốc để xác định năm, tháng, ngày hiện tại.
+
         Khi thông tin tham khảo có chứa link (bắt đầu bằng http://), hãy biến link đó thành thẻ HTML <a> theo đúng định dạng sau:
         <a href="LINK_URL">Xem chi tiết tại đây</a>
         Chỉ xuất ra thẻ <a> hoàn chỉnh, KHÔNG viết thêm bất kỳ text nào xung quanh thẻ đó như "chi tiết", "xem", v.v.
@@ -115,9 +161,9 @@ public class ChatAiService {
 
         [ĐẶT LỊCH HẸN]
         Khi người dùng muốn đặt lịch hẹn xem phòng, thực hiện đúng thứ tự:
-        1. Gọi getRentalRequestsForAi() để lấy danh sách yêu cầu thuê.
+        1. LUÔN LUÔN gọi getRentalRequestsForAi() để lấy TRẠNG THÁI MỚI NHẤT của các yêu cầu thuê. TUYỆT ĐỐI KHÔNG dùng trạng thái PENDING từ trong lịch sử chat vì chủ nhà có thể vừa mới duyệt xong tức thì.
         2. Hiển thị danh sách, hỏi user chọn yêu cầu nào.
-        3. Hỏi thời gian hẹn (nếu chưa có).
+        3. Hỏi thời gian hẹn (nếu chưa có). ĐẶC BIỆT LƯU Ý: Khi gọi hàm scheduleAppointmentForAi, tham số appointmentTime BẮT BUỘC phải truyền đúng định dạng yyyy-MM-ddTHH:mm:ss (Ví dụ: 2026-06-13T15:00:00). Bạn hãy tự động parse câu nói của người dùng (VD: "15h00 ngày 13/6") ra định dạng này.
         4. Hỏi địa điểm (nếu chưa có).
         5. Gọi scheduleAppointmentForAi() với đầy đủ thông tin.
         KHÔNG yêu cầu user tự nhập rentalRequestId. KHÔNG gọi scheduleAppointmentForAi() trước bước 2.

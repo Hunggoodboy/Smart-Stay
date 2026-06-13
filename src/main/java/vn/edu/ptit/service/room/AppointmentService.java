@@ -248,9 +248,8 @@ public class AppointmentService {
             throw new BadRequestException("Lịch hẹn đã bị hủy trước đó");
         }
 
-        // Chỉ cho phép hủy trước giờ hẹn ít nhất 2 giờ
-        if (appointment.getAppointmentTime().isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new BadRequestException("Không thể hủy lịch hẹn ít hơn 2 giờ trước thời gian đã hẹn");
+        if (appointment.getStatus().equals(Appointments.Status.COMPLETED)) {
+            throw new BadRequestException("Không thể hủy lịch hẹn đã hoàn tất");
         }
 
         appointment.setStatus(Appointments.Status.CANCELLED);
@@ -282,6 +281,26 @@ public class AppointmentService {
 
         Appointments saved = appointmentRepository.save(appointment);
         return convertToResponse(saved);
+    }
+
+    /**
+     * Xoá lịch hẹn (chỉ khi đã CANCELLED hoặc COMPLETED)
+     */
+    @Transactional
+    public void deleteAppointment(Long appointmentId, Long userId) throws BadRequestException {
+        Appointments appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lịch hẹn với ID: " + appointmentId));
+
+        if (!isAuthorized(appointment, userId)) {
+            throw new BadRequestException("Bạn không có quyền xoá lịch hẹn này");
+        }
+
+        if (appointment.getStatus() != Appointments.Status.CANCELLED &&
+            appointment.getStatus() != Appointments.Status.COMPLETED) {
+            throw new BadRequestException("Chỉ có thể xoá lịch hẹn đã huỷ hoặc đã hoàn tất");
+        }
+
+        appointmentRepository.delete(appointment);
     }
 
     // ==================== HELPER METHODS ====================

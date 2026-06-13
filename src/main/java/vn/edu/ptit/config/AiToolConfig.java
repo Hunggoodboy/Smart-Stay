@@ -18,6 +18,7 @@ import vn.edu.ptit.repository.RentalRequestRepository;
 import vn.edu.ptit.service.Authentication.AuthService;
 import vn.edu.ptit.service.room.AppointmentService;
 import vn.edu.ptit.service.roomManagement.RentalRequestService;
+import jakarta.persistence.EntityManager;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -32,6 +33,7 @@ public class AiToolConfig {
     private final AppointmentService appointmentService;
     private final AuthService authService;
     private final RentalRequestRepository rentalRequestRepository;
+    private final EntityManager entityManager;
 
     @Bean
     @Tool(description = "Tạo yêu cầu thuê phòng. Tham số bắt buộc: roomPostId (Long). Đối với address (String) và" +
@@ -80,7 +82,7 @@ public class AiToolConfig {
 
     @Bean
     @Tool(description = "Lên lịch hẹn xem phòng. Tham số: rentalRequestId (Long)," +
-            " appointmentTime (yyyy-MM-ddTHH:mm:ss), location (String), note (String, có thể null).")
+            " appointmentTime (BẮT BUỘC ĐÚNG CHUẨN ISO-8601 yyyy-MM-ddTHH:mm:ss, VD: 2026-06-13T15:00:00), note (String, có thể null).")
     public Function<AiScheduleAppointmentRequest, String> scheduleAppointmentForAi() {
         return request -> {
             try {
@@ -97,7 +99,14 @@ public class AiToolConfig {
                 AppointmentRequest appointmentRequest = new AppointmentRequest();
                 appointmentRequest.setRentalRequestId(request.rentalRequestId());
                 appointmentRequest.setAppointmentTime(appointmentTime);
-                appointmentRequest.setLocation(request.location());
+                RentalRequests rentalRequest = rentalRequestRepository
+                        .findById(request.rentalRequestId())
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu thuê ID: " + request.rentalRequestId()));
+
+                String resolvedLocation = rentalRequest.getRoomPost() != null
+                        ? rentalRequest.getRoomPost().getAddress()
+                        : "Địa chỉ chưa cập nhật";
+                appointmentRequest.setLocation(resolvedLocation);
                 appointmentRequest.setNote(request.note() != null ? request.note() : "Lịch hẹn được tạo qua AI");
 
                 AppointmentResponse response = appointmentService.createAppointment(appointmentRequest, userId);
@@ -124,6 +133,8 @@ public class AiToolConfig {
         return request -> {
             try {
                 Long userId = authService.getCurrentUserId();
+                // Force clear JPA cache để lấy dữ liệu thời gian thực từ DB
+                entityManager.clear();
                 List<RentalRequests> todayRequests = rentalRequestRepository.findTodayRequestsByUserId(userId);
 
                 if (todayRequests.isEmpty()) {
@@ -158,6 +169,8 @@ public class AiToolConfig {
     public Function<AiEmptyRequest, String> getRentalRequestsForAi() {
         return request -> {
             try {
+                // Force clear JPA cache để luôn lấy trạng thái mới nhất từ DB
+                entityManager.clear();
                 List<RentalRequestResponse> requests = rentalRequestService.findMyRequests();
 
                 if (requests == null || requests.isEmpty()) {

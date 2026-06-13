@@ -3,6 +3,7 @@ package vn.edu.ptit.service.roomManagement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import vn.edu.ptit.dto.Request.CreateRoomManageRequest;
 import vn.edu.ptit.dto.Request.RentalRequestDTO;
 import vn.edu.ptit.dto.Response.ApiResponse;
@@ -12,6 +13,7 @@ import vn.edu.ptit.repository.*;
 import vn.edu.ptit.service.Authentication.AuthService;
 import vn.edu.ptit.Exception.BusinessRuleException;
 import vn.edu.ptit.Exception.ResourceNotFoundException;
+import jakarta.persistence.EntityManager;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,6 +30,7 @@ public class RentalRequestService {
     private final ContractsRepository  contractsRepository;
     private final CustomerRepository customerRepository;
     private final UserRepository userRepository;
+    private final EntityManager entityManager;
     public ApiResponse createNewRentalRequest(RentalRequestDTO request) {
         Long currentId = authService.getCurrentUser().getId();
 
@@ -107,39 +110,15 @@ public class RentalRequestService {
                     .build();
     }
 
-    public List<RentalRequestResponse> findRentalRequestByUser() {
-        Long currentUserId = authService.getCurrentUserId();
-        if (authService.getUser() instanceof Customer) {
-            User user = authService.getUser();
-            return rentalRequestRepository.findByCustomerId(currentUserId)
-                    .stream()
-                    .map(currentRental -> {
-                        return RentalRequestResponse.builder()
-                                .id(currentRental.getId())
-                                .contractId(currentRental.getContract().getId())
-                                .status(currentRental.getStatus())
-                                .reviewedAt(currentRental.getReviewedAt())
-                                .createdAt(currentRental.getCreatedAt())
-                                .customer(RentalRequestResponse.UserInfo.builder().
-                                        fullName(user.getFullName())
-                                        .build())
-                                .landlord(RentalRequestResponse.UserInfo.builder().
-                                        fullName(currentRental.getLandlord().getFullName())
-                                        .build())
-                                .contractStatus(currentRental.getContract().getStatus())
-                                .build();
-                    })
-                    .collect(Collectors.toList());
-        }
-        return null;
-    }
-
     /**
      * Lấy tất cả yêu cầu thuê liên quan đến người dùng hiện tại (cả Landlord lẫn Customer).
      * Repository query đã filter: (landlord.id = userId OR customer.id = userId)
      */
+    @Transactional(readOnly = true)
     public List<RentalRequestResponse> findMyRequests() {
         Long currentUserId = authService.getCurrentUserId();
+        // Clear JPA first-level cache để luôn lấy dữ liệu mới nhất từ DB
+        entityManager.clear();
         List<Object[]> rentalRequestsList = rentalRequestRepository.findAllWithRoomPostAndCustomer(currentUserId);
         return mapToResponse(rentalRequestsList);
     }

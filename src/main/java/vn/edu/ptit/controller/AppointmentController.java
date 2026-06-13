@@ -148,4 +148,25 @@ public class AppointmentController {
                             .build());
         }
     }
+
+    /**
+     * Xoá lịch hẹn (chỉ được xoá khi đã CANCELLED hoặc COMPLETED)
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteAppointment(@PathVariable Long id) {
+        try {
+            Long userId = authService.getCurrentUserId();
+            appointmentService.deleteAppointment(id, userId);
+            return ResponseEntity.ok(ApiResponse.builder()
+                    .success(true)
+                    .message("Đã xoá lịch hẹn thành công")
+                    .build());
+        } catch (RuntimeException | BadRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .build());
+        }
+    }
 }

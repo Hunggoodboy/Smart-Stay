@@ -6,6 +6,5 @@ package vn.edu.ptit.dto.Request;
 public record AiScheduleAppointmentRequest(
     Long rentalRequestId,
     String appointmentTime,
-    String location,
     String note
 ){}
