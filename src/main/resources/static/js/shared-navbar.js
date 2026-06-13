@@ -153,14 +153,29 @@
     }
 
     const roleLabel = isAdmin ? 'Quản trị viên' : (isLandlord ? 'Chủ nhà' : 'Khách thuê');
+    let navAvatarObjectUrl = null;
+
+    function getNavDefaultAvatar(name) {
+        return `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'User')}&background=eff6ff&color=1d4ed8`;
+    }
+
+    function setNavAvatarPreview(src, label) {
+        const preview = document.getElementById('_nav-avatar-preview');
+        const nameBox = document.getElementById('_nav-avatar-name');
+        if (preview) {
+            preview.src = src || getNavDefaultAvatar(document.getElementById('_nav-fullName')?.value || 'User');
+        }
+        if (nameBox) {
+            nameBox.textContent = label || 'JPG, PNG, WEBP hoặc GIF, tối đa 5MB';
+        }
+    }
 
     // Render user chip mới (avatar + tên + dropdown logout)
     function renderUserChip(displayName, avatarUrl) {
         const navActions = document.querySelector('.nav-actions');
         if (!navActions) return;
 
-        const avatarSrc = avatarUrl
-            || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=eff6ff&color=1d4ed8`;
+        const avatarSrc = avatarUrl || getNavDefaultAvatar(displayName);
 
         navActions.innerHTML = `
             <div id="navUserChipWrap" style="position:relative;">
@@ -170,7 +185,7 @@
                     onclick="window._toggleNavUserDrop()">
                     <img src="${avatarSrc}" alt="Avatar"
                         style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid #e5e7eb;flex-shrink:0;"
-                        onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=eff6ff&color=1d4ed8'">
+                        onerror="this.src='${getNavDefaultAvatar(displayName)}'">
                     <span style="font-size:14px;font-weight:600;color:#374151;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${displayName}</span>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                 </button>
@@ -255,6 +270,25 @@
         ._nav-form-msg { border-radius:10px;padding:11px 14px;font-size:14px;font-weight:700;display:none; }
         ._nav-form-msg.error { display:block;background:#fef2f2;color:#b91c1c; }
         ._nav-form-msg.success { display:block;background:#ecfdf5;color:#047857; }
+        ._nav-avatar-upload {
+            display:flex;align-items:center;gap:16px;min-height:88px;
+            padding:14px;border:1px solid #e2e8f0;border-radius:14px;background:#f8fafc;
+        }
+        ._nav-avatar-preview {
+            width:72px;height:72px;flex:0 0 72px;object-fit:cover;
+            border-radius:14px;background:#eff6ff;border:1px solid #dbeafe;
+        }
+        ._nav-avatar-controls {
+            display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0;
+        }
+        ._nav-upload-btn {
+            display:inline-flex;align-items:center;justify-content:center;
+            min-height:40px;padding:9px 14px;line-height:1.2;
+        }
+        ._nav-avatar-name {
+            max-width:100%;color:#64748b;font-size:13px;font-weight:600;
+            line-height:1.45;overflow-wrap:anywhere;
+        }
         ._nav-form-actions { display:flex;justify-content:flex-end;gap:12px;padding-top:16px;border-top:1px solid #e5e7eb; }
         ._nav-btn-secondary {
             border-radius:12px;padding:10px 18px;font:inherit;font-size:14px;font-weight:700;
@@ -267,6 +301,7 @@
         }
         ._nav-btn-primary:hover { background:#1d4ed8; }
         ._nav-btn-primary:disabled { opacity:0.6;cursor:wait; }
+        @media(max-width:560px){ ._nav-avatar-upload{align-items:flex-start;} }
         </style>`;
 
         const profileModal = `
@@ -297,7 +332,18 @@
                         <label class="_nav-form-field"><span>CCCD/CMND</span><input id="_nav-idcard" type="text" class="_nav-form-input"></label>
                     </div>
                     <label class="_nav-form-field"><span>Địa chỉ</span><input id="_nav-address" type="text" class="_nav-form-input"></label>
-                    <label class="_nav-form-field"><span>Ảnh đại diện (URL)</span><input id="_nav-avatarUrl" type="url" class="_nav-form-input" placeholder="https://..."></label>
+                    <div class="_nav-form-field">
+                        <span>Ảnh đại diện</span>
+                        <div class="_nav-avatar-upload">
+                            <img id="_nav-avatar-preview" class="_nav-avatar-preview"
+                                 src="${getNavDefaultAvatar(displayName)}" alt="Ảnh đại diện">
+                            <div class="_nav-avatar-controls">
+                                <label for="_nav-avatar-file" class="_nav-btn-secondary _nav-upload-btn">Tải ảnh lên</label>
+                                <input id="_nav-avatar-file" name="avatarFile" type="file" accept="image/*" hidden>
+                                <div id="_nav-avatar-name" class="_nav-avatar-name">JPG, PNG, WEBP hoặc GIF, tối đa 5MB</div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="_nav-form-actions">
                         <button type="button" class="_nav-btn-secondary" onclick="window._closeNavProfile()">Hủy</button>
                         <button type="submit" id="_nav-profile-submit" class="_nav-btn-primary">Lưu thay đổi</button>
@@ -340,6 +386,36 @@
             if (e.target === this) window._closeNavPassword();
         });
 
+        const avatarInput = document.getElementById('_nav-avatar-file');
+        if (avatarInput) {
+            avatarInput.addEventListener('change', function() {
+                const file = avatarInput.files && avatarInput.files[0];
+                const msg = document.getElementById('_nav-profile-msg');
+                if (msg) { msg.className = '_nav-form-msg'; msg.textContent = ''; }
+                if (!file) {
+                    setNavAvatarPreview(null);
+                    return;
+                }
+                if (!file.type || !file.type.startsWith('image/')) {
+                    avatarInput.value = '';
+                    if (msg) { msg.className = '_nav-form-msg error'; msg.textContent = 'File ảnh đại diện phải là ảnh hợp lệ'; }
+                    setNavAvatarPreview(null);
+                    return;
+                }
+                if (file.size > 5 * 1024 * 1024) {
+                    avatarInput.value = '';
+                    if (msg) { msg.className = '_nav-form-msg error'; msg.textContent = 'Ảnh đại diện không được vượt quá 5MB'; }
+                    setNavAvatarPreview(null);
+                    return;
+                }
+                if (navAvatarObjectUrl) {
+                    URL.revokeObjectURL(navAvatarObjectUrl);
+                }
+                navAvatarObjectUrl = URL.createObjectURL(file);
+                setNavAvatarPreview(navAvatarObjectUrl, file.name);
+            });
+        }
+
         // Profile form submit
         document.getElementById('_nav-profile-form').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -349,22 +425,31 @@
             msg.className = '_nav-form-msg'; msg.textContent = '';
             try {
                 const t = localStorage.getItem('smartstay_token');
+                const payload = new FormData();
+                payload.append('fullName', document.getElementById('_nav-fullName').value.trim());
+                payload.append('email', document.getElementById('_nav-email').value.trim());
+                payload.append('phoneNumber', document.getElementById('_nav-phone').value.trim());
+                payload.append('gender', document.getElementById('_nav-gender').value);
+                const dob = document.getElementById('_nav-dob').value;
+                if (dob) payload.append('dateOfBirth', dob);
+                payload.append('idCardNumber', document.getElementById('_nav-idcard').value.trim());
+                payload.append('address', document.getElementById('_nav-address').value.trim());
+                const avatarFile = document.getElementById('_nav-avatar-file')?.files?.[0];
+                if (avatarFile) payload.append('avatarFile', avatarFile);
+
                 const res = await fetch('/api/user/profile', {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', ...(t ? {'Authorization': `Bearer ${t}`} : {}) },
+                    headers: t ? {'Authorization': `Bearer ${t}`} : {},
                     credentials: 'include',
-                    body: JSON.stringify({
-                        fullName: document.getElementById('_nav-fullName').value.trim(),
-                        email: document.getElementById('_nav-email').value.trim(),
-                        phoneNumber: document.getElementById('_nav-phone').value.trim(),
-                        gender: document.getElementById('_nav-gender').value,
-                        dateOfBirth: document.getElementById('_nav-dob').value || null,
-                        idCardNumber: document.getElementById('_nav-idcard').value.trim(),
-                        address: document.getElementById('_nav-address').value.trim(),
-                        avatarUrl: document.getElementById('_nav-avatarUrl').value.trim() || null
-                    })
+                    body: payload
                 });
-                if (!res.ok) throw new Error('Đã xảy ra lỗi khi cập nhật');
+                const data = await res.json().catch(() => null);
+                if (!res.ok) throw new Error((data && data.message) || 'Đã xảy ra lỗi khi cập nhật');
+                if (data) {
+                    localStorage.setItem('smartstay_user', JSON.stringify(data));
+                    renderUserChip(data.fullName || data.displayName || data.username || 'Người dùng', data.avatarUrl || null);
+                    setNavAvatarPreview(data.avatarUrl || getNavDefaultAvatar(data.fullName || data.username), 'Đang dùng ảnh đại diện hiện tại');
+                }
                 msg.className = '_nav-form-msg success'; msg.textContent = '✅ Đã lưu thông tin thành công!';
                 setTimeout(() => window._closeNavProfile(), 1200);
             } catch(err) {
@@ -431,7 +516,9 @@
                 document.getElementById('_nav-dob').value = d.dateOfBirth || '';
                 document.getElementById('_nav-idcard').value = d.idCardNumber || '';
                 document.getElementById('_nav-address').value = d.address || '';
-                document.getElementById('_nav-avatarUrl').value = d.avatarUrl || '';
+                const avatarFile = document.getElementById('_nav-avatar-file');
+                if (avatarFile) avatarFile.value = '';
+                setNavAvatarPreview(d.avatarUrl || getNavDefaultAvatar(d.fullName || d.username), d.avatarUrl ? 'Đang dùng ảnh đại diện hiện tại' : undefined);
             }
         } catch(e) { console.warn('Could not load profile', e); }
     };
@@ -441,6 +528,8 @@
         if (modal) modal.classList.remove('open');
         const msg = document.getElementById('_nav-profile-msg');
         if (msg) { msg.className = '_nav-form-msg'; msg.textContent = ''; }
+        const avatarFile = document.getElementById('_nav-avatar-file');
+        if (avatarFile) avatarFile.value = '';
     };
 
     window._openNavPassword = function() {
