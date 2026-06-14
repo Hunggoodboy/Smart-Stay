@@ -164,6 +164,16 @@ public class WebController {
         return "createRoomManage";
     }
 
+    @GetMapping("/editRoomPost/{id}")
+    public String editRoomPost(@PathVariable Long id) {
+        try {
+            authService.getCurrentUserId();
+        } catch (Exception e) {
+            return "redirect:/login";
+        }
+        return "editRoomPost";
+    }
+
     @GetMapping("/revenue-management")
     public String revenueManagement() {
         return "revenue_management";

@@ -83,4 +83,25 @@ public class RoomPostController {
     public ResponseEntity<List<RoomPostSummaryResponse>> getPostsForLandlord() {
         return ResponseEntity.ok(roomPostService.getPostsForCurrentLandlord());
     }
+
+    @PutMapping("/api/room-post/{id}")
+    public ResponseEntity<ApiResponse> updateRoomPost(
+            @PathVariable Long id,
+            @RequestPart("request") CreateRoomPostRequest request,
+            @RequestPart(value = "mainImage", required = false) MultipartFile mainImg,
+            @RequestPart(value = "gallery", required = false) List<MultipartFile> images
+    ) {
+        try {
+            roomPostService.updateRoomPost(id, request, mainImg, images);
+            return ResponseEntity.ok(ApiResponse.builder()
+                    .success(true)
+                    .message("Cập nhật bài đăng thành công")
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .build());
+        }
+    }
 }

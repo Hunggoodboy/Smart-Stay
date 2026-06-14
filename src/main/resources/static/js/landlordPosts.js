@@ -128,10 +128,10 @@ function renderPostCards(posts) {
         const thumbUrl = p.thumbnailUrl || '../static/images/default-room.png';
 
         html += `
-        <article class="flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md hover:-translate-y-1">
-            <div class="relative h-48 w-full bg-slate-100 border-b border-gray-100">
-                <img src="${thumbUrl}" alt="Ảnh phòng" class="h-full w-full object-cover">
-                <span class="absolute left-3 top-3 rounded-md px-2.5 py-1 text-[11px] font-bold text-white shadow-sm ${statusMeta.badgeClass}">${statusMeta.label}</span>
+        <article class="flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md hover:-translate-y-1" style="display: flex; flex-direction: column; overflow: hidden; border-radius: 1rem;">
+            <div class="relative h-48 w-full bg-slate-100 border-b border-gray-100" style="position: relative; height: 190px; width: 100%; flex-shrink: 0;">
+                <img src="${thumbUrl}" alt="Ảnh phòng" class="h-full w-full object-cover" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                <span class="absolute left-3 top-3 rounded-md px-2.5 py-1 text-[11px] font-bold text-white shadow-sm ${statusMeta.badgeClass}" style="position: absolute; left: 12px; top: 12px; border-radius: 6px; padding: 4px 10px; font-size: 11px; font-weight: bold;">${statusMeta.label}</span>
             </div>
             <div class="flex flex-1 flex-col p-5">
                 <div class="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-2">

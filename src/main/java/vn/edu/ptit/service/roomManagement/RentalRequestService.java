@@ -106,6 +106,7 @@ public class RentalRequestService {
                     .roomType(roomPost.getRoomType())
                     .description(roomPost.getDescription())
                     .contractId(contractRef.getId())
+                    .roomPostId(roomPost.getId())
                     .address(roomPost.getAddress())
                     .ward(roomPost.getWard())
                     .district(roomPost.getDistrict())

@@ -34,4 +34,8 @@ public class RoomManagementController {
         return ResponseEntity.ok(roomService.getRoomDetailManagement(roomId));
     }
 
+    @GetMapping("/check-rented/{roomPostId}")
+    public ResponseEntity<Boolean> checkRoomRented(@PathVariable Long roomPostId) {
+        return ResponseEntity.ok(roomService.checkRoomPostRented(roomPostId));
+    }
 }

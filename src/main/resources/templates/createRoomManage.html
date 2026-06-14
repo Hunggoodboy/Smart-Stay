@@ -378,6 +378,7 @@
                 ⏳ Đang tải thông tin hợp đồng...
             </div>
             <input type="hidden" id="contractId">
+            <input type="hidden" id="roomPostId">
         </div>
     </div>
 
@@ -446,6 +447,27 @@
                         document.getElementById('contractId').value = data.contractId;
                         loadContractDetails(data.contractId, token); // Gọi hàm phụ trợ bên dưới
                     }
+                    if(data.roomPostId) {
+                        document.getElementById('roomPostId').value = data.roomPostId;
+                        try {
+                            const checkRes = await fetch(`/api/room-management/check-rented/${data.roomPostId}`, {
+                                headers: { 'Authorization': `Bearer ${token}` }
+                            });
+                            if (checkRes.ok) {
+                                const isRented = await checkRes.json();
+                                if (isRented) {
+                                    showToast('error', 'Phòng này bạn đang cho thuê và không tạo phòng quản lý được', 10000);
+                                    const submitBtn = document.getElementById('submitBtn');
+                                    submitBtn.disabled = true;
+                                    submitBtn.textContent = 'Phòng đã cho thuê';
+                                    submitBtn.style.background = '#94a3b8';
+                                    submitBtn.style.cursor = 'not-allowed';
+                                }
+                            }
+                        } catch(e) {
+                            console.error('Lỗi khi kiểm tra phòng đã thuê:', e);
+                        }
+                    }
 
                 } else {
                     showToast('error', 'Không thể lấy dữ liệu gợi ý phòng!');
@@ -491,6 +513,7 @@
 
         const payload = {
             contractId: parseInt(document.getElementById('contractId').value) || null,
+            roomPostId: parseInt(document.getElementById('roomPostId').value) || null,
             roomNumber: document.getElementById('roomNumber').value,
             roomType:   document.getElementById('roomType').value,
             description:document.getElementById('description').value,

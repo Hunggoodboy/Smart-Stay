@@ -74,6 +74,14 @@ public class RoomPostDetailResponse {
      */
     private String myRequestStatus;
 
+    // ==================== TRẠNG THÁI PHÒNG QUẢN LÝ ====================
+
+    /** Bài đăng này đã có phòng quản lý (trong bảng rooms) chưa */
+    private boolean hasRoom;
+
+    /** Trạng thái phòng: AVAILABLE, RENTED, MAINTENANCE (null nếu chưa có rooms) */
+    private String roomStatus;
+
     // ==================== Sở hữu ====================
 
     private boolean isOwner;

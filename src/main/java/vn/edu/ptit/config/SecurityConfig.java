@@ -58,6 +58,7 @@ public class SecurityConfig {
                                                 org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers(PUBLIC_URLS).permitAll()
+                                                .requestMatchers("/api/landlord/requestToLandLord").authenticated()
                                                 .requestMatchers(LANDLORD_API_URLS).hasAuthority("LANDLORD")
                                                 .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
                                                 .requestMatchers("/adminVerify", "/adminDashboard", "/adminUsers",

@@ -147,7 +147,7 @@ function renderPage() {
 function buildCard(r) {
     const img = r.thumbnailUrl
         ? `<img src="${esc(r.thumbnailUrl)}" alt="${esc(r.title)}" loading="lazy"
-            onerror="this.parentElement.innerHTML='${noImgEsc()}'">`
+            onerror="this.parentElement.innerHTML='${noImgEsc()}`
         : noImgHtml();
 
     const area = r.areaM2

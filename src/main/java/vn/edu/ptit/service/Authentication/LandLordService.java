@@ -24,13 +24,38 @@ public class LandLordService {
     private final UserRepository userRepository;
     public ApiResponse createLandLord(LandLordRegisterRequest request) {
         User currentUser = authService.getUser();
-        LandLord landLord = new LandLord();
-        landLord.setId(currentUser.getId());
-        landLord.setAddress(request.getAddress());
-        landLord.setIdCardNumber(request.getIdCardNumber());
-        landLord.setVerified(false);
-        landLordRepository.save(landLord);
-        return ApiResponse.builder().message("Đăng ký chủ nhà thành công, vui lòng chờ xác thực").success(true).build();
+        
+        // 1. Kiểm tra xem người dùng có phải là Customer hoặc Admin không
+        if (currentUser instanceof vn.edu.ptit.entity.Customer || currentUser instanceof vn.edu.ptit.entity.Admin) {
+            return ApiResponse.builder()
+                    .message("Tài khoản của bạn không được phép đăng ký làm chủ nhà (Chỉ dành cho USER bình thường)")
+                    .success(false)
+                    .build();
+        }
+
+        // 2. Kiểm tra xem người dùng đã từng gửi yêu cầu đăng ký chưa
+        Boolean isVerified = userRepository.getLandlordVerificationStatus(currentUser.getId());
+        if (isVerified != null) {
+            if (Boolean.TRUE.equals(isVerified)) {
+                return ApiResponse.builder()
+                        .message("Bạn đã là chủ nhà rồi, không thể đăng ký lại")
+                        .success(false)
+                        .build();
+            } else {
+                return ApiResponse.builder()
+                        .message("Bạn đã gửi yêu cầu rồi, vui lòng chờ Quản trị viên xác thực")
+                        .success(false)
+                        .build();
+            }
+        }
+
+        // 3. Nếu hợp lệ, tạo mới yêu cầu
+        userRepository.insertIntoLandLord(currentUser.getId(), request.getAddress(), request.getIdCardNumber());
+        
+        return ApiResponse.builder()
+                .message("Đăng ký chủ nhà thành công, vui lòng chờ xác thực")
+                .success(true)
+                .build();
     }
     private List<RequestLandLordResponse> convertToListResponse(List<LandLord> landLords) {
         return landLords.stream().map(landLord -> {
@@ -49,8 +74,10 @@ public class LandLordService {
         User currentUser = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
         userRepository.updateUserType("LANDLORD", currentUser.getId());
         LandLord landLord = landLordRepository.findById(userId).orElse(null);
-        landLord.setVerified(true);
-        landLordRepository.save(landLord);
+        if (landLord != null) {
+            landLord.setVerified(true);
+            landLordRepository.save(landLord);
+        }
         return ApiResponse.builder().message("Xác thực chủ nhà thành công").success(true).build();
     }
     public List<RequestLandLordResponse> getLandLordsByVerified(boolean verified) {

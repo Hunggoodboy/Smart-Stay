@@ -27,4 +27,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Transactional
     @Query(value = "insert into customers(user_id, address,id_card_number,is_verified) values (:userId, :address, :idCardNumber, true)", nativeQuery = true)
     void insertIntoCustomer(@Param("userId") Long userId, @Param("address") String address, @Param("idCardNumber") String idCardNumber);
+
+    @Modifying(clearAutomatically = true)
+    @Transactional
+    @Query(value = "insert into landlords(user_id, address, id_card_number, is_verified) values (:userId, :address, :idCardNumber, false)", nativeQuery = true)
+    void insertIntoLandLord(@Param("userId") Long userId, @Param("address") String address, @Param("idCardNumber") String idCardNumber);
+
+    @Query(value = "SELECT is_verified FROM landlords WHERE user_id = :userId", nativeQuery = true)
+    Boolean getLandlordVerificationStatus(@Param("userId") Long userId);
 }

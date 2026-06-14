@@ -52,7 +52,6 @@ public class RoomService {
             throw new BusinessRuleException("Đã có phòng quản lý cho hợp đồng này");
         }
 
-        // ── KIỂM TRA CUSTOMER ĐÃ ĐANG TRONG PHÒNG KHÁC ──────────────
         // Lấy customer từ hợp đồng để kiểm tra
         User customerToCheck = contract.getCustomer();
         if (roomsRepository.existsActiveRentalByCustomerId(customerToCheck.getId())) {
@@ -60,6 +59,13 @@ public class RoomService {
                 "Khách thuê " + customerToCheck.getFullName() + " hiện đang trong diện thuê phòng ở hệ thống. " +
                 "Không thể tạo phòng quản lý mới cho khách này."
             );
+        }
+
+        // Kiểm tra bài đăng đã có phòng đang cho thuê chưa
+        if (request.getRoomPostId() != null) {
+            if (roomsRepository.existsByRoomPostIdAndStatus(request.getRoomPostId(), Rooms.Status.RENTED)) {
+                throw new BusinessRuleException("Phòng này bạn đang cho thuê và không tạo phòng quản lý được");
+            }
         }
 
         // Customer lấy từ hợp đồng, không cần truyền thêm email
@@ -151,4 +157,7 @@ public class RoomService {
                 .build();
     }
 
+    public boolean checkRoomPostRented(Long roomPostId) {
+        return roomsRepository.existsByRoomPostIdAndStatus(roomPostId, Rooms.Status.RENTED);
+    }
 }

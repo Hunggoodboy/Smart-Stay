@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chỉnh sửa bài đăng – SmartStay</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,600&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --brand: #6366f1; --brand-2: #4f46e5; --brand-light: #eef2ff; --brand-soft: #e0e7ff;
+            --ink: #1f2937; --ink-2: #4b5563; --ink-3: #6b7280; --ink-4: #9ca3af;
+            --surface: #f8fafc; --card: #ffffff; --border: #e5e7eb;
+            --r-md: 12px; --r-lg: 16px; --r-xl: 24px;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-lg: 0 12px 24px rgba(0,0,0,0.08);
+            --font-display: 'Fraunces', serif;
+            --font-body: 'DM Sans', sans-serif;
+        }
+        body { font-family: var(--font-body); background: var(--surface); color: var(--ink); margin: 0; line-height: 1.6; padding-top: 80px; }
+        * { box-sizing: border-box; }
+
+        .container { max-width: 900px; margin: 0 auto; padding: 32px 24px; }
+
+        .page-header { margin-bottom: 32px; }
+        .page-header h1 { font-family: var(--font-display); font-size: 32px; font-weight: 700; margin: 0 0 8px; color: var(--ink); }
+        .page-header p { color: var(--ink-3); font-size: 15px; margin: 0; }
+
+        .form-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: var(--r-xl);
+            padding: 32px; box-shadow: var(--shadow-lg); margin-bottom: 24px;
+        }
+        .form-card h2 {
+            font-size: 18px; font-weight: 700; margin: 0 0 20px; padding-bottom: 12px;
+            border-bottom: 2px solid var(--brand-light); color: var(--ink);
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        .field-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        .field-group { margin-bottom: 16px; }
+        .field-group.full { grid-column: 1 / -1; }
+
+        label { display: block; font-size: 13px; font-weight: 600; color: var(--ink-2); margin-bottom: 6px; }
+        input, select, textarea {
+            width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: var(--r-md);
+            font-family: inherit; font-size: 14px; color: var(--ink); outline: none; transition: border-color 0.2s;
+            background: #fff;
+        }
+        input:focus, select:focus, textarea:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+        textarea { resize: vertical; min-height: 100px; }
+
+        .current-images { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+        .current-img-wrap {
+            position: relative; width: 120px; height: 90px; border-radius: var(--r-md);
+            overflow: hidden; border: 2px solid var(--border);
+        }
+        .current-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+        .current-img-wrap .img-badge {
+            position: absolute; top: 4px; left: 4px; background: var(--brand); color: #fff;
+            font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border); border-radius: var(--r-md); padding: 24px;
+            text-align: center; cursor: pointer; transition: all 0.2s; color: var(--ink-3);
+        }
+        .upload-area:hover { border-color: var(--brand); background: var(--brand-light); color: var(--brand); }
+
+        .btn-save {
+            width: 100%; padding: 16px; background: linear-gradient(135deg, var(--brand), var(--brand-2));
+            color: #fff; border: none; border-radius: var(--r-md); font-size: 16px; font-weight: 700;
+            cursor: pointer; transition: all 0.2s; font-family: var(--font-body);
+        }
+        .btn-save:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(99,102,241,0.3); }
+        .btn-save:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .btn-back {
+            display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px;
+            background: #fff; border: 1px solid var(--border); border-radius: 10px;
+            font-size: 14px; font-weight: 600; color: var(--ink-2); text-decoration: none;
+            box-shadow: var(--shadow-sm); transition: all 0.15s; margin-bottom: 24px;
+        }
+        .btn-back:hover { background: #f9fafb; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+        /* Toast */
+        #toast-container { position: fixed; top: 90px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 12px; }
+        .toast { display: flex; align-items: flex-start; gap: 12px; padding: 16px 20px; border-radius: 12px; min-width: 300px; max-width: 400px; background: #fff; box-shadow: 0 8px 30px rgba(0,0,0,0.12); border-left: 4px solid transparent; animation: toastIn 0.35s cubic-bezier(0.21,1.02,0.73,1) forwards; font-size: 14px; }
+        .toast.success { border-color: #10b981; }
+        .toast.error   { border-color: #ef4444; }
+        .toast.hiding { animation: toastOut 0.3s ease forwards; }
+        @keyframes toastIn  { from { opacity:0; transform:translateX(60px); } to { opacity:1; transform:translateX(0); } }
+        @keyframes toastOut { from { opacity:1; transform:translateX(0); } to { opacity:0; transform:translateX(60px); } }
+
+        #loader { text-align: center; padding: 80px 0; font-size: 18px; color: var(--ink-3); }
+
+        @media (max-width: 700px) {
+            .field-row, .field-row-3 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<link rel="stylesheet" th:href="@{/css/shared-navbar.css}" />
+<header class="navbar">
+    <div class="nav-inner" id="navInner">
+        <a href="/" class="logo">
+            <span class="logo-mark">S</span>
+            <span class="logo-text">Smart<em>Stay</em></span>
+        </a>
+        <nav class="nav-links">
+            <a href="/" class="nav-link">Khám phá</a>
+            <a href="/chatMessage" class="nav-link">Tin nhắn</a>
+        </nav>
+        <div class="nav-actions" style="display:flex;align-items:center;gap:8px;">
+            <a href="/login" class="btn-ghost" id="btnLogin">Đăng nhập</a>
+            <a href="/register" class="btn-primary" id="btnRegister">Đăng ký</a>
+        </div>
+        <button class="hamburger" id="hamburger" aria-label="Menu">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+</header>
+
+<div id="toast-container"></div>
+
+<div id="loader">⏳ Đang tải thông tin bài đăng...</div>
+
+<div class="container" id="app" style="display:none;">
+    <a href="javascript:history.back()" class="btn-back">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Quay lại
+    </a>
+
+    <div class="page-header">
+        <h1>✏️ Chỉnh sửa bài đăng</h1>
+        <p>Cập nhật thông tin phòng cho thuê của bạn. Thay đổi sẽ được hiển thị ngay lập tức.</p>
+    </div>
+
+    <!-- Thông tin cơ bản -->
+    <div class="form-card">
+        <h2>🏠 Thông tin cơ bản</h2>
+        <div class="field-group">
+            <label for="edit-title">Tiêu đề bài đăng</label>
+            <input type="text" id="edit-title" placeholder="VD: Phòng trọ mới xây, full nội thất" maxlength="200" />
+        </div>
+        <div class="field-row">
+            <div class="field-group">
+                <label for="edit-roomType">Loại phòng</label>
+                <select id="edit-roomType">
+                    <option value="">-- Chọn --</option>
+                    <option value="PHONG_TRO">Phòng trọ</option>
+                    <option value="CHUNG_CU_MINI">Chung cư mini</option>
+                    <option value="CAN_HO">Căn hộ</option>
+                    <option value="NHA_NGUYEN_CAN">Nhà nguyên căn</option>
+                    <option value="STUDIO">Studio</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label for="edit-areaM2">Diện tích (m²)</label>
+                <input type="number" id="edit-areaM2" min="1" step="0.5" />
+            </div>
+        </div>
+        <div class="field-group">
+            <label for="edit-maxOccupants">Số người tối đa</label>
+            <input type="number" id="edit-maxOccupants" min="1" max="20" />
+        </div>
+        <div class="field-group">
+            <label for="edit-description">Mô tả chi tiết</label>
+            <textarea id="edit-description" rows="5" maxlength="5000" placeholder="Mô tả chi tiết về phòng..."></textarea>
+        </div>
+    </div>
+
+    <!-- Địa chỉ -->
+    <div class="form-card">
+        <h2>📍 Địa chỉ</h2>
+        <div class="field-group">
+            <label for="edit-address">Địa chỉ cụ thể</label>
+            <input type="text" id="edit-address" placeholder="VD: 123 Nguyễn Trãi" />
+        </div>
+        <div class="field-row">
+            <div class="field-group">
+                <label for="edit-ward">Phường / Xã</label>
+                <input type="text" id="edit-ward" />
+            </div>
+            <div class="field-group">
+                <label for="edit-district">Quận / Huyện</label>
+                <input type="text" id="edit-district" />
+            </div>
+        </div>
+        <div class="field-group">
+            <label for="edit-city">Tỉnh / Thành phố</label>
+            <select id="edit-city">
+                <option value="">-- Chọn --</option>
+                <option value="Hà Nội">Hà Nội</option>
+                <option value="Hồ Chí Minh">TP. Hồ Chí Minh</option>
+                <option value="Đà Nẵng">Đà Nẵng</option>
+                <option value="Hải Phòng">Hải Phòng</option>
+                <option value="Cần Thơ">Cần Thơ</option>
+                <option value="Bình Dương">Bình Dương</option>
+                <option value="Đồng Nai">Đồng Nai</option>
+                <option value="Khánh Hòa">Khánh Hòa</option>
+                <option value="Thừa Thiên Huế">Thừa Thiên Huế</option>
+                <option value="Khác">Tỉnh khác...</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Giá & Dịch vụ -->
+    <div class="form-card">
+        <h2>💰 Giá thuê & Dịch vụ</h2>
+        <div class="field-row">
+            <div class="field-group">
+                <label for="edit-monthlyRent">Giá thuê / tháng (₫)</label>
+                <input type="number" id="edit-monthlyRent" min="0" step="100000" />
+            </div>
+            <div class="field-group">
+                <label for="edit-depositAmount">Tiền đặt cọc (₫)</label>
+                <input type="number" id="edit-depositAmount" min="0" step="100000" />
+            </div>
+        </div>
+        <div class="field-row-3">
+            <div class="field-group">
+                <label for="edit-electricityPricePerKwh">Giá điện (₫/kWh)</label>
+                <input type="number" id="edit-electricityPricePerKwh" min="0" step="100" />
+            </div>
+            <div class="field-group">
+                <label for="edit-waterPricePerM3">Giá nước (₫/m³)</label>
+                <input type="number" id="edit-waterPricePerM3" min="0" step="1000" />
+            </div>
+            <div class="field-group">
+                <label for="edit-internetFee">Phí Internet (₫/tháng)</label>
+                <input type="number" id="edit-internetFee" min="0" step="10000" />
+            </div>
+        </div>
+        <div class="field-row">
+            <div class="field-group">
+                <label for="edit-parkingFee">Phí gửi xe (₫/tháng)</label>
+                <input type="number" id="edit-parkingFee" min="0" step="10000" />
+            </div>
+            <div class="field-group">
+                <label for="edit-cleaningFee">Phí vệ sinh (₫/tháng)</label>
+                <input type="number" id="edit-cleaningFee" min="0" step="10000" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Hình ảnh -->
+    <div class="form-card">
+        <h2>📸 Hình ảnh</h2>
+
+        <div class="field-group">
+            <label>Ảnh chính hiện tại</label>
+            <div class="current-images" id="current-main-image"></div>
+        </div>
+
+        <div class="field-group">
+            <label>Thay ảnh chính mới (nếu muốn)</label>
+            <div class="upload-area" onclick="document.getElementById('edit-mainImage').click()">
+                <input type="file" id="edit-mainImage" accept="image/*" hidden />
+                <div id="new-main-preview" style="display:none;">
+                    <img id="new-main-img" src="" style="max-height:150px;border-radius:8px;margin-bottom:8px;" />
+                    <p style="margin:0;font-size:13px;color:var(--brand);">Ảnh chính mới đã chọn</p>
+                </div>
+                <div id="main-upload-prompt">
+                    <span style="font-size:28px;">📸</span>
+                    <p style="margin:4px 0 0;">Nhấn để chọn ảnh chính mới</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="field-group">
+            <label>Ảnh gallery hiện tại</label>
+            <div class="current-images" id="current-gallery-images"></div>
+        </div>
+
+        <div class="field-group">
+            <label>Thêm ảnh gallery mới</label>
+            <div class="upload-area" onclick="document.getElementById('edit-gallery').click()">
+                <input type="file" id="edit-gallery" accept="image/*" multiple hidden />
+                <div id="gallery-preview" style="display:none;"></div>
+                <div id="gallery-upload-prompt">
+                    <span style="font-size:28px;">🖼️</span>
+                    <p style="margin:4px 0 0;">Nhấn để chọn thêm ảnh gallery</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nút lưu -->
+    <button class="btn-save" id="btn-submit" onclick="submitEdit()">
+        💾 Lưu thay đổi
+    </button>
+</div>
+
+<script>
+    const roomPostId = window.location.pathname.split('/').pop();
+    let originalData = {};
+
+    async function loadRoomData() {
+        const token = localStorage.getItem('smartstay_token');
+        try {
+            const res = await fetch(`/room-detail/${roomPostId}`, {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            if (!res.ok) throw new Error('Not found');
+            const data = await res.json();
+            originalData = data;
+
+            if (!data.owner) {
+                document.getElementById('loader').textContent = '⛔ Bạn không có quyền chỉnh sửa bài đăng này.';
+                return;
+            }
+
+            fillForm(data);
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('app').style.display = 'block';
+        } catch (e) {
+            document.getElementById('loader').innerHTML = '⚠️ Không tìm thấy bài đăng hoặc có lỗi xảy ra.';
+        }
+    }
+
+    function fillForm(room) {
+        document.getElementById('edit-title').value = room.title || '';
+        document.getElementById('edit-roomType').value = room.roomType || '';
+        document.getElementById('edit-areaM2').value = room.areaM2 || '';
+        document.getElementById('edit-maxOccupants').value = room.maxOccupants || '';
+        document.getElementById('edit-description').value = room.description || '';
+        document.getElementById('edit-address').value = room.fullAddress || room.address || '';
+        document.getElementById('edit-ward').value = room.ward || '';
+        document.getElementById('edit-district').value = room.district || '';
+        document.getElementById('edit-city').value = room.city || '';
+        document.getElementById('edit-monthlyRent').value = room.monthlyRent || '';
+        document.getElementById('edit-depositAmount').value = room.depositAmount || '';
+        document.getElementById('edit-electricityPricePerKwh').value = room.electricityPricePerKwh || '';
+        document.getElementById('edit-waterPricePerM3').value = room.waterPricePerM3 || '';
+        document.getElementById('edit-internetFee').value = room.internetFee || 0;
+        document.getElementById('edit-parkingFee').value = room.parkingFee || 0;
+        document.getElementById('edit-cleaningFee').value = room.cleaningFee || 0;
+
+        // Ảnh chính
+        const mainImgContainer = document.getElementById('current-main-image');
+        if (room.mainImageUrl) {
+            const url = room.mainImageUrl.startsWith('http') ? room.mainImageUrl : (room.mainImageUrl.startsWith('/') ? room.mainImageUrl : '/' + room.mainImageUrl);
+            mainImgContainer.innerHTML = `<div class="current-img-wrap"><img src="${url}" onerror="this.src='https://placehold.co/120x90/eef2ff/6366f1?text=Loi'"><span class="img-badge">Ảnh chính</span></div>`;
+        } else {
+            mainImgContainer.innerHTML = '<p style="color:var(--ink-4);font-size:13px;">Chưa có ảnh chính</p>';
+        }
+
+        // Gallery
+        const galleryContainer = document.getElementById('current-gallery-images');
+        if (room.images && room.images.length > 0) {
+            galleryContainer.innerHTML = room.images.map((img, i) => {
+                const url = img.startsWith('http') ? img : (img.startsWith('/') ? img : '/' + img);
+                return `<div class="current-img-wrap"><img src="${url}" onerror="this.src='https://placehold.co/120x90/eef2ff/6366f1?text=Loi'"><span class="img-badge">#${i+1}</span></div>`;
+            }).join('');
+        } else {
+            galleryContainer.innerHTML = '<p style="color:var(--ink-4);font-size:13px;">Chưa có ảnh gallery</p>';
+        }
+    }
+
+    // Preview ảnh chính mới
+    document.getElementById('edit-mainImage').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                document.getElementById('new-main-img').src = ev.target.result;
+                document.getElementById('new-main-preview').style.display = 'block';
+                document.getElementById('main-upload-prompt').style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Preview ảnh gallery mới
+    document.getElementById('edit-gallery').addEventListener('change', function(e) {
+        const files = e.target.files;
+        if (files.length > 0) {
+            const preview = document.getElementById('gallery-preview');
+            preview.style.display = 'flex';
+            preview.style.flexWrap = 'wrap';
+            preview.style.gap = '8px';
+            preview.innerHTML = '';
+            document.getElementById('gallery-upload-prompt').style.display = 'none';
+            for (let f of files) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const img = document.createElement('img');
+                    img.src = ev.target.result;
+                    img.style.cssText = 'width:80px;height:60px;object-fit:cover;border-radius:8px;border:2px solid var(--brand-soft);';
+                    preview.appendChild(img);
+                };
+                reader.readAsDataURL(f);
+            }
+        }
+    });
+
+    async function submitEdit() {
+        const btn = document.getElementById('btn-submit');
+        btn.textContent = '⏳ Đang lưu...';
+        btn.disabled = true;
+
+        const token = localStorage.getItem('smartstay_token');
+        const formData = new FormData();
+
+        const requestData = {
+            title: document.getElementById('edit-title').value,
+            description: document.getElementById('edit-description').value,
+            monthlyRent: parseFloat(document.getElementById('edit-monthlyRent').value) || null,
+            depositAmount: parseFloat(document.getElementById('edit-depositAmount').value) || null,
+            areaM2: parseFloat(document.getElementById('edit-areaM2').value) || null,
+            maxOccupants: parseInt(document.getElementById('edit-maxOccupants').value) || null,
+            roomType: document.getElementById('edit-roomType').value || null,
+            address: document.getElementById('edit-address').value,
+            ward: document.getElementById('edit-ward').value || null,
+            district: document.getElementById('edit-district').value || null,
+            city: document.getElementById('edit-city').value,
+            electricityPricePerKwh: parseFloat(document.getElementById('edit-electricityPricePerKwh').value) || null,
+            waterPricePerM3: parseFloat(document.getElementById('edit-waterPricePerM3').value) || null,
+            internetFee: parseFloat(document.getElementById('edit-internetFee').value) || 0,
+            parkingFee: parseFloat(document.getElementById('edit-parkingFee').value) || 0,
+            cleaningFee: parseFloat(document.getElementById('edit-cleaningFee').value) || 0
+        };
+
+        formData.append('request', new Blob([JSON.stringify(requestData)], { type: 'application/json' }));
+
+        const mainImgFile = document.getElementById('edit-mainImage').files[0];
+        if (mainImgFile) {
+            formData.append('mainImage', mainImgFile);
+        }
+
+        const galleryFiles = document.getElementById('edit-gallery').files;
+        if (galleryFiles.length > 0) {
+            for (let f of galleryFiles) {
+                formData.append('gallery', f);
+            }
+        }
+
+        try {
+            const res = await fetch(`/api/room-post/${roomPostId}`, {
+                method: 'PUT',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+
+            const data = await res.json();
+            if (res.ok && data.success) {
+                showToast('success', 'Cập nhật thành công!');
+                setTimeout(() => {
+                    window.location.href = '/rooms/' + roomPostId;
+                }, 1500);
+            } else {
+                showToast('error', data.message || 'Cập nhật thất bại.');
+                btn.textContent = '💾 Lưu thay đổi';
+                btn.disabled = false;
+            }
+        } catch (e) {
+            showToast('error', 'Lỗi kết nối: ' + e.message);
+            btn.textContent = '💾 Lưu thay đổi';
+            btn.disabled = false;
+        }
+    }
+
+    function showToast(type, msg) {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `<span>${type === 'success' ? '✅' : '❌'}</span><span>${msg}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => { toast.classList.add('hiding'); setTimeout(() => toast.remove(), 300); }, 4000);
+    }
+
+    loadRoomData();
+</script>
+<script th:src="@{/js/shared-navbar.js}" src="../static/js/shared-navbar.js"></script>
+</body>
+</html>

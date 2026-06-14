@@ -305,6 +305,9 @@ body { padding-top: 80px; }
                 <button id="btnManage" class="btn-primary" style="margin-top: 12px; background: #1f2937; display: none;" onclick="goToManagement()">
                     🛠️ Tạo quản lý phòng
                 </button>
+                <button id="btnEditPost" class="btn-primary" style="margin-top: 12px; background: linear-gradient(135deg, #6366f1, #8b5cf6); display: none;" onclick="goToEditPost()">
+                    ✏️ Chỉnh sửa thông tin phòng
+                </button>
             </div>
         </div>
     </div>
@@ -442,9 +445,35 @@ body { padding-top: 80px; }
         const btnManage = document.getElementById('btnManage');
 
         if (room.owner == true) {
-            // Nếu là chủ nhà: Hiện nút Quản lý, ẩn nút Gửi yêu cầu[cite: 8, 10]
+            // Nếu là chủ nhà: Ẩn nút Gửi yêu cầu
             btnAction.style.display = 'none';
-            btnManage.style.display = 'block';
+
+            if (room.hasRoom) {
+                // Phòng đã có trong bảng rooms → hiển thị trạng thái
+                const statusLabels = {
+                    'RENTED': '🏠 Phòng đang thuê',
+                    'AVAILABLE': '✅ Phòng trống',
+                    'MAINTENANCE': '🔧 Đang bảo trì'
+                };
+                const statusColors = {
+                    'RENTED': '#10b981',
+                    'AVAILABLE': '#3b82f6',
+                    'MAINTENANCE': '#f59e0b'
+                };
+                btnManage.textContent = statusLabels[room.roomStatus] || '🏠 Phòng đã quản lý';
+                btnManage.style.background = statusColors[room.roomStatus] || '#6b7280';
+                btnManage.style.display = 'block';
+                btnManage.disabled = true;
+                btnManage.style.cursor = 'default';
+                btnManage.onclick = null;
+            } else {
+                // Chưa có phòng quản lý → hiển thị nút tạo mới
+                btnManage.style.display = 'block';
+            }
+
+            // Hiển thị nút Chỉnh sửa thông tin phòng
+            const editBtn = document.getElementById('btnEditPost');
+            if (editBtn) editBtn.style.display = 'block';
         } else {
             // Nếu là khách: Hiện nút Gửi yêu cầu, ẩn nút Quản lý[cite: 10]
             btnAction.style.display = 'block';
@@ -645,6 +674,10 @@ body { padding-top: 80px; }
         sessionStorage.setItem('temp_room_data', JSON.stringify(roomData));
         // Chuyển sang trang tạo mới
         window.location.href = '/createRoomManage';
+    }
+
+    function goToEditPost() {
+        window.location.href = '/editRoomPost/' + roomId;
     }
     // Khởi chạy khi load xong DOM
     fetchRoomDetail();

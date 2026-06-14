@@ -35,15 +35,31 @@
     document.getElementById('regForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const token = localStorage.getItem('smartstay_token');
-        const res = await fetch('/api/landlord/requestToLandLord', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({
-                idCardNumber: document.getElementById('idCard').value,
-                address: document.getElementById('address').value
-            })
-        });
-        if (res.ok) { alert("Gửi yêu cầu thành công!"); window.location.href = '/myHome'; }
+        try {
+            const res = await fetch('/api/landlord/requestToLandLord', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({
+                    idCardNumber: document.getElementById('idCard').value,
+                    address: document.getElementById('address').value
+                })
+            });
+            
+            if (res.ok) { 
+                const data = await res.json();
+                if (data.success) {
+                    alert(data.message || "Gửi yêu cầu thành công!"); 
+                    window.location.href = '/'; 
+                } else {
+                    alert("Lỗi: " + data.message);
+                }
+            } else {
+                alert("Đã xảy ra lỗi hệ thống, vui lòng thử lại sau.");
+            }
+        } catch (error) {
+            console.error("Fetch error:", error);
+            alert("Lỗi kết nối máy chủ.");
+        }
     });
 </script>
 </body>

@@ -15,8 +15,10 @@ import vn.edu.ptit.dto.Response.RoomPostSummaryResponse;
 import vn.edu.ptit.entity.LandLord;
 import vn.edu.ptit.entity.RoomPostImages;
 import vn.edu.ptit.entity.RoomPosts;
+import vn.edu.ptit.entity.Rooms;
 import vn.edu.ptit.entity.User;
 import vn.edu.ptit.repository.RoomPostRepository;
+import vn.edu.ptit.repository.RoomsRepository;
 import vn.edu.ptit.service.Authentication.AuthService;
 
 import java.io.IOException;
@@ -32,6 +34,7 @@ public class RoomPostService {
     private final RoomPostRepository roomPostRepository;
     private final AuthService authService;
     private final FileService fileService;
+    private final RoomsRepository roomsRepository;
 
     @Transactional
     public ApiResponseCreateRoomPost createNewRoomPost(CreateRoomPostRequest createRoomPostRequest, MultipartFile mainImg,
@@ -143,11 +146,73 @@ public class RoomPostService {
             // Bắt lỗi "Người dùng chưa đăng nhập" hoặc token hết hạn
             // Không làm gì cả, cứ để isOwner = false để họ xem với tư cách Khách
         }
-        System.out.println(authService.getCurrentUserIdOrNull());
         response.setOwner(isOwner);
-        System.out.println(isOwner);
         response.setLandlord(new LandlordInfo(user.getId(), user.getFullName(), user.getPhoneNumber(), user.getAvatarUrl()));
+
+        // Kiểm tra phòng quản lý đã tồn tại trong bảng rooms chưa
+        java.util.Optional<Rooms> existingRoom = roomsRepository.findByRoomPostId(id);
+        if (existingRoom.isPresent()) {
+            response.setHasRoom(true);
+            response.setRoomStatus(existingRoom.get().getStatus().name());
+        } else {
+            response.setHasRoom(false);
+            response.setRoomStatus(null);
+        }
+
         return response;
+    }
+
+    @Transactional
+    public void updateRoomPost(Long id, CreateRoomPostRequest request,
+                               MultipartFile mainImg, List<MultipartFile> gallery) throws IOException {
+        RoomPosts roomPost = roomPostRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Bài đăng không tồn tại"));
+
+        // Kiểm tra quyền sở hữu
+        Long currentUserId = authService.getCurrentUserId();
+        if (!roomPost.getLandlord().getId().equals(currentUserId)) {
+            throw new RuntimeException("Bạn không có quyền chỉnh sửa bài đăng này");
+        }
+
+        // Cập nhật các trường thông tin
+        if (request.getTitle() != null) roomPost.setTitle(request.getTitle());
+        if (request.getDescription() != null) roomPost.setDescription(request.getDescription());
+        if (request.getMonthlyRent() != null) roomPost.setMonthlyRent(request.getMonthlyRent());
+        if (request.getDepositAmount() != null) roomPost.setDepositAmount(request.getDepositAmount());
+        if (request.getAreaM2() != null) roomPost.setAreaM2(request.getAreaM2());
+        if (request.getMaxOccupants() != null) roomPost.setMaxOccupants(request.getMaxOccupants());
+        if (request.getRoomType() != null) roomPost.setRoomType(request.getRoomType());
+        if (request.getAddress() != null) roomPost.setAddress(request.getAddress());
+        if (request.getWard() != null) roomPost.setWard(request.getWard());
+        if (request.getDistrict() != null) roomPost.setDistrict(request.getDistrict());
+        if (request.getCity() != null) roomPost.setCity(request.getCity());
+        if (request.getElectricityPricePerKwh() != null) roomPost.setElectricityPricePerKwh(request.getElectricityPricePerKwh());
+        if (request.getWaterPricePerM3() != null) roomPost.setWaterPricePerM3(request.getWaterPricePerM3());
+        if (request.getInternetFee() != null) roomPost.setInternetFee(request.getInternetFee());
+        if (request.getParkingFee() != null) roomPost.setParkingFee(request.getParkingFee());
+        if (request.getCleaningFee() != null) roomPost.setCleaningFee(request.getCleaningFee());
+
+        // Cập nhật ảnh chính nếu có upload mới
+        if (mainImg != null && !mainImg.isEmpty()) {
+            String url = fileService.saveImg(mainImg);
+            roomPost.setMainImageUrl(url);
+        }
+
+        // Cập nhật gallery nếu có upload mới (thêm vào, không xóa cũ)
+        if (gallery != null && !gallery.isEmpty()) {
+            for (MultipartFile file : gallery) {
+                if (!file.isEmpty()) {
+                    RoomPostImages img = new RoomPostImages();
+                    String url = fileService.saveImg(file);
+                    img.setRoomPost(roomPost);
+                    img.setImageUrl(url);
+                    roomPost.getImages().add(img);
+                }
+            }
+        }
+
+        roomPost.setUpdatedAt(LocalDateTime.now());
+        roomPostRepository.save(roomPost);
     }
 
 }
